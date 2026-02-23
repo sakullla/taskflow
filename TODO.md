@@ -1,10 +1,10 @@
 # TODO - MVP Build Checklist
 
 ## 1) Product and UX
-- [ ] Finalize navigation labels and information architecture
-- [ ] Define list page interaction states: empty, loading, error
+- [x] Finalize navigation labels and information architecture
+- [x] Define list page interaction states: empty, loading, error
 - [x] Define task details drawer fields and edit flows
-- [ ] Draft "My Day" interaction rules and reset policy
+- [x] Draft "My Day" interaction rules and reset policy
 
 ## 2) Frontend (`apps/web`)
 - [x] Create domain models (`List`, `Task`, `Step`, `MyDayTask`)

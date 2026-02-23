@@ -1,6 +1,6 @@
 # Agent Task Board
 
-Generated: 2026-02-23T12:30:42.986Z
+Generated: 2026-02-23T12:32:39.400Z
 
 ## Dispatch Rules
 - Source of truth: `TODO.md` unchecked tasks
@@ -10,9 +10,7 @@ Generated: 2026-02-23T12:30:42.986Z
 ## Queue by Agent
 
 ### frontend-builder
-- [ ] (Product and UX) Finalize navigation labels and information architecture
-- [ ] (Product and UX) Define list page interaction states: empty, loading, error
-- [ ] (Product and UX) Draft "My Day" interaction rules and reset policy
+- No pending tasks.
 
 ### backend-builder
 - [ ] (Backend (`apps/api`)) Add unit tests for task/list services
@@ -30,4 +28,4 @@ Generated: 2026-02-23T12:30:42.986Z
 
 ## Snapshot
 - Total tasks: 23
-- Pending tasks: 11
+- Pending tasks: 8

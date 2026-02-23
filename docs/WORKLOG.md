@@ -10,3 +10,4 @@
 - 2026-02-23: Added localStorage cache fallback for lists/tasks with automatic persistence on state changes.
 - 2026-02-23: Expanded API with steps/my-day endpoints, standardized error format, and x-user-id auth stub with user-scoped data guards.
 - 2026-02-23: Added SQLite-backed persistence (node:sqlite) with schema setup, hydration, and state flush on API mutations.
+- 2026-02-23: Documented UX decisions for IA, list states, and My Day reset policy in docs/PRODUCT_UX_SPEC.md.
