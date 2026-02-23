@@ -22,6 +22,7 @@
 - [ ] Add unit tests for task/list services
 
 ## 4) Cross-cutting
+- [x] Setup multi-agent execution framework and dispatch board
 - [ ] Define sync conflict rule (v1: last-write-wins)
 - [ ] Add telemetry hooks and request logging
 - [ ] Add CI pipeline: typecheck + test + build
