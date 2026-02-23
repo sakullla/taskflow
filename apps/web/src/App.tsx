@@ -20,6 +20,28 @@ import { Task, TaskDefaults, TaskPriority, TodoList } from "./models";
 
 const DEFAULT_LIST_ID = "inbox";
 const todayIso = new Date().toISOString().slice(0, 10);
+const LISTS_CACHE_KEY = "todo.cache.lists.v1";
+const TASKS_CACHE_KEY = "todo.cache.tasks.v1";
+
+function readCache<T>(key: string): T | null {
+  try {
+    const raw = window.localStorage.getItem(key);
+    if (!raw) {
+      return null;
+    }
+    return JSON.parse(raw) as T;
+  } catch {
+    return null;
+  }
+}
+
+function writeCache<T>(key: string, data: T): void {
+  try {
+    window.localStorage.setItem(key, JSON.stringify(data));
+  } catch {
+    // Ignore storage quota and serialization issues.
+  }
+}
 
 type TaskPatch = Partial<
   Pick<
@@ -511,12 +533,24 @@ function ListRouteScreen({
 }
 
 export function App() {
-  const [tasks, setTasks] = useState<Task[]>(initialTasks);
-  const [lists, setLists] = useState<TodoList[]>(initialLists);
+  const [tasks, setTasks] = useState<Task[]>(
+    () => readCache<Task[]>(TASKS_CACHE_KEY) ?? initialTasks
+  );
+  const [lists, setLists] = useState<TodoList[]>(
+    () => readCache<TodoList[]>(LISTS_CACHE_KEY) ?? initialLists
+  );
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
   const [syncNotice, setSyncNotice] = useState<string | null>(null);
   const navigate = useNavigate();
   const location = useLocation();
+
+  useEffect(() => {
+    writeCache(LISTS_CACHE_KEY, lists);
+  }, [lists]);
+
+  useEffect(() => {
+    writeCache(TASKS_CACHE_KEY, tasks);
+  }, [tasks]);
 
   useEffect(() => {
     let disposed = false;
