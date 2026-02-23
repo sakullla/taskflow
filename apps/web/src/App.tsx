@@ -16,6 +16,7 @@ import {
   updateListApi,
   updateTaskApi
 } from "./lib/api";
+import { trackEvent } from "./lib/telemetry";
 import { Task, TaskDefaults, TaskPriority, TodoList } from "./models";
 
 const DEFAULT_LIST_ID = "inbox";
@@ -564,9 +565,15 @@ export function App() {
         setLists(data.lists);
         setTasks(data.tasks);
         setSyncNotice(null);
+        trackEvent({ name: "bootstrap_sync_success" });
       } catch (error) {
         if (!disposed) {
           setSyncNotice(`API sync unavailable. Using local data. ${String(error)}`);
+          trackEvent({
+            name: "bootstrap_sync_failed",
+            level: "warn",
+            metadata: { error: String(error) }
+          });
         }
       }
     };
@@ -610,6 +617,7 @@ export function App() {
           current.map((task) => (task.id === id ? currentTask : task))
         );
         setSyncNotice("Failed to sync task completion. Local change was reverted.");
+        trackEvent({ name: "task_toggle_sync_failed", level: "warn", metadata: { taskId: id } });
       });
   };
 
@@ -634,6 +642,7 @@ export function App() {
           current.map((task) => (task.id === id ? previousTask : task))
         );
         setSyncNotice("Failed to sync task updates. Local change was reverted.");
+        trackEvent({ name: "task_update_sync_failed", level: "warn", metadata: { taskId: id } });
       });
   };
 
@@ -662,6 +671,7 @@ export function App() {
       .catch(() => {
         setTasks((current) => current.filter((task) => task.id !== optimisticTask.id));
         setSyncNotice("Failed to create task on server. Local task was removed.");
+        trackEvent({ name: "task_create_sync_failed", level: "warn", metadata: { title } });
       });
   };
 
@@ -694,6 +704,7 @@ export function App() {
         setLists((current) => current.filter((list) => list.id !== tempId));
         setSyncNotice("Failed to create list on server. Local list was removed.");
         navigate(`/lists/${DEFAULT_LIST_ID}`, { replace: true });
+        trackEvent({ name: "list_create_sync_failed", level: "warn", metadata: { name } });
       });
   };
 
@@ -712,6 +723,7 @@ export function App() {
         current.map((list) => (list.id === listId ? previousList : list))
       );
       setSyncNotice("Failed to rename list on server. Local name was reverted.");
+      trackEvent({ name: "list_rename_sync_failed", level: "warn", metadata: { listId } });
     });
   };
 
@@ -747,6 +759,7 @@ export function App() {
       setLists(previousLists);
       setTasks(previousTasks);
       setSyncNotice("Failed to delete list on server. Local state was restored.");
+      trackEvent({ name: "list_delete_sync_failed", level: "warn", metadata: { listId } });
     });
   };
 

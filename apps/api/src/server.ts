@@ -458,6 +458,18 @@ app.use((req: Request, _res: Response, next: NextFunction) => {
   next();
 });
 
+app.use((req: Request, res: Response, next: NextFunction) => {
+  const start = Date.now();
+  res.on("finish", () => {
+    const userId = (req as UserRequest).userId;
+    const durationMs = Date.now() - start;
+    console.log(
+      `[${new Date().toISOString()}] ${req.method} ${req.originalUrl} ${res.statusCode} ${durationMs}ms user=${userId}`
+    );
+  });
+  next();
+});
+
 app.get("/health", (_req, res) => {
   res.json({ status: "ok" });
 });
@@ -871,6 +883,10 @@ app.use((error: unknown, _req: Request, res: Response, _next: NextFunction) => {
   sendError(res, 500, "INTERNAL_ERROR", "internal server error");
 });
 
-app.listen(port, () => {
-  console.log(`API listening on http://localhost:${port}`);
-});
+export { app };
+
+if (process.env.NODE_ENV !== "test") {
+  app.listen(port, () => {
+    console.log(`API listening on http://localhost:${port}`);
+  });
+}

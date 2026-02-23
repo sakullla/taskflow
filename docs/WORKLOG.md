@@ -11,3 +11,7 @@
 - 2026-02-23: Expanded API with steps/my-day endpoints, standardized error format, and x-user-id auth stub with user-scoped data guards.
 - 2026-02-23: Added SQLite-backed persistence (node:sqlite) with schema setup, hydration, and state flush on API mutations.
 - 2026-02-23: Documented UX decisions for IA, list states, and My Day reset policy in docs/PRODUCT_UX_SPEC.md.
+- 2026-02-23: Added sync conflict policy doc (v1 LWW), request logging middleware, and telemetry hooks for optimistic sync failures.
+- 2026-02-23: Added CI workflow (.github/workflows/ci.yml) running install, typecheck, and build gates.
+- 2026-02-23: Added API test suite (node:test + supertest) covering validation, create/update completion flow, and My Day smoke path.
+- 2026-02-23: Added QA checklist doc, environment template, and secrets handling guide for release readiness.

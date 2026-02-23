@@ -23,6 +23,12 @@ A checklist/task-first application scaffold focused on lists, tasks, and My Day.
 4. Build agent board:
    - `npm run agent:dispatch`
 
+## Environment
+
+- Copy `.env.example` to `.env` and adjust values.
+- API defaults: `PORT=4000`, `TODO_DB_PATH=data/todo.sqlite`
+- Web default: `VITE_API_BASE_URL=http://localhost:4000`
+
 ## Current scope
 
 This repository is initialized for MVP delivery with multi-agent execution support.
