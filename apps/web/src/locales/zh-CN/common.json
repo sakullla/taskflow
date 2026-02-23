@@ -1,0 +1,29 @@
+{
+  "app": {
+    "name": "Todo",
+    "tagline": "高效管理你的每一天"
+  },
+  "actions": {
+    "add": "添加",
+    "save": "保存",
+    "delete": "删除",
+    "cancel": "取消",
+    "edit": "编辑",
+    "close": "关闭",
+    "search": "搜索",
+    "create": "创建",
+    "update": "更新",
+    "confirm": "确认",
+    "back": "返回"
+  },
+  "empty": {
+    "title": "暂无任务",
+    "description": "开始添加你的第一个任务吧！",
+    "listDescription": "这个列表还没有任务"
+  },
+  "loading": "加载中...",
+  "error": {
+    "title": "出错了",
+    "retry": "重试"
+  }
+}

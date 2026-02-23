@@ -16,3 +16,23 @@
 - 2026-02-23: Added API test suite (node:test + supertest) covering validation, create/update completion flow, and My Day smoke path.
 - 2026-02-23: Added QA checklist doc, environment template, and secrets handling guide for release readiness.
 - 2026-02-23: Added local MVP deployment command and deployment runbook (docs/DEPLOYMENT.md).
+- 2026-02-23: Fixed Tailwind CSS v4 configuration (migrated from v3 syntax to v4 `@import` and `@theme`).
+- 2026-02-23: Fixed API TypeScript type errors (Task/Step types, Fastify types, unused variables).
+- 2026-02-23: Fixed add task button - implemented full add task flow with API integration in MyDayPage.
+- 2026-02-23: Fixed listId UUID validation error - conditional listId payload, load lists from API on mount.
+- 2026-02-23: Implemented sidebar list management (create with color picker, delete with confirmation).
+- 2026-02-23: Implemented task completion toggle with optimistic update and rollback on error.
+- 2026-02-23: Implemented task important toggle with optimistic update.
+- 2026-02-23: Implemented task delete functionality with confirmation dialog.
+- 2026-02-23: Implemented task edit (title and note) with auto-save on blur.
+- 2026-02-23: Enhanced all views (MyDay/Important/Planned/All/List) with add task functionality and API data loading.
+- 2026-02-23: Full functional test passed: list CRUD, task CRUD, toggle completion/important, update, delete.
+- 2026-02-23: Implemented step management (create, toggle, edit, delete) in TaskDetail component.
+- 2026-02-23: Implemented My Day functionality - add/remove tasks from My Day with dedicated API endpoint.
+- 2026-02-23: Added date picker component with preset dates (today, tomorrow, next week) and custom date selection.
+- 2026-02-23: Enhanced empty state design with icons for TaskList component.
+- 2026-02-23: Implemented Toast notification system with zustand store for global notifications.
+- 2026-02-23: **Added Playwright E2E test suite** with 14 tests covering smoke tests, task management, navigation, task details, and list management.
+- 2026-02-23: **Fixed environment variable loading** by adding `dotenv/config` import to API server.
+- 2026-02-23: **Added seed data** to in-memory database for consistent E2E testing.
+- 2026-02-23: **Fixed i18n translations** for list management UI (newListPlaceholder, create, cancel, delete).

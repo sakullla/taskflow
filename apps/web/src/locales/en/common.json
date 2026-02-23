@@ -1,0 +1,29 @@
+{
+  "app": {
+    "name": "Todo",
+    "tagline": "Manage your day efficiently"
+  },
+  "actions": {
+    "add": "Add",
+    "save": "Save",
+    "delete": "Delete",
+    "cancel": "Cancel",
+    "edit": "Edit",
+    "close": "Close",
+    "search": "Search",
+    "create": "Create",
+    "update": "Update",
+    "confirm": "Confirm",
+    "back": "Back"
+  },
+  "empty": {
+    "title": "No tasks",
+    "description": "Start by adding your first task!",
+    "listDescription": "This list has no tasks yet"
+  },
+  "loading": "Loading...",
+  "error": {
+    "title": "Error",
+    "retry": "Retry"
+  }
+}

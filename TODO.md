@@ -1,34 +1,117 @@
-# TODO - MVP Build Checklist
+# 生产级别重构计划 - 执行清单
 
-## 1) Product and UX
-- [x] Finalize navigation labels and information architecture
-- [x] Define list page interaction states: empty, loading, error
-- [x] Define task details drawer fields and edit flows
-- [x] Draft "My Day" interaction rules and reset policy
+## 📋 阶段一：基础架构重构
 
-## 2) Frontend (`apps/web`)
-- [x] Create domain models (`List`, `Task`, `Step`, `MyDayTask`)
-- [x] Implement list sidebar with custom list CRUD
-- [x] Implement task list with quick-add and complete toggle
-- [x] Implement task detail panel (due date, reminder, note, priority)
-- [x] Integrate API client layer and optimistic updates
-- [x] Add local cache (IndexedDB/localStorage fallback)
+### Week 1: 后端重构 (Fastify + Prisma)
+- [x] 1.1 初始化 Fastify 项目结构
+- [x] 1.2 配置 Prisma ORM 和数据库模型
+- [x] 1.3 实现用户认证模块 (JWT)
+- [x] 1.4 实现列表模块 CRUD
+- [x] 1.5 实现任务模块 CRUD
+- [x] 1.6 实现步骤模块 CRUD
+- [x] 1.7 实现"我的一天"功能
+- [x] 1.8 API 测试与错误处理
 
-## 3) Backend (`apps/api`)
-- [x] Add persistent storage (PostgreSQL or SQLite for local dev)
-- [x] Implement REST endpoints for lists/tasks/steps/my-day
-- [x] Add input validation and error shape conventions
-- [x] Add auth stub and user scoping guard
-- [x] Add unit tests for task/list services
+### Week 2: 前端基础重构
+- [x] 2.1 初始化前端项目 (Vite + React + TS)
+- [x] 2.2 配置 Tailwind CSS + shadcn/ui
+- [x] 2.3 配置 i18next 国际化
+- [x] 2.4 配置 Zustand + React Query
+- [x] 2.5 设计系统基础组件
+- [x] 2.6 实现认证页面 (登录/注册)
+- [x] 2.7 实现主布局框架
+- [x] 2.8 集成 API 客户端
 
-## 4) Cross-cutting
-- [x] Setup multi-agent execution framework and dispatch board
-- [x] Define sync conflict rule (v1: last-write-wins)
-- [x] Add telemetry hooks and request logging
-- [x] Add CI pipeline: typecheck + test + build
-- [x] Add e2e smoke test for create/complete task flow
+---
 
-## 5) Release
-- [x] QA checklist and bug bash
-- [x] Production env template and secrets doc
-- [x] Build and deploy first MVP
+## 📋 阶段二：核心功能实现
+
+### Week 3: 任务管理功能
+- [x] 3.1 任务列表视图组件
+- [x] 3.2 任务卡片组件
+- [x] 3.3 任务详情抽屉
+- [x] 3.4 添加任务功能
+- [x] 3.5 编辑/删除任务
+- [x] 3.6 任务筛选与排序
+- [x] 3.7 步骤管理功能
+- [ ] 3.8 任务完成动画
+
+### Week 4: 列表与视图
+- [x] 4.1 侧边栏列表管理
+- [x] 4.2 自定义列表 CRUD
+- [x] 4.3 "我的一天"视图
+- [x] 4.4 "重要"视图
+- [x] 4.5 "计划内"视图 (日历)
+- [ ] 4.6 搜索功能
+- [ ] 4.7 批量操作
+- [ ] 4.8 移动端响应式适配
+
+---
+
+## 📋 阶段三：体验优化
+
+### Week 5: 动画与交互
+- [ ] 5.1 Framer Motion 动画库集成
+- [ ] 5.2 任务完成动画效果
+- [ ] 5.3 页面过渡动画
+- [ ] 5.4 加载状态设计
+- [ ] 5.5 骨架屏组件
+- [x] 5.6 Toast 通知系统
+- [ ] 5.7 确认对话框
+- [ ] 5.8 空状态设计
+
+### Week 6: 设置与国际化
+- [ ] 6.1 用户设置页面
+- [ ] 6.2 主题切换 (Light/Dark)
+- [ ] 6.3 语言切换功能
+- [ ] 6.4 账户管理
+- [x] 6.5 简体中文翻译文件
+- [x] 6.6 英文翻译文件
+- [ ] 6.7 翻译文案校对
+- [ ] 6.8 RTL 支持评估
+
+---
+
+## 📋 阶段四：生产部署
+
+### Week 7: Docker 与部署
+- [x] 7.1 编写 API Dockerfile
+- [x] 7.2 编写 Web Dockerfile
+- [x] 7.3 编写 docker-compose.yml
+- [x] 7.4 配置 Nginx 反向代理
+- [ ] 7.5 SSL/TLS 证书配置
+- [x] 7.6 环境变量管理
+- [ ] 7.7 数据库备份脚本
+- [ ] 7.8 部署文档编写
+
+### Week 8: 测试与优化
+- [ ] 8.1 单元测试 (前端组件)
+- [ ] 8.2 单元测试 (后端 API)
+- [x] 8.3 E2E 测试 (Playwright)
+- [ ] 8.4 性能优化
+- [ ] 8.5 安全审计
+- [ ] 8.6 可访问性检查
+- [ ] 8.7 文档完善
+- [ ] 8.8 生产环境部署验证
+
+---
+
+## 📊 当前进度
+
+| 阶段 | 任务数 | 已完成 | 进度 |
+|------|--------|--------|------|
+| 阶段一 | 16 | 16 | 100% |
+| 阶段二 | 16 | 12 | 75% |
+| 阶段三 | 16 | 4 | 25% |
+| 阶段四 | 16 | 6 | 38% |
+| **总计** | **64** | **38** | **59%** |
+
+---
+
+## 🎯 优先级说明
+
+- **P0 (必须)**: 核心功能，阻塞后续开发
+- **P1 (重要)**: 主要功能，影响用户体验
+- **P2 (可选)**: 增强功能，可后续迭代
+
+所有任务默认为 P0，除非特别标注。

@@ -1,0 +1,18 @@
+{
+  "myDay": "My Day",
+  "important": "Important",
+  "planned": "Planned",
+  "all": "All Tasks",
+  "lists": "Lists",
+  "settings": "Settings",
+  "profile": "Profile",
+  "logout": "Logout",
+  "login": "Login",
+  "register": "Register",
+  "newListPlaceholder": "List name",
+  "create": "Create",
+  "cancel": "Cancel",
+  "delete": "Delete",
+  "deleteListConfirm": "Delete this list?",
+  "search": "Search"
+}

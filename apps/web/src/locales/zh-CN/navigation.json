@@ -1,0 +1,18 @@
+{
+  "myDay": "我的一天",
+  "important": "重要",
+  "planned": "计划内",
+  "all": "全部任务",
+  "lists": "列表",
+  "settings": "设置",
+  "profile": "个人资料",
+  "logout": "退出登录",
+  "login": "登录",
+  "register": "注册",
+  "newListPlaceholder": "列表名称",
+  "create": "创建",
+  "cancel": "取消",
+  "delete": "删除",
+  "deleteListConfirm": "删除此列表？",
+  "search": "搜索"
+}

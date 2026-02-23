@@ -1,0 +1,29 @@
+{
+  "title": "Task",
+  "addPlaceholder": "Add a task",
+  "titleLabel": "Task title",
+  "note": "Note",
+  "notePlaceholder": "Add a note...",
+  "dueDate": "Due date",
+  "reminder": "Reminder",
+  "priority": {
+    "label": "Priority",
+    "low": "Low",
+    "normal": "Normal",
+    "high": "High"
+  },
+  "addToMyDay": "Add to My Day",
+  "removeFromMyDay": "Remove from My Day",
+  "markImportant": "Mark as important",
+  "unmarkImportant": "Unmark as important",
+  "markCompleted": "Mark as completed",
+  "markIncomplete": "Mark as incomplete",
+  "completed": "Completed",
+  "incomplete": "Incomplete",
+  "steps": "Steps",
+  "addStep": "Add step",
+  "stepPlaceholder": "Add a step...",
+  "deleteConfirm": "Are you sure you want to delete this task?",
+  "created": "Created on",
+  "updated": "Updated on"
+}
