@@ -29,6 +29,11 @@ A checklist/task-first application scaffold focused on lists, tasks, and My Day.
 - API defaults: `PORT=4000`, `TODO_DB_PATH=data/todo.sqlite`
 - Web default: `VITE_API_BASE_URL=http://localhost:4000`
 
+## Local MVP deploy
+
+- Run `npm run deploy:mvp:local` to build and launch API + web preview.
+- See `docs/DEPLOYMENT.md` for deployment and health-check steps.
+
 ## Current scope
 
 This repository is initialized for MVP delivery with multi-agent execution support.

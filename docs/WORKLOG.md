@@ -15,3 +15,4 @@
 - 2026-02-23: Added CI workflow (.github/workflows/ci.yml) running install, typecheck, and build gates.
 - 2026-02-23: Added API test suite (node:test + supertest) covering validation, create/update completion flow, and My Day smoke path.
 - 2026-02-23: Added QA checklist doc, environment template, and secrets handling guide for release readiness.
+- 2026-02-23: Added local MVP deployment command and deployment runbook (docs/DEPLOYMENT.md).

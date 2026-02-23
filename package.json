@@ -8,11 +8,17 @@
   "scripts": {
     "dev:web": "npm --workspace apps/web run dev",
     "dev:api": "npm --workspace apps/api run dev",
+    "start:web:preview": "npm --workspace apps/web run preview -- --host 0.0.0.0 --port 4173",
+    "start:api": "npm --workspace apps/api run start",
+    "deploy:mvp:local": "npm run build:web && npm run build:api && concurrently \"npm run start:api\" \"npm run start:web:preview\"",
     "build:web": "npm --workspace apps/web run build",
     "build:api": "npm --workspace apps/api run build",
     "test": "npm run test --workspaces",
     "lint": "npm run lint --workspaces",
     "typecheck": "npm run typecheck --workspaces",
     "agent:dispatch": "node scripts/dispatch-agent-tasks.mjs"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1"
   }
 }

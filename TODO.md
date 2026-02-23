@@ -31,4 +31,4 @@
 ## 5) Release
 - [x] QA checklist and bug bash
 - [x] Production env template and secrets doc
-- [ ] Build and deploy first MVP
+- [x] Build and deploy first MVP
