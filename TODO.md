@@ -15,7 +15,7 @@
 - [x] Add local cache (IndexedDB/localStorage fallback)
 
 ## 3) Backend (`apps/api`)
-- [ ] Add persistent storage (PostgreSQL or SQLite for local dev)
+- [x] Add persistent storage (PostgreSQL or SQLite for local dev)
 - [x] Implement REST endpoints for lists/tasks/steps/my-day
 - [x] Add input validation and error shape conventions
 - [x] Add auth stub and user scoping guard

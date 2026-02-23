@@ -1,6 +1,6 @@
 # Agent Task Board
 
-Generated: 2026-02-23T12:24:58.054Z
+Generated: 2026-02-23T12:30:42.986Z
 
 ## Dispatch Rules
 - Source of truth: `TODO.md` unchecked tasks
@@ -15,7 +15,6 @@ Generated: 2026-02-23T12:24:58.054Z
 - [ ] (Product and UX) Draft "My Day" interaction rules and reset policy
 
 ### backend-builder
-- [ ] (Backend (`apps/api`)) Add persistent storage (PostgreSQL or SQLite for local dev)
 - [ ] (Backend (`apps/api`)) Add unit tests for task/list services
 
 ### qa-reviewer
@@ -31,4 +30,4 @@ Generated: 2026-02-23T12:24:58.054Z
 
 ## Snapshot
 - Total tasks: 23
-- Pending tasks: 12
+- Pending tasks: 11

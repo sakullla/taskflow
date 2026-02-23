@@ -1,6 +1,9 @@
 import cors from "cors";
 import express, { NextFunction, Request, Response } from "express";
 import { randomUUID } from "node:crypto";
+import { mkdirSync } from "node:fs";
+import { dirname } from "node:path";
+import { DatabaseSync } from "node:sqlite";
 
 type TaskPriority = "low" | "normal" | "high";
 
@@ -63,6 +66,7 @@ const port = Number(process.env.PORT ?? 4000);
 const demoUserId = "demo-user";
 const nowIso = new Date().toISOString();
 const defaultListId = "inbox";
+const dbPath = process.env.TODO_DB_PATH ?? "data/todo.sqlite";
 
 const lists: TodoList[] = [
   {
@@ -136,6 +140,246 @@ const myDayTasks: MyDayTask[] = [
   }
 ];
 
+const db = (() => {
+  mkdirSync(dirname(dbPath), { recursive: true });
+  return new DatabaseSync(dbPath);
+})();
+
+function setupSchema(): void {
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS lists (
+      id TEXT PRIMARY KEY,
+      user_id TEXT NOT NULL,
+      name TEXT NOT NULL,
+      color TEXT NOT NULL,
+      is_default INTEGER NOT NULL,
+      created_at TEXT NOT NULL
+    );
+    CREATE TABLE IF NOT EXISTS tasks (
+      id TEXT PRIMARY KEY,
+      user_id TEXT NOT NULL,
+      list_id TEXT NOT NULL,
+      title TEXT NOT NULL,
+      note TEXT NOT NULL,
+      is_completed INTEGER NOT NULL,
+      is_important INTEGER NOT NULL,
+      in_my_day INTEGER NOT NULL,
+      due_date TEXT,
+      reminder_at TEXT,
+      priority TEXT NOT NULL,
+      created_at TEXT NOT NULL
+    );
+    CREATE TABLE IF NOT EXISTS steps (
+      id TEXT PRIMARY KEY,
+      user_id TEXT NOT NULL,
+      task_id TEXT NOT NULL,
+      title TEXT NOT NULL,
+      is_completed INTEGER NOT NULL,
+      step_order INTEGER NOT NULL,
+      created_at TEXT NOT NULL
+    );
+    CREATE TABLE IF NOT EXISTS my_day_tasks (
+      id TEXT PRIMARY KEY,
+      user_id TEXT NOT NULL,
+      task_id TEXT NOT NULL,
+      date TEXT NOT NULL,
+      created_at TEXT NOT NULL
+    );
+  `);
+}
+
+function persistState(): void {
+  db.exec("BEGIN TRANSACTION");
+  try {
+    db.exec("DELETE FROM lists");
+    db.exec("DELETE FROM tasks");
+    db.exec("DELETE FROM steps");
+    db.exec("DELETE FROM my_day_tasks");
+
+    const insertList = db.prepare(
+      "INSERT INTO lists (id, user_id, name, color, is_default, created_at) VALUES (?, ?, ?, ?, ?, ?)"
+    );
+    for (const item of lists) {
+      insertList.run(
+        item.id,
+        item.userId,
+        item.name,
+        item.color,
+        item.isDefault ? 1 : 0,
+        item.createdAt
+      );
+    }
+
+    const insertTask = db.prepare(
+      "INSERT INTO tasks (id, user_id, list_id, title, note, is_completed, is_important, in_my_day, due_date, reminder_at, priority, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+    );
+    for (const item of tasks) {
+      insertTask.run(
+        item.id,
+        item.userId,
+        item.listId,
+        item.title,
+        item.note,
+        item.isCompleted ? 1 : 0,
+        item.isImportant ? 1 : 0,
+        item.inMyDay ? 1 : 0,
+        item.dueDate,
+        item.reminderAt,
+        item.priority,
+        item.createdAt
+      );
+    }
+
+    const insertStep = db.prepare(
+      "INSERT INTO steps (id, user_id, task_id, title, is_completed, step_order, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)"
+    );
+    for (const item of steps) {
+      insertStep.run(
+        item.id,
+        item.userId,
+        item.taskId,
+        item.title,
+        item.isCompleted ? 1 : 0,
+        item.order,
+        item.createdAt
+      );
+    }
+
+    const insertMyDay = db.prepare(
+      "INSERT INTO my_day_tasks (id, user_id, task_id, date, created_at) VALUES (?, ?, ?, ?, ?)"
+    );
+    for (const item of myDayTasks) {
+      insertMyDay.run(item.id, item.userId, item.taskId, item.date, item.createdAt);
+    }
+
+    db.exec("COMMIT");
+  } catch (error) {
+    db.exec("ROLLBACK");
+    throw error;
+  }
+}
+
+function hydrateState(): void {
+  const listRows = db
+    .prepare(
+      "SELECT id, user_id, name, color, is_default, created_at FROM lists ORDER BY created_at"
+    )
+    .all() as Array<{
+    id: string;
+    user_id: string;
+    name: string;
+    color: string;
+    is_default: number;
+    created_at: string;
+  }>;
+
+  if (listRows.length === 0) {
+    persistState();
+    return;
+  }
+
+  const taskRows = db
+    .prepare(
+      "SELECT id, user_id, list_id, title, note, is_completed, is_important, in_my_day, due_date, reminder_at, priority, created_at FROM tasks ORDER BY created_at DESC"
+    )
+    .all() as Array<{
+    id: string;
+    user_id: string;
+    list_id: string;
+    title: string;
+    note: string;
+    is_completed: number;
+    is_important: number;
+    in_my_day: number;
+    due_date: string | null;
+    reminder_at: string | null;
+    priority: TaskPriority;
+    created_at: string;
+  }>;
+
+  const stepRows = db
+    .prepare(
+      "SELECT id, user_id, task_id, title, is_completed, step_order, created_at FROM steps ORDER BY step_order ASC"
+    )
+    .all() as Array<{
+    id: string;
+    user_id: string;
+    task_id: string;
+    title: string;
+    is_completed: number;
+    step_order: number;
+    created_at: string;
+  }>;
+
+  const myDayRows = db
+    .prepare("SELECT id, user_id, task_id, date, created_at FROM my_day_tasks")
+    .all() as Array<{
+    id: string;
+    user_id: string;
+    task_id: string;
+    date: string;
+    created_at: string;
+  }>;
+
+  lists.splice(
+    0,
+    lists.length,
+    ...listRows.map((row) => ({
+      id: row.id,
+      userId: row.user_id,
+      name: row.name,
+      color: row.color,
+      isDefault: row.is_default === 1,
+      createdAt: row.created_at
+    }))
+  );
+
+  tasks.splice(
+    0,
+    tasks.length,
+    ...taskRows.map((row) => ({
+      id: row.id,
+      userId: row.user_id,
+      listId: row.list_id,
+      title: row.title,
+      note: row.note,
+      isCompleted: row.is_completed === 1,
+      isImportant: row.is_important === 1,
+      inMyDay: row.in_my_day === 1,
+      dueDate: row.due_date,
+      reminderAt: row.reminder_at,
+      priority: row.priority,
+      createdAt: row.created_at
+    }))
+  );
+
+  steps.splice(
+    0,
+    steps.length,
+    ...stepRows.map((row) => ({
+      id: row.id,
+      userId: row.user_id,
+      taskId: row.task_id,
+      title: row.title,
+      isCompleted: row.is_completed === 1,
+      order: row.step_order,
+      createdAt: row.created_at
+    }))
+  );
+
+  myDayTasks.splice(
+    0,
+    myDayTasks.length,
+    ...myDayRows.map((row) => ({
+      id: row.id,
+      userId: row.user_id,
+      taskId: row.task_id,
+      date: row.date,
+      createdAt: row.created_at
+    }))
+  );
+}
+
 function sendError(
   res: Response,
   status: number,
@@ -201,6 +445,9 @@ function findTaskByUser(taskId: string, userId: string): Task | undefined {
   return tasks.find((item) => item.id === taskId && item.userId === userId);
 }
 
+setupSchema();
+hydrateState();
+
 app.use(cors());
 app.use(express.json());
 
@@ -240,6 +487,7 @@ app.post("/lists", (req: Request, res) => {
   };
 
   lists.push(nextList);
+  persistState();
   res.status(201).json(nextList);
 });
 
@@ -259,6 +507,7 @@ app.patch("/lists/:id", (req: Request, res) => {
   }
 
   list.name = name;
+  persistState();
   res.json(list);
 });
 
@@ -285,6 +534,7 @@ app.delete("/lists/:id", (req: Request, res) => {
     }
   }
 
+  persistState();
   res.json({ deleted: removed.id, reassignedTo: fallbackListId });
 });
 
@@ -334,6 +584,7 @@ app.post("/tasks", (req: Request, res) => {
   };
 
   tasks.unshift(nextTask);
+  persistState();
   res.status(201).json(nextTask);
 });
 
@@ -410,6 +661,7 @@ app.patch("/tasks/:id", (req: Request, res) => {
     task.listId = listId;
   }
 
+  persistState();
   res.json(task);
 });
 
@@ -436,6 +688,7 @@ app.delete("/tasks/:id", (req: Request, res) => {
     }
   }
 
+  persistState();
   res.json({ deleted: deleted.id });
 });
 
@@ -486,6 +739,7 @@ app.post("/tasks/:taskId/steps", (req: Request, res) => {
   };
 
   steps.push(nextStep);
+  persistState();
   res.status(201).json(nextStep);
 });
 
@@ -513,6 +767,7 @@ app.patch("/steps/:id", (req: Request, res) => {
     step.order = order;
   }
 
+  persistState();
   res.json(step);
 });
 
@@ -526,6 +781,7 @@ app.delete("/steps/:id", (req: Request, res) => {
   }
 
   const [deleted] = steps.splice(index, 1);
+  persistState();
   res.json({ deleted: deleted.id });
 });
 
@@ -574,6 +830,7 @@ app.post("/my-day", (req: Request, res) => {
 
   myDayTasks.push(entry);
   task.inMyDay = true;
+  persistState();
   res.status(201).json(entry);
 });
 
@@ -601,11 +858,17 @@ app.delete("/my-day/:taskId", (req: Request, res) => {
     task.inMyDay = false;
   }
 
+  persistState();
   res.json({ deleted: deletedCount, taskId, date });
 });
 
 app.use((_req, res) => {
   sendError(res, 404, "NOT_FOUND", "route not found");
+});
+
+app.use((error: unknown, _req: Request, res: Response, _next: NextFunction) => {
+  console.error(error);
+  sendError(res, 500, "INTERNAL_ERROR", "internal server error");
 });
 
 app.listen(port, () => {
