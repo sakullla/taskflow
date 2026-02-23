@@ -13,6 +13,7 @@ Keep feature code inside the owning app. Shared interfaces should live in clear,
 ## Build, Test, and Development Commands
 Run from repository root:
 - `npm install`: install all workspace dependencies.
+- `npm run deploy:mvp:local`: build and launch API + web preview for local testing.
 - `npm run dev:web`: start frontend dev server.
 - `npm run dev:api`: start backend dev server.
 - `npm run build:web`: production build for web.

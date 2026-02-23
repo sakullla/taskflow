@@ -16,12 +16,17 @@ A checklist/task-first application scaffold focused on lists, tasks, and My Day.
 
 1. Install dependencies:
    - `npm install`
-2. Run web:
-   - `npm run dev:web`
-3. Run api:
-   - `npm run dev:api`
-4. Build agent board:
+2. Run local testing (Builds and runs both API and web preview):
+   - `npm run deploy:mvp:local`
+3. Build agent board:
    - `npm run agent:dispatch`
+
+## Development (Optional)
+
+- Run web:
+   - `npm run dev:web`
+- Run api:
+   - `npm run dev:api`
 
 ## Environment
 

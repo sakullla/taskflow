@@ -12,6 +12,7 @@ import {
   createListApi,
   createTaskApi,
   deleteListApi,
+  deleteTaskApi,
   fetchBootstrapData,
   updateListApi,
   updateTaskApi
@@ -98,10 +99,10 @@ const initialTasks: Task[] = [
 ];
 
 const pages = [
-  { path: "/", label: "My Day" },
-  { path: "/important", label: "Important" },
-  { path: "/planned", label: "Planned" },
-  { path: "/tasks", label: "All Tasks" }
+  { path: "/", label: "✨ My Day" },
+  { path: "/important", label: "💖 Important" },
+  { path: "/planned", label: "🗓️ Planned" },
+  { path: "/tasks", label: "🎀 All Tasks" }
 ];
 
 interface TaskViewConfig {
@@ -158,12 +159,16 @@ function Sidebar({
   lists,
   onAddList,
   onRenameList,
-  onDeleteList
+  onDeleteList,
+  isMobileMenuOpen,
+  setMobileMenuOpen
 }: {
   lists: TodoList[];
   onAddList: (name: string) => void;
   onRenameList: (listId: string, name: string) => void;
   onDeleteList: (listId: string) => void;
+  isMobileMenuOpen: boolean;
+  setMobileMenuOpen: (open: boolean) => void;
 }) {
   const [newListName, setNewListName] = useState("");
   const [editingListId, setEditingListId] = useState<string | null>(null);
@@ -202,89 +207,113 @@ function Sidebar({
   };
 
   return (
-    <aside className="sidebar">
-      <h1>To-Do</h1>
-      <nav className="system-nav">
+    <>
+      <nav className="mobile-bottom-nav">
         {pages.map((page) => (
           <NavLink
             key={page.path}
             to={page.path}
             end={page.path === "/"}
             className={({ isActive }) => (isActive ? "active" : "")}
+            onClick={() => setMobileMenuOpen(false)}
           >
-            {page.label}
+            <span className="nav-icon">{page.label.split(" ")[0]}</span>
+            <span className="nav-label">{page.label.substring(page.label.indexOf(" ") + 1)}</span>
           </NavLink>
         ))}
+        <button className="mobile-menu-toggle" onClick={() => setMobileMenuOpen(!isMobileMenuOpen)}>
+          🍔 <span className="nav-label">Lists</span>
+        </button>
       </nav>
 
-      <section className="lists-panel">
-        <header>
-          <h3>Lists</h3>
-        </header>
+      <aside className={`sidebar ${isMobileMenuOpen ? "open" : ""}`}>
+        <h1>To-Do</h1>
+        <nav className="system-nav desktop-only">
+          {pages.map((page) => (
+            <NavLink
+              key={page.path}
+              to={page.path}
+              end={page.path === "/"}
+              className={({ isActive }) => (isActive ? "active" : "")}
+            >
+              {page.label}
+            </NavLink>
+          ))}
+        </nav>
 
-        <div className="lists-body">
-          {lists.map((list) => {
-            if (editingListId === list.id) {
-              return (
-                <form key={list.id} className="list-edit" onSubmit={handleRename}>
-                  <input
-                    value={editingName}
-                    onChange={(event) => setEditingName(event.target.value)}
-                    aria-label="Rename list"
-                    autoFocus
-                  />
-                  <button type="submit">Save</button>
-                  <button type="button" onClick={() => setEditingListId(null)}>
-                    Cancel
-                  </button>
-                </form>
-              );
-            }
+        <section className="lists-panel">
+          <header>
+            <h3>Lists</h3>
+            <button className="mobile-close-menu" onClick={() => setMobileMenuOpen(false)}>✖</button>
+          </header>
 
-            return (
-              <div key={list.id} className="list-row">
-                <NavLink
-                  to={`/lists/${list.id}`}
-                  className={({ isActive }) => (isActive ? "active" : "")}
-                >
-                  {list.name}
-                </NavLink>
-                <div className="list-actions">
-                  <button type="button" onClick={() => startRename(list)}>
-                    Rename
-                  </button>
-                  {!list.isDefault ? (
-                    <button type="button" onClick={() => onDeleteList(list.id)}>
-                      Delete
+          <div className="lists-body">
+            {lists.map((list) => {
+              if (editingListId === list.id) {
+                return (
+                  <form key={list.id} className="list-edit" onSubmit={handleRename}>
+                    <input
+                      value={editingName}
+                      onChange={(event) => setEditingName(event.target.value)}
+                      aria-label="Rename list"
+                      autoFocus
+                    />
+                    <button type="submit">💾</button>
+                    <button type="button" onClick={() => setEditingListId(null)}>
+                      ✖
                     </button>
-                  ) : null}
-                </div>
-              </div>
-            );
-          })}
-        </div>
+                  </form>
+                );
+              }
 
-        <form className="list-add" onSubmit={handleAddList}>
-          <input
-            value={newListName}
-            onChange={(event) => setNewListName(event.target.value)}
-            placeholder="New list"
-            aria-label="New list name"
-          />
-          <button type="submit">Add</button>
-        </form>
-      </section>
-    </aside>
+              return (
+                <div key={list.id} className="list-row">
+                  <NavLink
+                    to={`/lists/${list.id}`}
+                    className={({ isActive }) => (isActive ? "active" : "")}
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    {list.name}
+                  </NavLink>
+                  <div className="list-actions">
+                    <button type="button" title="Rename" onClick={() => startRename(list)}>
+                      ✏️
+                    </button>
+                    {!list.isDefault ? (
+                      <button type="button" title="Delete" onClick={() => onDeleteList(list.id)}>
+                        🗑️
+                      </button>
+                    ) : null}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          <form className="list-add" onSubmit={handleAddList}>
+            <input
+              value={newListName}
+              onChange={(event) => setNewListName(event.target.value)}
+              placeholder="New list"
+              aria-label="New list name"
+            />
+            <button type="submit" title="Add List">➕</button>
+          </form>
+        </section>
+      </aside>
+      {isMobileMenuOpen && <div className="mobile-overlay" onClick={() => setMobileMenuOpen(false)} />}
+    </>
   );
 }
-
 function TaskDetailPanel({
   task,
   onUpdateTask,
+  onDeleteTask,
   onClearSelection
 }: {
   task: Task | null;
   onUpdateTask: (id: string, patch: TaskPatch) => void;
+  onDeleteTask: (id: string) => void;
   onClearSelection: () => void;
 }) {
   if (!task) {
@@ -304,9 +333,12 @@ function TaskDetailPanel({
     <aside className="task-detail">
       <header className="detail-header">
         <h3>Task details</h3>
-        <button type="button" onClick={onClearSelection}>
-          Close
-        </button>
+        <div>
+          <button type="button" onClick={() => onDeleteTask(task.id)} style={{ marginRight: '8px', background: '#ffe5ec', color: '#fb6f92' }} title="Delete Task">🗑️</button>
+          <button type="button" onClick={onClearSelection}>
+            Close
+          </button>
+        </div>
       </header>
 
       <label>
@@ -391,6 +423,7 @@ function TaskScreen({
   onToggleTask,
   onSelectTask,
   onUpdateTask,
+  onDeleteTask,
   onClearSelection
 }: {
   title: string;
@@ -401,6 +434,7 @@ function TaskScreen({
   onToggleTask: (id: string) => void;
   onSelectTask: (id: string) => void;
   onUpdateTask: (id: string, patch: TaskPatch) => void;
+  onDeleteTask: (id: string) => void;
   onClearSelection: () => void;
 }) {
   const [newTitle, setNewTitle] = useState("");
@@ -435,7 +469,7 @@ function TaskScreen({
               placeholder="Add a task"
               aria-label={`Add task in ${title}`}
             />
-            <button type="submit">Add</button>
+            <button type="submit" title="Add Task">➕</button>
           </form>
 
           {orderedTasks.length === 0 ? (
@@ -475,6 +509,7 @@ function TaskScreen({
         <TaskDetailPanel
           task={selectedTask}
           onUpdateTask={onUpdateTask}
+          onDeleteTask={onDeleteTask}
           onClearSelection={onClearSelection}
         />
       </div>
@@ -490,6 +525,7 @@ function ListRouteScreen({
   onToggleTask,
   onSelectTask,
   onUpdateTask,
+  onDeleteTask,
   onClearSelection
 }: {
   lists: TodoList[];
@@ -499,6 +535,7 @@ function ListRouteScreen({
   onToggleTask: (id: string) => void;
   onSelectTask: (id: string) => void;
   onUpdateTask: (id: string, patch: TaskPatch) => void;
+  onDeleteTask: (id: string) => void;
   onClearSelection: () => void;
 }) {
   const { listId } = useParams();
@@ -528,6 +565,7 @@ function ListRouteScreen({
       onToggleTask={onToggleTask}
       onSelectTask={onSelectTask}
       onUpdateTask={onUpdateTask}
+      onDeleteTask={onDeleteTask}
       onClearSelection={onClearSelection}
     />
   );
@@ -542,6 +580,7 @@ export function App() {
   );
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
   const [syncNotice, setSyncNotice] = useState<string | null>(null);
+  const [isMobileMenuOpen, setMobileMenuOpen] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -763,6 +802,19 @@ export function App() {
     });
   };
 
+    const deleteTask = (id: string) => {
+      const previousTasks = tasks;
+      setTasks((current) => current.filter((task) => task.id !== id));
+      if (selectedTaskId === id) {
+        setSelectedTaskId(null);
+      }
+
+      void deleteTaskApi(id).catch(() => {
+        setTasks(previousTasks);
+        setSyncNotice("Failed to delete task on server. Local state was restored.");
+        trackEvent({ name: "task_delete_sync_failed", level: "warn", metadata: { taskId: id } });
+      });
+    };
   return (
     <div className="layout">
       <Sidebar
@@ -770,6 +822,8 @@ export function App() {
         onAddList={addList}
         onRenameList={renameList}
         onDeleteList={deleteList}
+        isMobileMenuOpen={isMobileMenuOpen}
+        setMobileMenuOpen={setMobileMenuOpen}
       />
       <main className="content">
         {syncNotice ? <p className="sync-banner">{syncNotice}</p> : null}
@@ -786,6 +840,7 @@ export function App() {
                 onToggleTask={toggleTask}
                 onSelectTask={selectTask}
                 onUpdateTask={updateTask}
+                onDeleteTask={deleteTask}
                 onClearSelection={clearSelectedTask}
               />
             }
@@ -802,6 +857,7 @@ export function App() {
                 onToggleTask={toggleTask}
                 onSelectTask={selectTask}
                 onUpdateTask={updateTask}
+                onDeleteTask={deleteTask}
                 onClearSelection={clearSelectedTask}
               />
             }
@@ -818,6 +874,7 @@ export function App() {
                 onToggleTask={toggleTask}
                 onSelectTask={selectTask}
                 onUpdateTask={updateTask}
+                onDeleteTask={deleteTask}
                 onClearSelection={clearSelectedTask}
               />
             }
@@ -834,6 +891,7 @@ export function App() {
                 onToggleTask={toggleTask}
                 onSelectTask={selectTask}
                 onUpdateTask={updateTask}
+                onDeleteTask={deleteTask}
                 onClearSelection={clearSelectedTask}
               />
             }
@@ -849,6 +907,7 @@ export function App() {
                 onToggleTask={toggleTask}
                 onSelectTask={selectTask}
                 onUpdateTask={updateTask}
+                onDeleteTask={deleteTask}
                 onClearSelection={clearSelectedTask}
               />
             }

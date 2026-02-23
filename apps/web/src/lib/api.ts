@@ -108,3 +108,9 @@ export async function updateTaskApi(
     body: JSON.stringify(patch)
   });
 }
+
+export async function deleteTaskApi(taskId: string): Promise<{ deleted: string }> {
+  return requestJson<{ deleted: string }>(`/tasks/${taskId}`, {
+    method: "DELETE"
+  });
+}
