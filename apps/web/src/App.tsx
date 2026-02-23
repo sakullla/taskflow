@@ -1,4 +1,4 @@
-import { FormEvent, useMemo, useState } from "react";
+import { FormEvent, useEffect, useMemo, useState } from "react";
 import {
   NavLink,
   Navigate,
@@ -8,6 +8,14 @@ import {
   useNavigate,
   useParams
 } from "react-router-dom";
+import {
+  createListApi,
+  createTaskApi,
+  deleteListApi,
+  fetchBootstrapData,
+  updateListApi,
+  updateTaskApi
+} from "./lib/api";
 import { Task, TaskDefaults, TaskPriority, TodoList } from "./models";
 
 const DEFAULT_LIST_ID = "inbox";
@@ -16,7 +24,7 @@ const todayIso = new Date().toISOString().slice(0, 10);
 type TaskPatch = Partial<
   Pick<
     Task,
-    "title" | "note" | "dueDate" | "reminderAt" | "priority" | "isImportant" | "inMyDay"
+    "title" | "note" | "dueDate" | "reminderAt" | "priority" | "isImportant" | "inMyDay" | "isCompleted"
   >
 >;
 
@@ -107,9 +115,9 @@ const viewConfigs: Record<string, TaskViewConfig> = {
   }
 };
 
-function buildTask(title: string, defaults: TaskDefaults): Task {
+function buildTask(title: string, defaults: TaskDefaults, id = crypto.randomUUID()): Task {
   return {
-    id: crypto.randomUUID(),
+    id,
     listId: defaults.listId ?? DEFAULT_LIST_ID,
     title,
     note: defaults.note ?? "",
@@ -506,8 +514,35 @@ export function App() {
   const [tasks, setTasks] = useState<Task[]>(initialTasks);
   const [lists, setLists] = useState<TodoList[]>(initialLists);
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
+  const [syncNotice, setSyncNotice] = useState<string | null>(null);
   const navigate = useNavigate();
   const location = useLocation();
+
+  useEffect(() => {
+    let disposed = false;
+
+    const loadData = async () => {
+      try {
+        const data = await fetchBootstrapData();
+        if (disposed) {
+          return;
+        }
+        setLists(data.lists);
+        setTasks(data.tasks);
+        setSyncNotice(null);
+      } catch (error) {
+        if (!disposed) {
+          setSyncNotice(`API sync unavailable. Using local data. ${String(error)}`);
+        }
+      }
+    };
+
+    void loadData();
+
+    return () => {
+      disposed = true;
+    };
+  }, []);
 
   const selectTask = (id: string) => {
     setSelectedTaskId(id);
@@ -518,17 +553,54 @@ export function App() {
   };
 
   const toggleTask = (id: string) => {
+    const currentTask = tasks.find((task) => task.id === id);
+    if (!currentTask) {
+      return;
+    }
+
+    const nextCompleted = !currentTask.isCompleted;
     setTasks((current) =>
       current.map((task) =>
-        task.id === id ? { ...task, isCompleted: !task.isCompleted } : task
+        task.id === id ? { ...task, isCompleted: nextCompleted } : task
       )
     );
+
+    void updateTaskApi(id, { isCompleted: nextCompleted })
+      .then((serverTask) => {
+        setTasks((current) =>
+          current.map((task) => (task.id === id ? serverTask : task))
+        );
+      })
+      .catch(() => {
+        setTasks((current) =>
+          current.map((task) => (task.id === id ? currentTask : task))
+        );
+        setSyncNotice("Failed to sync task completion. Local change was reverted.");
+      });
   };
 
   const updateTask = (id: string, patch: TaskPatch) => {
+    const previousTask = tasks.find((task) => task.id === id);
+    if (!previousTask) {
+      return;
+    }
+
     setTasks((current) =>
       current.map((task) => (task.id === id ? { ...task, ...patch } : task))
     );
+
+    void updateTaskApi(id, patch)
+      .then((serverTask) => {
+        setTasks((current) =>
+          current.map((task) => (task.id === id ? serverTask : task))
+        );
+      })
+      .catch(() => {
+        setTasks((current) =>
+          current.map((task) => (task.id === id ? previousTask : task))
+        );
+        setSyncNotice("Failed to sync task updates. Local change was reverted.");
+      });
   };
 
   const addTask = (title: string, defaults: TaskDefaults) => {
@@ -536,32 +608,77 @@ export function App() {
       ? lists.some((list) => list.id === defaults.listId)
       : true;
 
-    setTasks((current) => [
-      buildTask(title, {
+    const optimisticTask = buildTask(
+      title,
+      {
         ...defaults,
         listId: listExists ? defaults.listId : DEFAULT_LIST_ID
-      }),
-      ...current
-    ]);
+      },
+      `tmp-${crypto.randomUUID()}`
+    );
+
+    setTasks((current) => [optimisticTask, ...current]);
+
+    void createTaskApi({ title, defaults: optimisticTask })
+      .then((serverTask) => {
+        setTasks((current) =>
+          current.map((task) => (task.id === optimisticTask.id ? serverTask : task))
+        );
+      })
+      .catch(() => {
+        setTasks((current) => current.filter((task) => task.id !== optimisticTask.id));
+        setSyncNotice("Failed to create task on server. Local task was removed.");
+      });
   };
 
   const addList = (name: string) => {
-    const nextList: TodoList = {
-      id: crypto.randomUUID(),
+    const tempId = `tmp-${crypto.randomUUID()}`;
+    const optimisticList: TodoList = {
+      id: tempId,
       name,
       color: "#0f766e",
       isDefault: false,
       createdAt: new Date().toISOString()
     };
 
-    setLists((current) => [...current, nextList]);
-    navigate(`/lists/${nextList.id}`);
+    setLists((current) => [...current, optimisticList]);
+    navigate(`/lists/${tempId}`);
+
+    void createListApi({ name, color: optimisticList.color })
+      .then((serverList) => {
+        setLists((current) =>
+          current.map((list) => (list.id === tempId ? serverList : list))
+        );
+        setTasks((current) =>
+          current.map((task) =>
+            task.listId === tempId ? { ...task, listId: serverList.id } : task
+          )
+        );
+        navigate(`/lists/${serverList.id}`, { replace: true });
+      })
+      .catch(() => {
+        setLists((current) => current.filter((list) => list.id !== tempId));
+        setSyncNotice("Failed to create list on server. Local list was removed.");
+        navigate(`/lists/${DEFAULT_LIST_ID}`, { replace: true });
+      });
   };
 
   const renameList = (listId: string, name: string) => {
+    const previousList = lists.find((list) => list.id === listId);
+    if (!previousList) {
+      return;
+    }
+
     setLists((current) =>
       current.map((list) => (list.id === listId ? { ...list, name } : list))
     );
+
+    void updateListApi(listId, { name }).catch(() => {
+      setLists((current) =>
+        current.map((list) => (list.id === listId ? previousList : list))
+      );
+      setSyncNotice("Failed to rename list on server. Local name was reverted.");
+    });
   };
 
   const deleteList = (listId: string) => {
@@ -578,6 +695,9 @@ export function App() {
       return;
     }
 
+    const previousLists = lists;
+    const previousTasks = tasks;
+
     setLists((current) => current.filter((item) => item.id !== list.id));
     setTasks((current) =>
       current.map((task) =>
@@ -588,6 +708,12 @@ export function App() {
     if (location.pathname === `/lists/${list.id}`) {
       navigate(`/lists/${DEFAULT_LIST_ID}`, { replace: true });
     }
+
+    void deleteListApi(listId).catch(() => {
+      setLists(previousLists);
+      setTasks(previousTasks);
+      setSyncNotice("Failed to delete list on server. Local state was restored.");
+    });
   };
 
   return (
@@ -599,6 +725,7 @@ export function App() {
         onDeleteList={deleteList}
       />
       <main className="content">
+        {syncNotice ? <p className="sync-banner">{syncNotice}</p> : null}
         <Routes>
           <Route
             path="/"
@@ -608,7 +735,7 @@ export function App() {
                 emptyText={viewConfigs.myDay.emptyText}
                 tasks={tasks.filter(viewConfigs.myDay.filter)}
                 selectedTaskId={selectedTaskId}
-                onAddTask={(title) => addTask(title, viewConfigs.myDay.defaults)}
+                onAddTask={(taskTitle) => addTask(taskTitle, viewConfigs.myDay.defaults)}
                 onToggleTask={toggleTask}
                 onSelectTask={selectTask}
                 onUpdateTask={updateTask}
@@ -624,7 +751,7 @@ export function App() {
                 emptyText={viewConfigs.important.emptyText}
                 tasks={tasks.filter(viewConfigs.important.filter)}
                 selectedTaskId={selectedTaskId}
-                onAddTask={(title) => addTask(title, viewConfigs.important.defaults)}
+                onAddTask={(taskTitle) => addTask(taskTitle, viewConfigs.important.defaults)}
                 onToggleTask={toggleTask}
                 onSelectTask={selectTask}
                 onUpdateTask={updateTask}
@@ -640,7 +767,7 @@ export function App() {
                 emptyText={viewConfigs.planned.emptyText}
                 tasks={tasks.filter(viewConfigs.planned.filter)}
                 selectedTaskId={selectedTaskId}
-                onAddTask={(title) => addTask(title, viewConfigs.planned.defaults)}
+                onAddTask={(taskTitle) => addTask(taskTitle, viewConfigs.planned.defaults)}
                 onToggleTask={toggleTask}
                 onSelectTask={selectTask}
                 onUpdateTask={updateTask}
@@ -656,7 +783,7 @@ export function App() {
                 emptyText={viewConfigs.tasks.emptyText}
                 tasks={tasks.filter(viewConfigs.tasks.filter)}
                 selectedTaskId={selectedTaskId}
-                onAddTask={(title) => addTask(title, viewConfigs.tasks.defaults)}
+                onAddTask={(taskTitle) => addTask(taskTitle, viewConfigs.tasks.defaults)}
                 onToggleTask={toggleTask}
                 onSelectTask={selectTask}
                 onUpdateTask={updateTask}

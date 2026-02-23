@@ -11,7 +11,7 @@
 - [x] Implement list sidebar with custom list CRUD
 - [x] Implement task list with quick-add and complete toggle
 - [x] Implement task detail panel (due date, reminder, note, priority)
-- [ ] Integrate API client layer and optimistic updates
+- [x] Integrate API client layer and optimistic updates
 - [ ] Add local cache (IndexedDB/localStorage fallback)
 
 ## 3) Backend (`apps/api`)
