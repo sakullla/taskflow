@@ -1,0 +1,152 @@
+:root {
+  font-family: "Segoe UI", sans-serif;
+  color: #1f2a37;
+  background: #f6f9fc;
+}
+
+body {
+  margin: 0;
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: 300px 1fr;
+  min-height: 100vh;
+}
+
+.sidebar {
+  background: #fff;
+  border-right: 1px solid #e5e7eb;
+  padding: 20px;
+  display: grid;
+  gap: 20px;
+  align-content: start;
+}
+
+.sidebar h1 {
+  margin: 0;
+}
+
+.system-nav {
+  display: grid;
+  gap: 8px;
+}
+
+.sidebar a {
+  color: #4b5563;
+  text-decoration: none;
+  padding: 8px 12px;
+  border-radius: 8px;
+}
+
+.sidebar a.active {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+.lists-panel {
+  display: grid;
+  gap: 10px;
+}
+
+.lists-panel header h3 {
+  margin: 0;
+  font-size: 14px;
+  color: #6b7280;
+  text-transform: uppercase;
+}
+
+.lists-body {
+  display: grid;
+  gap: 8px;
+}
+
+.list-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 8px;
+}
+
+.list-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.list-actions button,
+.list-edit button,
+.list-add button,
+.quick-add button {
+  border: none;
+  background: #2563eb;
+  color: #fff;
+  border-radius: 8px;
+  padding: 8px 12px;
+  cursor: pointer;
+}
+
+.list-edit,
+.list-add,
+.quick-add {
+  display: flex;
+  gap: 8px;
+}
+
+.list-edit input,
+.list-add input,
+.quick-add input {
+  flex: 1;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  padding: 10px 12px;
+}
+
+.content {
+  padding: 32px;
+}
+
+.task-screen {
+  max-width: 680px;
+}
+
+.quick-add {
+  margin-bottom: 20px;
+}
+
+.task-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 10px;
+}
+
+.task-item {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.task-item label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+}
+
+.task-item.done {
+  color: #6b7280;
+}
+
+.task-item.done span {
+  text-decoration: line-through;
+}
+
+.empty-text {
+  color: #6b7280;
+}
