@@ -3,14 +3,14 @@
 ## 1) Product and UX
 - [ ] Finalize navigation labels and information architecture
 - [ ] Define list page interaction states: empty, loading, error
-- [ ] Define task details drawer fields and edit flows
+- [x] Define task details drawer fields and edit flows
 - [ ] Draft "My Day" interaction rules and reset policy
 
 ## 2) Frontend (`apps/web`)
 - [x] Create domain models (`List`, `Task`, `Step`, `MyDayTask`)
 - [x] Implement list sidebar with custom list CRUD
 - [x] Implement task list with quick-add and complete toggle
-- [ ] Implement task detail panel (due date, reminder, note, priority)
+- [x] Implement task detail panel (due date, reminder, note, priority)
 - [ ] Integrate API client layer and optimistic updates
 - [ ] Add local cache (IndexedDB/localStorage fallback)
 

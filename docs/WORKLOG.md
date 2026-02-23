@@ -5,3 +5,4 @@
 - 2026-02-23: Added custom list CRUD in sidebar with list routes and task reassignment to default list on delete.
 - 2026-02-23: Added List/Task/Step/MyDayTask frontend model definitions and central model exports.
 - 2026-02-23: Introduced multi-agent system (orchestrator/frontend/backend/qa/release) with auto-dispatch script and task board.
+- 2026-02-23: Added task detail panel with editable title, note, due date, reminder, priority, and task flags (Important/My Day).

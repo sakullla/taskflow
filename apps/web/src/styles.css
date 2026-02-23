@@ -76,7 +76,8 @@ body {
 .list-actions button,
 .list-edit button,
 .list-add button,
-.quick-add button {
+.quick-add button,
+.detail-header button {
   border: none;
   background: #2563eb;
   color: #fff;
@@ -94,19 +95,38 @@ body {
 
 .list-edit input,
 .list-add input,
-.quick-add input {
+.quick-add input,
+.task-detail input,
+.task-detail textarea,
+.task-detail select {
   flex: 1;
   border: 1px solid #d1d5db;
   border-radius: 8px;
   padding: 10px 12px;
+  font: inherit;
+}
+
+.task-detail textarea {
+  resize: vertical;
 }
 
 .content {
-  padding: 32px;
+  padding: 24px;
 }
 
-.task-screen {
-  max-width: 680px;
+.task-screen h2 {
+  margin-top: 0;
+}
+
+.task-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 320px;
+  gap: 16px;
+  align-items: start;
+}
+
+.task-list-panel {
+  min-width: 0;
 }
 
 .quick-add {
@@ -130,6 +150,7 @@ body {
   justify-content: space-between;
   align-items: center;
   gap: 12px;
+  cursor: pointer;
 }
 
 .task-item label {
@@ -137,6 +158,11 @@ body {
   align-items: center;
   gap: 10px;
   flex: 1;
+}
+
+.task-item.selected {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 1px #2563eb;
 }
 
 .task-item.done {
@@ -147,6 +173,81 @@ body {
   text-decoration: line-through;
 }
 
+.task-meta {
+  display: grid;
+  justify-items: end;
+  gap: 4px;
+}
+
+.priority {
+  text-transform: capitalize;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 12px;
+}
+
+.priority-low {
+  background: #e5e7eb;
+}
+
+.priority-normal {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+.priority-high {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+.task-detail {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 14px;
+  display: grid;
+  gap: 12px;
+}
+
+.task-detail label {
+  display: grid;
+  gap: 6px;
+  font-size: 14px;
+}
+
+.task-detail.empty {
+  min-height: 200px;
+  align-content: start;
+}
+
+.detail-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.detail-header h3 {
+  margin: 0;
+}
+
+.switch-row {
+  display: flex !important;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+}
+
+.switch-row input {
+  flex: 0;
+  width: auto;
+}
+
 .empty-text {
   color: #6b7280;
+}
+
+@media (max-width: 1200px) {
+  .task-layout {
+    grid-template-columns: 1fr;
+  }
 }

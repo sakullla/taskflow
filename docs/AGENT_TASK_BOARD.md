@@ -1,6 +1,6 @@
 # Agent Task Board
 
-Generated: 2026-02-23T12:04:55.762Z
+Generated: 2026-02-23T12:11:42.280Z
 
 ## Dispatch Rules
 - Source of truth: `TODO.md` unchecked tasks
@@ -12,9 +12,7 @@ Generated: 2026-02-23T12:04:55.762Z
 ### frontend-builder
 - [ ] (Product and UX) Finalize navigation labels and information architecture
 - [ ] (Product and UX) Define list page interaction states: empty, loading, error
-- [ ] (Product and UX) Define task details drawer fields and edit flows
 - [ ] (Product and UX) Draft "My Day" interaction rules and reset policy
-- [ ] (Frontend (`apps/web`)) Implement task detail panel (due date, reminder, note, priority)
 - [ ] (Frontend (`apps/web`)) Integrate API client layer and optimistic updates
 - [ ] (Frontend (`apps/web`)) Add local cache (IndexedDB/localStorage fallback)
 
@@ -38,4 +36,4 @@ Generated: 2026-02-23T12:04:55.762Z
 
 ## Snapshot
 - Total tasks: 23
-- Pending tasks: 19
+- Pending tasks: 17

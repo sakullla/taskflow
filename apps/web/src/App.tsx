@@ -8,11 +8,17 @@ import {
   useNavigate,
   useParams
 } from "react-router-dom";
-import { Task, TaskDefaults, TodoList } from "./models";
-
+import { Task, TaskDefaults, TaskPriority, TodoList } from "./models";
 
 const DEFAULT_LIST_ID = "inbox";
 const todayIso = new Date().toISOString().slice(0, 10);
+
+type TaskPatch = Partial<
+  Pick<
+    Task,
+    "title" | "note" | "dueDate" | "reminderAt" | "priority" | "isImportant" | "inMyDay"
+  >
+>;
 
 const initialLists: TodoList[] = [
   {
@@ -36,20 +42,26 @@ const initialTasks: Task[] = [
     id: "task-1",
     listId: "work",
     title: "Review sprint backlog",
+    note: "Prepare risks and blockers before standup.",
     isCompleted: false,
     isImportant: true,
     inMyDay: true,
     dueDate: todayIso,
+    reminderAt: `${todayIso}T09:00`,
+    priority: "high",
     createdAt: new Date().toISOString()
   },
   {
     id: "task-2",
     listId: DEFAULT_LIST_ID,
     title: "Write API contract draft",
+    note: "Cover list/task/step payloads.",
     isCompleted: false,
     isImportant: false,
     inMyDay: false,
     dueDate: null,
+    reminderAt: null,
+    priority: "normal",
     createdAt: new Date().toISOString()
   }
 ];
@@ -100,10 +112,13 @@ function buildTask(title: string, defaults: TaskDefaults): Task {
     id: crypto.randomUUID(),
     listId: defaults.listId ?? DEFAULT_LIST_ID,
     title,
+    note: defaults.note ?? "",
     isCompleted: false,
     isImportant: defaults.isImportant ?? false,
     inMyDay: defaults.inMyDay ?? false,
     dueDate: defaults.dueDate ?? null,
+    reminderAt: defaults.reminderAt ?? null,
+    priority: defaults.priority ?? "normal",
     createdAt: new Date().toISOString()
   };
 }
@@ -232,18 +247,130 @@ function Sidebar({
   );
 }
 
+function TaskDetailPanel({
+  task,
+  onUpdateTask,
+  onClearSelection
+}: {
+  task: Task | null;
+  onUpdateTask: (id: string, patch: TaskPatch) => void;
+  onClearSelection: () => void;
+}) {
+  if (!task) {
+    return (
+      <aside className="task-detail empty">
+        <h3>Task details</h3>
+        <p className="empty-text">Select a task to edit title, note, date, reminder, and priority.</p>
+      </aside>
+    );
+  }
+
+  const changePriority = (value: string) => {
+    onUpdateTask(task.id, { priority: value as TaskPriority });
+  };
+
+  return (
+    <aside className="task-detail">
+      <header className="detail-header">
+        <h3>Task details</h3>
+        <button type="button" onClick={onClearSelection}>
+          Close
+        </button>
+      </header>
+
+      <label>
+        Title
+        <input
+          value={task.title}
+          onChange={(event) => onUpdateTask(task.id, { title: event.target.value })}
+          placeholder="Task title"
+        />
+      </label>
+
+      <label>
+        Note
+        <textarea
+          value={task.note}
+          onChange={(event) => onUpdateTask(task.id, { note: event.target.value })}
+          placeholder="Add details"
+          rows={4}
+        />
+      </label>
+
+      <label>
+        Due date
+        <input
+          type="date"
+          value={task.dueDate ?? ""}
+          onChange={(event) =>
+            onUpdateTask(task.id, { dueDate: event.target.value ? event.target.value : null })
+          }
+        />
+      </label>
+
+      <label>
+        Reminder
+        <input
+          type="datetime-local"
+          value={task.reminderAt ?? ""}
+          onChange={(event) =>
+            onUpdateTask(task.id, {
+              reminderAt: event.target.value ? event.target.value : null
+            })
+          }
+        />
+      </label>
+
+      <label>
+        Priority
+        <select value={task.priority} onChange={(event) => changePriority(event.target.value)}>
+          <option value="low">Low</option>
+          <option value="normal">Normal</option>
+          <option value="high">High</option>
+        </select>
+      </label>
+
+      <label className="switch-row">
+        <input
+          type="checkbox"
+          checked={task.isImportant}
+          onChange={(event) => onUpdateTask(task.id, { isImportant: event.target.checked })}
+        />
+        Important
+      </label>
+
+      <label className="switch-row">
+        <input
+          type="checkbox"
+          checked={task.inMyDay}
+          onChange={(event) => onUpdateTask(task.id, { inMyDay: event.target.checked })}
+        />
+        In My Day
+      </label>
+    </aside>
+  );
+}
+
 function TaskScreen({
   title,
   emptyText,
   tasks,
+  selectedTaskId,
   onAddTask,
-  onToggleTask
+  onToggleTask,
+  onSelectTask,
+  onUpdateTask,
+  onClearSelection
 }: {
   title: string;
   emptyText: string;
   tasks: Task[];
+  selectedTaskId: string | null;
   onAddTask: (title: string) => void;
   onToggleTask: (id: string) => void;
+  onSelectTask: (id: string) => void;
+  onUpdateTask: (id: string, patch: TaskPatch) => void;
+  onClearSelection: () => void;
 }) {
   const [newTitle, setNewTitle] = useState("");
 
@@ -251,6 +378,8 @@ function TaskScreen({
     () => [...tasks].sort((a, b) => Number(a.isCompleted) - Number(b.isCompleted)),
     [tasks]
   );
+
+  const selectedTask = orderedTasks.find((task) => task.id === selectedTaskId) ?? null;
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -266,35 +395,58 @@ function TaskScreen({
   return (
     <section className="task-screen">
       <h2>{title}</h2>
-      <form className="quick-add" onSubmit={handleSubmit}>
-        <input
-          value={newTitle}
-          onChange={(event) => setNewTitle(event.target.value)}
-          placeholder="Add a task"
-          aria-label={`Add task in ${title}`}
-        />
-        <button type="submit">Add</button>
-      </form>
+      <div className="task-layout">
+        <div className="task-list-panel">
+          <form className="quick-add" onSubmit={handleSubmit}>
+            <input
+              value={newTitle}
+              onChange={(event) => setNewTitle(event.target.value)}
+              placeholder="Add a task"
+              aria-label={`Add task in ${title}`}
+            />
+            <button type="submit">Add</button>
+          </form>
 
-      {orderedTasks.length === 0 ? (
-        <p className="empty-text">{emptyText}</p>
-      ) : (
-        <ul className="task-list">
-          {orderedTasks.map((task) => (
-            <li key={task.id} className={task.isCompleted ? "task-item done" : "task-item"}>
-              <label>
-                <input
-                  type="checkbox"
-                  checked={task.isCompleted}
-                  onChange={() => onToggleTask(task.id)}
-                />
-                <span>{task.title}</span>
-              </label>
-              {task.dueDate ? <small>Due: {task.dueDate}</small> : null}
-            </li>
-          ))}
-        </ul>
-      )}
+          {orderedTasks.length === 0 ? (
+            <p className="empty-text">{emptyText}</p>
+          ) : (
+            <ul className="task-list">
+              {orderedTasks.map((task) => (
+                <li
+                  key={task.id}
+                  className={
+                    task.id === selectedTaskId
+                      ? `task-item selected${task.isCompleted ? " done" : ""}`
+                      : task.isCompleted
+                        ? "task-item done"
+                        : "task-item"
+                  }
+                  onClick={() => onSelectTask(task.id)}
+                >
+                  <label>
+                    <input
+                      type="checkbox"
+                      checked={task.isCompleted}
+                      onChange={() => onToggleTask(task.id)}
+                    />
+                    <span>{task.title}</span>
+                  </label>
+                  <div className="task-meta">
+                    {task.dueDate ? <small>Due: {task.dueDate}</small> : null}
+                    <small className={`priority priority-${task.priority}`}>{task.priority}</small>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+
+        <TaskDetailPanel
+          task={selectedTask}
+          onUpdateTask={onUpdateTask}
+          onClearSelection={onClearSelection}
+        />
+      </div>
     </section>
   );
 }
@@ -302,13 +454,21 @@ function TaskScreen({
 function ListRouteScreen({
   lists,
   tasks,
+  selectedTaskId,
   onAddTask,
-  onToggleTask
+  onToggleTask,
+  onSelectTask,
+  onUpdateTask,
+  onClearSelection
 }: {
   lists: TodoList[];
   tasks: Task[];
+  selectedTaskId: string | null;
   onAddTask: (title: string, defaults: TaskDefaults) => void;
   onToggleTask: (id: string) => void;
+  onSelectTask: (id: string) => void;
+  onUpdateTask: (id: string, patch: TaskPatch) => void;
+  onClearSelection: () => void;
 }) {
   const { listId } = useParams();
 
@@ -332,8 +492,12 @@ function ListRouteScreen({
       title={list.name}
       emptyText="No tasks in this list yet."
       tasks={tasks.filter((task) => task.listId === list.id)}
+      selectedTaskId={selectedTaskId}
       onAddTask={(title) => onAddTask(title, { listId: list.id })}
       onToggleTask={onToggleTask}
+      onSelectTask={onSelectTask}
+      onUpdateTask={onUpdateTask}
+      onClearSelection={onClearSelection}
     />
   );
 }
@@ -341,14 +505,29 @@ function ListRouteScreen({
 export function App() {
   const [tasks, setTasks] = useState<Task[]>(initialTasks);
   const [lists, setLists] = useState<TodoList[]>(initialLists);
+  const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
   const navigate = useNavigate();
   const location = useLocation();
+
+  const selectTask = (id: string) => {
+    setSelectedTaskId(id);
+  };
+
+  const clearSelectedTask = () => {
+    setSelectedTaskId(null);
+  };
 
   const toggleTask = (id: string) => {
     setTasks((current) =>
       current.map((task) =>
         task.id === id ? { ...task, isCompleted: !task.isCompleted } : task
       )
+    );
+  };
+
+  const updateTask = (id: string, patch: TaskPatch) => {
+    setTasks((current) =>
+      current.map((task) => (task.id === id ? { ...task, ...patch } : task))
     );
   };
 
@@ -428,8 +607,12 @@ export function App() {
                 title={viewConfigs.myDay.title}
                 emptyText={viewConfigs.myDay.emptyText}
                 tasks={tasks.filter(viewConfigs.myDay.filter)}
+                selectedTaskId={selectedTaskId}
                 onAddTask={(title) => addTask(title, viewConfigs.myDay.defaults)}
                 onToggleTask={toggleTask}
+                onSelectTask={selectTask}
+                onUpdateTask={updateTask}
+                onClearSelection={clearSelectedTask}
               />
             }
           />
@@ -440,8 +623,12 @@ export function App() {
                 title={viewConfigs.important.title}
                 emptyText={viewConfigs.important.emptyText}
                 tasks={tasks.filter(viewConfigs.important.filter)}
+                selectedTaskId={selectedTaskId}
                 onAddTask={(title) => addTask(title, viewConfigs.important.defaults)}
                 onToggleTask={toggleTask}
+                onSelectTask={selectTask}
+                onUpdateTask={updateTask}
+                onClearSelection={clearSelectedTask}
               />
             }
           />
@@ -452,8 +639,12 @@ export function App() {
                 title={viewConfigs.planned.title}
                 emptyText={viewConfigs.planned.emptyText}
                 tasks={tasks.filter(viewConfigs.planned.filter)}
+                selectedTaskId={selectedTaskId}
                 onAddTask={(title) => addTask(title, viewConfigs.planned.defaults)}
                 onToggleTask={toggleTask}
+                onSelectTask={selectTask}
+                onUpdateTask={updateTask}
+                onClearSelection={clearSelectedTask}
               />
             }
           />
@@ -464,8 +655,12 @@ export function App() {
                 title={viewConfigs.tasks.title}
                 emptyText={viewConfigs.tasks.emptyText}
                 tasks={tasks.filter(viewConfigs.tasks.filter)}
+                selectedTaskId={selectedTaskId}
                 onAddTask={(title) => addTask(title, viewConfigs.tasks.defaults)}
                 onToggleTask={toggleTask}
+                onSelectTask={selectTask}
+                onUpdateTask={updateTask}
+                onClearSelection={clearSelectedTask}
               />
             }
           />
@@ -475,8 +670,12 @@ export function App() {
               <ListRouteScreen
                 lists={lists}
                 tasks={tasks}
+                selectedTaskId={selectedTaskId}
                 onAddTask={addTask}
                 onToggleTask={toggleTask}
+                onSelectTask={selectTask}
+                onUpdateTask={updateTask}
+                onClearSelection={clearSelectedTask}
               />
             }
           />
