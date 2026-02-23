@@ -8,3 +8,4 @@
 - 2026-02-23: Added task detail panel with editable title, note, due date, reminder, priority, and task flags (Important/My Day).
 - 2026-02-23: Integrated web API client with optimistic create/update/delete for lists and tasks, plus rollback on sync failure.
 - 2026-02-23: Added localStorage cache fallback for lists/tasks with automatic persistence on state changes.
+- 2026-02-23: Expanded API with steps/my-day endpoints, standardized error format, and x-user-id auth stub with user-scoped data guards.

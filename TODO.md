@@ -16,9 +16,9 @@
 
 ## 3) Backend (`apps/api`)
 - [ ] Add persistent storage (PostgreSQL or SQLite for local dev)
-- [ ] Implement REST endpoints for lists/tasks/steps/my-day
-- [ ] Add input validation and error shape conventions
-- [ ] Add auth stub and user scoping guard
+- [x] Implement REST endpoints for lists/tasks/steps/my-day
+- [x] Add input validation and error shape conventions
+- [x] Add auth stub and user scoping guard
 - [ ] Add unit tests for task/list services
 
 ## 4) Cross-cutting

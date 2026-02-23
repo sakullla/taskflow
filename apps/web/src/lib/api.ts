@@ -4,6 +4,9 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:4000
 
 interface ApiErrorShape {
   message?: string;
+  error?: {
+    message?: string;
+  };
 }
 
 async function requestJson<T>(path: string, init?: RequestInit): Promise<T> {
@@ -21,6 +24,8 @@ async function requestJson<T>(path: string, init?: RequestInit): Promise<T> {
       const errorBody = (await response.json()) as ApiErrorShape;
       if (errorBody?.message) {
         message = errorBody.message;
+      } else if (errorBody?.error?.message) {
+        message = errorBody.error.message;
       }
     } catch {
       // Keep fallback message if error response has no JSON body.

@@ -1,6 +1,6 @@
 # Agent Task Board
 
-Generated: 2026-02-23T12:20:46.312Z
+Generated: 2026-02-23T12:24:58.054Z
 
 ## Dispatch Rules
 - Source of truth: `TODO.md` unchecked tasks
@@ -16,9 +16,6 @@ Generated: 2026-02-23T12:20:46.312Z
 
 ### backend-builder
 - [ ] (Backend (`apps/api`)) Add persistent storage (PostgreSQL or SQLite for local dev)
-- [ ] (Backend (`apps/api`)) Implement REST endpoints for lists/tasks/steps/my-day
-- [ ] (Backend (`apps/api`)) Add input validation and error shape conventions
-- [ ] (Backend (`apps/api`)) Add auth stub and user scoping guard
 - [ ] (Backend (`apps/api`)) Add unit tests for task/list services
 
 ### qa-reviewer
@@ -34,4 +31,4 @@ Generated: 2026-02-23T12:20:46.312Z
 
 ## Snapshot
 - Total tasks: 23
-- Pending tasks: 15
+- Pending tasks: 12
