@@ -25,7 +25,7 @@ This document outlines the step-by-step plan to optimize the frontend for a mode
   - (Optional) Trigger `navigator.vibrate` for tactile feedback on mobile devices when swiping.
 
 ## Phase 3: Detail Views as Bottom Sheets
-- [ ] **Task Detail Bottom Sheet:**
+- [x] **Task Detail Bottom Sheet:**
   - Refactor `MobileTaskDetail.tsx` to behave like a native Bottom Sheet instead of a side drawer or full page.
   - Implement drag-down to dismiss functionality.
   - Ensure keyboard avoidance (input fields don't get hidden under the mobile virtual keyboard).
