@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Star, Plus } from "lucide-react";
+import { Star, Plus, Star as StarIcon } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -130,7 +130,9 @@ export function ImportantPage() {
           tasks={importantTasks}
           selectedId={selectedTaskId}
           onSelect={selectTask}
-          emptyMessage={t("tasks:addPlaceholder")}
+          emptyTitle={t("tasks:emptyImportantTitle") || "No important tasks"}
+          emptyDescription={t("tasks:emptyImportantDesc") || "Mark tasks as important to see them here"}
+          emptyIcon={StarIcon}
         />
       </div>
 

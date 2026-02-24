@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Calendar, Plus } from "lucide-react";
+import { Calendar, Plus, Calendar as CalendarIcon } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -125,7 +125,9 @@ export function PlannedPage() {
           tasks={plannedTasks}
           selectedId={selectedTaskId}
           onSelect={selectTask}
-          emptyMessage={t("tasks:addPlaceholder")}
+          emptyTitle={t("tasks:emptyPlannedTitle") || "No planned tasks"}
+          emptyDescription={t("tasks:emptyPlannedDesc") || "Add due dates to tasks to see them here"}
+          emptyIcon={CalendarIcon}
         />
       </div>
 

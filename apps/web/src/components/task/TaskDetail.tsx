@@ -1,10 +1,12 @@
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { X, Star, Trash2, Plus, Check, Sun } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { DatePicker } from "@/components/ui/date-picker";
 import { toast } from "@/components/ui/toast";
+import { ConfirmDialog } from "@/components/ui/dialog";
 import { api } from "@/lib/api/client";
 import { useTaskStore } from "@/stores/taskStore";
 import type { Task, Step } from "@/types";
@@ -16,11 +18,13 @@ interface TaskDetailProps {
 }
 
 export function TaskDetail({ task, onClose }: TaskDetailProps) {
+  const { t } = useTranslation(["tasks", "common"]);
   const { updateTask, deleteTask } = useTaskStore();
   const [title, setTitle] = useState(task?.title || "");
   const [note, setNote] = useState(task?.note || "");
   const [isSaving, setIsSaving] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   // Step management
   const [newStepTitle, setNewStepTitle] = useState("");
@@ -99,22 +103,25 @@ export function TaskDetail({ task, onClose }: TaskDetailProps) {
     }
   };
 
-  const handleDelete = async () => {
-    if (!task) return;
+  const handleDeleteClick = () => {
+    setShowDeleteConfirm(true);
+  };
 
-    if (!confirm("Delete this task?")) return;
+  const handleConfirmDelete = async () => {
+    if (!task) return;
 
     setIsDeleting(true);
     try {
       await api.delete(`/tasks/${task.id}`);
       deleteTask(task.id);
-      toast("Task deleted", "success");
+      toast(t("tasks:deleteSuccess") || "Task deleted", "success");
       onClose();
     } catch (error) {
       console.error("Failed to delete task:", error);
-      toast("Failed to delete task", "error");
+      toast(t("tasks:deleteError") || "Failed to delete task", "error");
     } finally {
       setIsDeleting(false);
+      setShowDeleteConfirm(false);
     }
   };
 
@@ -478,14 +485,27 @@ export function TaskDetail({ task, onClose }: TaskDetailProps) {
             variant="destructive"
             size="sm"
             className="w-full"
-            onClick={handleDelete}
+            onClick={handleDeleteClick}
             disabled={isDeleting}
           >
             <Trash2 className="h-4 w-4 mr-1" />
-            {isDeleting ? "Deleting..." : "Delete Task"}
+            {isDeleting ? t("common:actions.deleting") || "Deleting..." : t("common:actions.delete")}
           </Button>
         </div>
       </CardContent>
+
+      {/* Delete Confirmation Dialog */}
+      <ConfirmDialog
+        isOpen={showDeleteConfirm}
+        onClose={() => setShowDeleteConfirm(false)}
+        onConfirm={handleConfirmDelete}
+        title={t("tasks:deleteConfirmTitle") || "Delete Task"}
+        description={t("tasks:deleteConfirmDesc") || "Are you sure you want to delete this task? This action cannot be undone."}
+        confirmText={t("common:actions.delete") || "Delete"}
+        cancelText={t("common:actions.cancel") || "Cancel"}
+        confirmVariant="destructive"
+        isLoading={isDeleting}
+      />
     </Card>
   );
 }

@@ -14,7 +14,8 @@
     "create": "Create",
     "update": "Update",
     "confirm": "Confirm",
-    "back": "Back"
+    "back": "Back",
+    "deleting": "Deleting..."
   },
   "empty": {
     "title": "No tasks",

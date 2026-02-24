@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { List, Plus } from "lucide-react";
+import { List, Plus, List as ListIcon } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -128,7 +128,9 @@ export function ListPage() {
           tasks={listTasks}
           selectedId={selectedTaskId}
           onSelect={selectTask}
-          emptyMessage={t("tasks:addPlaceholder")}
+          emptyTitle={t("tasks:emptyListTitle") || "Empty list"}
+          emptyDescription={t("tasks:emptyListDesc") || "Add tasks to this list"}
+          emptyIcon={ListIcon}
         />
       </div>
 

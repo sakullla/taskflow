@@ -41,3 +41,5 @@
 - 2026-02-24: **Implemented task completion animations** - Added scale and color transition animations when completing tasks, smooth checkbox check animation, and star icon scale effect for important tasks.
 - 2026-02-24: **Implemented settings page and theme switching** - Added SettingsPage with theme selection (light/dark/system), language switching, notification preferences, and account management UI. Added Switch component and CardDescription component.
 - 2026-02-24: **Added E2E tests for new features** - Added test suites for search functionality (4 tests), settings page (5 tests), and mobile responsive design (5 tests). All 28 tests passing.
+- 2026-02-24: **Implemented confirmation dialogs** - Added Dialog and ConfirmDialog components with backdrop, animations, and keyboard support. Integrated into task deletion and list deletion with i18n support.
+- 2026-02-24: **Enhanced empty state design** - Created EmptyState component with multiple variants (EmptyTasks, EmptyImportant, EmptyPlanned, etc.). Updated all pages with contextual empty states and icons. Added bilingual translations for all empty state messages.

@@ -5,6 +5,7 @@ import { Sun, Star, Calendar, CheckSquare, Plus, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { ConfirmDialog } from "@/components/ui/dialog";
 import { useTaskStore } from "@/stores/taskStore";
 import { api } from "@/lib/api/client";
 import type { List } from "@/types";
@@ -22,12 +23,15 @@ const LIST_COLORS = [
 ];
 
 export function Sidebar() {
-  const { t } = useTranslation("navigation");
+  const { t } = useTranslation(["navigation", "common"]);
   const { lists, addList, deleteList } = useTaskStore();
   const [isAdding, setIsAdding] = useState(false);
   const [newListName, setNewListName] = useState("");
   const [selectedColor, setSelectedColor] = useState(LIST_COLORS[0]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [listToDelete, setListToDelete] = useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const handleCreateList = async () => {
     if (!newListName.trim()) return;
@@ -57,17 +61,26 @@ export function Sidebar() {
     }
   };
 
-  const handleDeleteList = async (listId: string, e: React.MouseEvent) => {
+  const handleDeleteListClick = (listId: string, e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
+    setListToDelete(listId);
+    setShowDeleteConfirm(true);
+  };
 
-    if (!confirm(t("deleteListConfirm") || "Delete this list?")) return;
+  const handleConfirmDeleteList = async () => {
+    if (!listToDelete) return;
 
+    setIsDeleting(true);
     try {
-      await api.delete(`/lists/${listId}`);
-      deleteList(listId);
+      await api.delete(`/lists/${listToDelete}`);
+      deleteList(listToDelete);
     } catch (error) {
       console.error("Failed to delete list:", error);
+    } finally {
+      setIsDeleting(false);
+      setShowDeleteConfirm(false);
+      setListToDelete(null);
     }
   };
 
@@ -203,9 +216,9 @@ export function Sidebar() {
                   ) : null}
                   {!list.isDefault && (
                     <button
-                      onClick={(e) => handleDeleteList(list.id, e)}
+                      onClick={(e) => handleDeleteListClick(list.id, e)}
                       className="opacity-0 group-hover:opacity-100 p-1 hover:bg-destructive/10 hover:text-destructive rounded transition-all"
-                      title={t("delete") || "Delete"}
+                      title={t("navigation:delete") || "Delete"}
                     >
                       <Trash2 className="h-3 w-3" />
                     </button>
@@ -216,6 +229,19 @@ export function Sidebar() {
           </div>
         </div>
       </nav>
+
+      {/* Delete List Confirmation Dialog */}
+      <ConfirmDialog
+        isOpen={showDeleteConfirm}
+        onClose={() => setShowDeleteConfirm(false)}
+        onConfirm={handleConfirmDeleteList}
+        title={t("navigation:deleteListConfirmTitle") || "Delete List"}
+        description={t("navigation:deleteListConfirmDesc") || "Are you sure you want to delete this list? Tasks in this list will be moved to the default list."}
+        confirmText={t("common:actions.delete") || "Delete"}
+        cancelText={t("common:actions.cancel") || "Cancel"}
+        confirmVariant="destructive"
+        isLoading={isDeleting}
+      />
     </aside>
   );
 }

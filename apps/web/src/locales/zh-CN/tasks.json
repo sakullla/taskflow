@@ -24,6 +24,10 @@
   "addStep": "添加步骤",
   "stepPlaceholder": "添加步骤...",
   "deleteConfirm": "确定要删除这个任务吗？",
+  "deleteConfirmTitle": "删除任务",
+  "deleteConfirmDesc": "确定要删除这个任务吗？此操作无法撤销。",
+  "deleteSuccess": "任务已删除",
+  "deleteError": "删除任务失败",
   "created": "创建于",
   "updated": "更新于",
   "tasks": "任务",
@@ -31,5 +35,15 @@
   "searchPrompt": "输入关键词搜索任务",
   "searchDescription": "按任务标题或备注搜索",
   "noSearchResults": "未找到任务",
-  "tryDifferentSearch": "尝试其他搜索词"
+  "tryDifferentSearch": "尝试其他搜索词",
+  "emptyMyDayTitle": "今天没有任务",
+  "emptyMyDayDesc": "添加任务到\"我的一天\"，专注于重要事项",
+  "emptyImportantTitle": "没有重要任务",
+  "emptyImportantDesc": "将任务标记为重要，即可在此处查看",
+  "emptyPlannedTitle": "没有计划任务",
+  "emptyPlannedDesc": "为任务添加截止日期，即可在此处查看",
+  "emptyAllTitle": "暂无任务",
+  "emptyAllDesc": "开始添加你的第一个任务吧！",
+  "emptyListTitle": "空列表",
+  "emptyListDesc": "向此列表添加任务"
 }

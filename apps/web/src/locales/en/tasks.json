@@ -24,6 +24,10 @@
   "addStep": "Add step",
   "stepPlaceholder": "Add a step...",
   "deleteConfirm": "Are you sure you want to delete this task?",
+  "deleteConfirmTitle": "Delete Task",
+  "deleteConfirmDesc": "Are you sure you want to delete this task? This action cannot be undone.",
+  "deleteSuccess": "Task deleted",
+  "deleteError": "Failed to delete task",
   "created": "Created on",
   "updated": "Updated on",
   "tasks": "Tasks",
@@ -31,5 +35,15 @@
   "searchPrompt": "Type to search for tasks",
   "searchDescription": "Search by task title or notes",
   "noSearchResults": "No tasks found",
-  "tryDifferentSearch": "Try a different search term"
+  "tryDifferentSearch": "Try a different search term",
+  "emptyMyDayTitle": "No tasks for today",
+  "emptyMyDayDesc": "Add tasks to My Day to focus on what matters",
+  "emptyImportantTitle": "No important tasks",
+  "emptyImportantDesc": "Mark tasks as important to see them here",
+  "emptyPlannedTitle": "No planned tasks",
+  "emptyPlannedDesc": "Add due dates to tasks to see them here",
+  "emptyAllTitle": "No tasks",
+  "emptyAllDesc": "Start by adding your first task!",
+  "emptyListTitle": "Empty list",
+  "emptyListDesc": "Add tasks to this list"
 }

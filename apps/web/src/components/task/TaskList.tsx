@@ -1,23 +1,32 @@
-import { CheckCircle2, ClipboardList } from "lucide-react";
 import { TaskItem } from "./TaskItem";
+import { EmptyState } from "@/components/ui/empty-state";
 import type { Task } from "@/types";
+import type { LucideIcon } from "lucide-react";
 
 interface TaskListProps {
   tasks: Task[];
   selectedId: string | null;
   onSelect: (id: string) => void;
-  emptyMessage?: string;
-  emptyIcon?: "check" | "clipboard";
+  emptyTitle?: string;
+  emptyDescription?: string;
+  emptyIcon?: LucideIcon;
 }
 
-export function TaskList({ tasks, selectedId, onSelect, emptyMessage, emptyIcon = "clipboard" }: TaskListProps) {
+export function TaskList({
+  tasks,
+  selectedId,
+  onSelect,
+  emptyTitle,
+  emptyDescription,
+  emptyIcon,
+}: TaskListProps) {
   if (tasks.length === 0) {
-    const Icon = emptyIcon === "check" ? CheckCircle2 : ClipboardList;
     return (
-      <div className="flex flex-col items-center justify-center py-16 text-muted-foreground">
-        <Icon className="h-16 w-16 mb-4 opacity-20" />
-        <p className="text-sm">{emptyMessage || "No tasks"}</p>
-      </div>
+      <EmptyState
+        icon={emptyIcon}
+        title={emptyTitle || "No tasks"}
+        description={emptyDescription}
+      />
     );
   }
 

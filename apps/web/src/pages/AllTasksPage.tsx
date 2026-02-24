@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { CheckSquare, Plus } from "lucide-react";
+import { CheckSquare, Plus, ClipboardList } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -123,7 +123,9 @@ export function AllTasksPage() {
           tasks={incompleteTasks}
           selectedId={selectedTaskId}
           onSelect={selectTask}
-          emptyMessage={t("tasks:addPlaceholder")}
+          emptyTitle={t("tasks:emptyAllTitle") || "No tasks"}
+          emptyDescription={t("tasks:emptyAllDesc") || "Start by adding your first task!"}
+          emptyIcon={ClipboardList}
         />
       </div>
 

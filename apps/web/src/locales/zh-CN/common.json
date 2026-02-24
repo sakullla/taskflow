@@ -14,7 +14,8 @@
     "create": "创建",
     "update": "更新",
     "confirm": "确认",
-    "back": "返回"
+    "back": "返回",
+    "deleting": "删除中..."
   },
   "empty": {
     "title": "暂无任务",

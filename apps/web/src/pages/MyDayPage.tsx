@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Sun, Plus } from "lucide-react";
+import { Sun, Plus, Sun as SunIcon } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -240,7 +240,9 @@ export function MyDayPage() {
           tasks={myDayTasks}
           selectedId={selectedTaskId}
           onSelect={selectTask}
-          emptyMessage={t("tasks:addPlaceholder")}
+          emptyTitle={t("tasks:emptyMyDayTitle") || "No tasks for today"}
+          emptyDescription={t("tasks:emptyMyDayDesc") || "Add tasks to My Day to focus on what matters"}
+          emptyIcon={SunIcon}
         />
       </div>
 
