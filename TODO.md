@@ -14,13 +14,13 @@ This document outlines the step-by-step plan to optimize the frontend for a mode
   - Clean up the mobile header (`Header.tsx`) to only show the current view title and search/profile icons.
 
 ## Phase 2: Task Item Touch Interactions
-- [ ] **Swipe Actions:**
+- [x] **Swipe Actions:**
   - Refactor `TaskItem.tsx` using `framer-motion` drag capabilities.
   - Implement Swipe Right to Mark Completed/Uncompleted.
   - Implement Swipe Left to Reveal Delete/Important actions.
-- [ ] **Touch Target Optimization:**
+- [x] **Touch Target Optimization:**
   - Increase padding and ensure all interactive elements (checkboxes, stars) have a minimum touch target area of 44x44px.
-- [ ] **Haptic Feedback & Animation:**
+- [x] **Haptic Feedback & Animation:**
   - Add physical-feeling spring animations on task completion.
   - (Optional) Trigger `navigator.vibrate` for tactile feedback on mobile devices when swiping.
 
