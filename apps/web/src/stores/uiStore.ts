@@ -8,6 +8,8 @@ interface UIState {
   isMobileTaskDetailOpen: boolean;
   // Screen size tracking
   isMobile: boolean;
+  // Quick Add
+  isQuickAddOpen: boolean;
 
   // Actions
   openMobileSidebar: () => void;
@@ -16,6 +18,8 @@ interface UIState {
   openMobileTaskDetail: () => void;
   closeMobileTaskDetail: () => void;
   setIsMobile: (isMobile: boolean) => void;
+  setQuickAddOpen: (isOpen: boolean) => void;
+  toggleQuickAdd: () => void;
 }
 
 export const useUIStore = create<UIState>()(
@@ -24,6 +28,7 @@ export const useUIStore = create<UIState>()(
       isMobileSidebarOpen: false,
       isMobileTaskDetailOpen: false,
       isMobile: false,
+      isQuickAddOpen: false,
 
       openMobileSidebar: () => set({ isMobileSidebarOpen: true }),
       closeMobileSidebar: () => set({ isMobileSidebarOpen: false }),
@@ -32,6 +37,8 @@ export const useUIStore = create<UIState>()(
       openMobileTaskDetail: () => set({ isMobileTaskDetailOpen: true }),
       closeMobileTaskDetail: () => set({ isMobileTaskDetailOpen: false }),
       setIsMobile: (isMobile) => set({ isMobile }),
+      setQuickAddOpen: (isOpen) => set({ isQuickAddOpen: isOpen }),
+      toggleQuickAdd: () => set((state) => ({ isQuickAddOpen: !state.isQuickAddOpen })),
     }),
     { name: "ui-store" }
   )

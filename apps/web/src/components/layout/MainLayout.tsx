@@ -4,6 +4,9 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Sidebar } from "./Sidebar";
 import { MobileSidebar } from "./MobileSidebar";
 import { Header } from "./Header";
+import { BottomNav } from "./BottomNav";
+import { FloatingActionButton } from "./FloatingActionButton";
+import { QuickAddOverlay } from "@/components/task/QuickAddOverlay";
 import { useUIStore } from "@/stores/uiStore";
 
 const MOBILE_BREAKPOINT = 1024;
@@ -26,18 +29,19 @@ export function MainLayout() {
   }, [setIsMobile]);
 
   return (
-    <div className="flex h-screen bg-background">
+    <div className="flex h-screen bg-background overflow-hidden">
       {/* Desktop Sidebar */}
       <div className="hidden lg:block">
         <Sidebar />
       </div>
 
-      {/* Mobile Sidebar */}
+      {/* Mobile Sidebar (Drawer for Lists) */}
       <MobileSidebar />
 
-      <div className="flex-1 flex flex-col min-w-0">
+      <div className="flex-1 flex flex-col min-w-0 relative">
         <Header />
-        <main className="flex-1 overflow-auto p-4 lg:p-6">
+        
+        <main className="flex-1 overflow-auto p-4 lg:p-6 pb-24 lg:pb-6">
           <AnimatePresence mode="wait">
             <motion.div
               key={location.pathname}
@@ -54,6 +58,11 @@ export function MainLayout() {
             </motion.div>
           </AnimatePresence>
         </main>
+
+        {/* Mobile Components */}
+        <FloatingActionButton />
+        <BottomNav />
+        <QuickAddOverlay />
       </div>
     </div>
   );

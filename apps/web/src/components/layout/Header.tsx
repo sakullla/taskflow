@@ -1,6 +1,6 @@
 import { useNavigate, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { Search, Menu, CheckSquare } from "lucide-react";
+import { Search, List as ListIcon, CheckSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useTaskStore } from "@/stores/taskStore";
@@ -48,7 +48,7 @@ export function Header() {
       <BatchActionBar />
       <header className="h-14 border-b bg-card flex items-center justify-between px-4 lg:px-6">
       <div className="flex items-center gap-3">
-        {/* Mobile Menu Button */}
+        {/* Mobile Lists Button */}
         <Button
           variant="ghost"
           size="icon"
@@ -56,14 +56,14 @@ export function Header() {
           onClick={toggleMobileSidebar}
           aria-label={t("lists")}
         >
-          <Menu className="h-5 w-5" />
+          <ListIcon className="h-5 w-5" />
         </Button>
 
-        <h2 className="text-lg font-semibold">{getTitle()}</h2>
+        <h2 className="text-lg font-bold tracking-tight">{getTitle()}</h2>
       </div>
 
-      <div className="flex items-center gap-2 lg:gap-4">
-        {/* Search - Hidden on small mobile, visible on larger screens */}
+      <div className="flex items-center gap-1 sm:gap-4">
+        {/* Search - Hidden on small mobile */}
         <div className="relative hidden sm:block w-48 lg:w-64">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input

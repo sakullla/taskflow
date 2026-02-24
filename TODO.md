@@ -1,117 +1,40 @@
-# 生产级别重构计划 - 执行清单
+# Mobile-First UI/UX Redesign Plan
 
-## 📋 阶段一：基础架构重构
+This document outlines the step-by-step plan to optimize the frontend for a modern, mobile-first experience, focusing on intuitive touch interactions and native-app-like fluidity.
 
-### Week 1: 后端重构 (Fastify + Prisma)
-- [x] 1.1 初始化 Fastify 项目结构
-- [x] 1.2 配置 Prisma ORM 和数据库模型
-- [x] 1.3 实现用户认证模块 (JWT)
-- [x] 1.4 实现列表模块 CRUD
-- [x] 1.5 实现任务模块 CRUD
-- [x] 1.6 实现步骤模块 CRUD
-- [x] 1.7 实现"我的一天"功能
-- [x] 1.8 API 测试与错误处理
+## Phase 1: Global Layout & Navigation (Mobile-First)
+- [x] **Bottom Navigation Bar:** 
+  - Create a new `BottomNav.tsx` component.
+  - Implement fixed bottom navigation for mobile (My Day, Important, Tasks, Lists).
+  - Update `MainLayout.tsx` to hide the top hamburger menu and display the bottom nav on mobile screens (`< lg`).
+- [x] **Floating Action Button (FAB):**
+  - Implement a global FAB (`+` icon) in the bottom right corner (above the nav bar) for quick task creation.
+  - Add a smooth `framer-motion` expansion animation when clicking the FAB to reveal the task input field.
+- [x] **Header Simplification:**
+  - Clean up the mobile header (`Header.tsx`) to only show the current view title and search/profile icons.
 
-### Week 2: 前端基础重构
-- [x] 2.1 初始化前端项目 (Vite + React + TS)
-- [x] 2.2 配置 Tailwind CSS + shadcn/ui
-- [x] 2.3 配置 i18next 国际化
-- [x] 2.4 配置 Zustand + React Query
-- [x] 2.5 设计系统基础组件
-- [x] 2.6 实现认证页面 (登录/注册)
-- [x] 2.7 实现主布局框架
-- [x] 2.8 集成 API 客户端
+## Phase 2: Task Item Touch Interactions
+- [ ] **Swipe Actions:**
+  - Refactor `TaskItem.tsx` using `framer-motion` drag capabilities.
+  - Implement Swipe Right to Mark Completed/Uncompleted.
+  - Implement Swipe Left to Reveal Delete/Important actions.
+- [ ] **Touch Target Optimization:**
+  - Increase padding and ensure all interactive elements (checkboxes, stars) have a minimum touch target area of 44x44px.
+- [ ] **Haptic Feedback & Animation:**
+  - Add physical-feeling spring animations on task completion.
+  - (Optional) Trigger `navigator.vibrate` for tactile feedback on mobile devices when swiping.
 
----
+## Phase 3: Detail Views as Bottom Sheets
+- [ ] **Task Detail Bottom Sheet:**
+  - Refactor `MobileTaskDetail.tsx` to behave like a native Bottom Sheet instead of a side drawer or full page.
+  - Implement drag-down to dismiss functionality.
+  - Ensure keyboard avoidance (input fields don't get hidden under the mobile virtual keyboard).
 
-## 📋 阶段二：核心功能实现
-
-### Week 3: 任务管理功能
-- [x] 3.1 任务列表视图组件
-- [x] 3.2 任务卡片组件
-- [x] 3.3 任务详情抽屉
-- [x] 3.4 添加任务功能
-- [x] 3.5 编辑/删除任务
-- [x] 3.6 任务筛选与排序
-- [x] 3.7 步骤管理功能
-- [x] 3.8 任务完成动画
-
-### Week 4: 列表与视图
-- [x] 4.1 侧边栏列表管理
-- [x] 4.2 自定义列表 CRUD
-- [x] 4.3 "我的一天"视图
-- [x] 4.4 "重要"视图
-- [x] 4.5 "计划内"视图 (日历)
-- [x] 4.6 搜索功能
-- [x] 4.7 批量操作
-- [x] 4.8 移动端响应式适配
-
----
-
-## 📋 阶段三：体验优化
-
-### Week 5: 动画与交互
-- [x] 5.1 Framer Motion 动画库集成
-- [x] 5.2 任务完成动画效果
-- [x] 5.3 页面过渡动画
-- [x] 5.4 加载状态设计
-- [x] 5.5 骨架屏组件
-- [x] 5.6 Toast 通知系统
-- [x] 5.7 确认对话框
-- [x] 5.8 空状态设计
-
-### Week 6: 设置与国际化
-- [x] 6.1 用户设置页面
-- [x] 6.2 主题切换 (Light/Dark)
-- [x] 6.3 语言切换功能
-- [x] 6.4 账户管理
-- [x] 6.5 简体中文翻译文件
-- [x] 6.6 英文翻译文件
-- [x] 6.7 翻译文案校对
-- [x] 6.8 RTL 支持评估
-
----
-
-## 📋 阶段四：生产部署
-
-### Week 7: Docker 与部署
-- [x] 7.1 编写 API Dockerfile
-- [x] 7.2 编写 Web Dockerfile
-- [x] 7.3 编写 docker-compose.yml
-- [x] 7.4 配置 Nginx 反向代理
-- [x] 7.5 SSL/TLS 证书配置
-- [x] 7.6 环境变量管理
-- [x] 7.7 数据库备份脚本
-- [x] 7.8 部署文档编写
-
-### Week 8: 测试与优化
-- [x] 8.1 单元测试 (前端组件)
-- [x] 8.2 单元测试 (后端 API)
-- [x] 8.3 E2E 测试 (Playwright)
-- [x] 8.4 性能优化
-- [x] 8.5 安全审计
-- [x] 8.6 可访问性检查
-- [x] 8.7 文档完善
-- [x] 8.8 生产环境部署验证
-
----
-
-## 📊 当前进度
-
-| 阶段 | 任务数 | 已完成 | 进度 |
-|------|--------|--------|------|
-| 阶段一 | 16 | 16 | 100% |
-| 阶段二 | 16 | 16 | 100% |
-| 阶段三 | 16 | 16 | 100% |
-| 阶段四 | 16 | 16 | 100% |
-| **总计** | **64** | **64** | **100%** |
-
----
-
-## 🎯 优先级说明
-
-- **P0 (必须)**: 核心功能，阻塞后续开发
-- **P1 (重要)**: 主要功能，影响用户体验
-- **P2 (可选)**: 增强功能，可后续迭代
-
-所有任务默认为 P0，除非特别标注。
+## Phase 4: Visual Polish & Styling
+- [ ] **Modern UI Aesthetics:**
+  - Update Tailwind utility classes to use softer, more modern shadows (`shadow-sm`, `shadow-md` with lower opacity).
+  - Refine card border radiuses (e.g., `rounded-xl` or `rounded-2xl` for a softer look).
+- [ ] **Dark Mode Refinement:**
+  - Ensure pure black backgrounds (`bg-black` or very dark gray `bg-zinc-950`) for OLED mobile screens if applicable.
+- [ ] **PWA Enhancements:**
+  - Configure `safe-area-inset-bottom` in CSS to prevent the bottom navigation from overlapping with iOS home indicators.
