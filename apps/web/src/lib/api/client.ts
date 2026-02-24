@@ -1,6 +1,6 @@
 import axios, { AxiosError, AxiosInstance } from "axios";
 
-const API_BASE_URL = (import.meta as any).env?.VITE_API_BASE_URL || "http://localhost:4000/api";
+const API_BASE_URL = (import.meta as any).env?.VITE_API_BASE_URL || "/api";
 
 class ApiClient {
   private client: AxiosInstance;
