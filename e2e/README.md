@@ -6,14 +6,15 @@ This directory contains Playwright end-to-end tests for the Todo application.
 
 ```
 e2e/
-├── smoke.spec.ts          # Basic smoke tests
-├── navigation.spec.ts     # Navigation and routing tests
-├── tasks.spec.ts          # Task management tests
-├── task-detail.spec.ts    # Task detail panel tests
-├── lists.spec.ts          # List management tests
-├── search.spec.ts         # Search functionality tests
-├── settings.spec.ts       # Settings page tests
-└── mobile-responsive.spec.ts  # Mobile responsive design tests
+├── smoke.spec.ts              # Basic smoke tests
+├── navigation.spec.ts         # Navigation and routing tests
+├── tasks.spec.ts              # Task management tests
+├── task-detail.spec.ts        # Task detail panel tests
+├── lists.spec.ts              # List management tests
+├── search.spec.ts             # Search functionality tests
+├── settings.spec.ts           # Settings page tests
+├── mobile-responsive.spec.ts  # Mobile responsive design tests
+└── batch-operations.spec.ts   # Batch operations tests
 ```
 
 ## Running Tests
@@ -33,6 +34,17 @@ npx playwright test --headed
 ```
 
 ## Test Coverage
+
+### Batch Operations (batch-operations.spec.ts)
+- ✅ Enter batch mode
+- ✅ Select multiple tasks in batch mode
+- ✅ Exit batch mode
+- ✅ Clear selection in batch mode
+- ✅ Batch mode shows checkboxes instead of completion circles
+- ✅ Complete tasks in batch mode
+- ✅ Delete tasks in batch mode (with confirmation)
+- ✅ Batch mode disabled on search page
+- ✅ Batch mode disabled on settings page
 
 ### Search Functionality (search.spec.ts)
 - ✅ Navigate to search page
@@ -61,4 +73,14 @@ npx playwright test --headed
 - ✅ Task detail (open detail, mark important, add steps)
 - ✅ List management (create list, delete list, task reassignment)
 
-## Total: 28 tests passing
+## Test Statistics
+- **Smoke & Navigation**: 4 tests
+- **Task Management**: 6 tests
+- **Task Detail**: 2 tests
+- **List Management**: 2 tests
+- **Search**: 4 tests
+- **Settings**: 5 tests
+- **Mobile Responsive**: 5 tests
+- **Batch Operations**: 9 tests
+
+## Total: 37 tests passing
