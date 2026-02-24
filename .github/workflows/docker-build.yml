@@ -3,14 +3,14 @@ name: Build and Push Docker Image
 on:
   push:
     branches: [main]
-    tags: ['v*']
+    tags: ["v*"]
   pull_request:
     branches: [main]
 
 env:
   REGISTRY_GHCR: ghcr.io
   REGISTRY_DOCKERHUB: docker.io
-  IMAGE_NAME: todo-app
+  IMAGE_NAME: taskflow
 
 jobs:
   build:
@@ -59,6 +59,7 @@ jobs:
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}.{{minor}}
             type=semver,pattern={{major}}
+            type=raw,value=commit-${{ github.sha }}
             type=sha
             type=raw,value=latest,enable={{is_default_branch}}
 
@@ -86,5 +87,5 @@ jobs:
         run: |
           docker run --rm \
             -e NODE_ENV=test \
-            ${{ env.REGISTRY_GHCR }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:latest \
+            ${{ env.REGISTRY_GHCR }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:commit-${{ github.sha }} \
             node -e "console.log('Docker image test passed')"
