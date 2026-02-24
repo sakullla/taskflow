@@ -12,8 +12,11 @@ interface TaskItemProps {
 }
 
 export function TaskItem({ task, isSelected, onClick }: TaskItemProps) {
-  const { updateTask } = useTaskStore();
+  const { updateTask, isBatchMode, selectedTaskIds, toggleTaskSelection } =
+    useTaskStore();
   const [isCompleting, setIsCompleting] = useState(false);
+
+  const isBatchSelected = selectedTaskIds.includes(task.id);
 
   const handleToggleComplete = async (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -69,39 +72,68 @@ export function TaskItem({ task, isSelected, onClick }: TaskItemProps) {
     }
   };
 
+  const handleBatchSelect = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    toggleTaskSelection(task.id);
+  };
+
+  const handleClick = () => {
+    if (isBatchMode) {
+      toggleTaskSelection(task.id);
+    } else {
+      onClick?.();
+    }
+  };
+
   return (
     <div
-      onClick={onClick}
+      onClick={handleClick}
       className={cn(
         "group flex items-start gap-3 p-3 rounded-lg border cursor-pointer transition-all hover:shadow-md",
         isSelected
           ? "border-primary bg-primary/5"
           : "border-border bg-card hover:border-primary/50",
         task.isCompleted && "opacity-60",
-        isCompleting && "animate-task-complete"
+        isCompleting && "animate-task-complete",
+        isBatchMode && isBatchSelected && "border-primary bg-primary/5 ring-1 ring-primary"
       )}
     >
-      {/* Checkbox */}
-      <button
-        onClick={handleToggleComplete}
-        className={cn(
-          "mt-0.5 w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all duration-300",
-          task.isCompleted
-            ? "bg-primary border-primary text-primary-foreground scale-110"
-            : "border-muted-foreground hover:border-primary hover:scale-105"
-        )}
-      >
-        <div
+      {/* Batch selection checkbox (shown in batch mode) */}
+      {isBatchMode ? (
+        <button
+          onClick={handleBatchSelect}
           className={cn(
-            "transition-all duration-300",
-            task.isCompleted
-              ? "scale-100 opacity-100"
-              : "scale-0 opacity-0"
+            "mt-0.5 w-5 h-5 rounded border-2 flex items-center justify-center transition-all duration-200 shrink-0",
+            isBatchSelected
+              ? "bg-primary border-primary text-primary-foreground"
+              : "border-muted-foreground hover:border-primary"
           )}
         >
-          <Check className="w-3 h-3 stroke-[3]" />
-        </div>
-      </button>
+          {isBatchSelected && <Check className="w-3.5 h-3.5 stroke-[3]" />}
+        </button>
+      ) : (
+        /* Task completion checkbox (shown in normal mode) */
+        <button
+          onClick={handleToggleComplete}
+          className={cn(
+            "mt-0.5 w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all duration-300 shrink-0",
+            task.isCompleted
+              ? "bg-primary border-primary text-primary-foreground scale-110"
+              : "border-muted-foreground hover:border-primary hover:scale-105"
+          )}
+        >
+          <div
+            className={cn(
+              "transition-all duration-300",
+              task.isCompleted
+                ? "scale-100 opacity-100"
+                : "scale-0 opacity-0"
+            )}
+          >
+            <Check className="w-3 h-3 stroke-[3]" />
+          </div>
+        </button>
+      )}
 
       {/* Content */}
       <div className="flex-1 min-w-0">
@@ -136,23 +168,25 @@ export function TaskItem({ task, isSelected, onClick }: TaskItemProps) {
         </div>
       </div>
 
-      {/* Important star */}
-      <button
-        onClick={handleToggleImportant}
-        className={cn(
-          "opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-all duration-200",
-          task.isImportant && "opacity-100 scale-110"
-        )}
-      >
-        <Star
+      {/* Important star (hidden in batch mode) */}
+      {!isBatchMode && (
+        <button
+          onClick={handleToggleImportant}
           className={cn(
-            "h-5 w-5 transition-all duration-200",
-            task.isImportant
-              ? "fill-red-500 text-red-500 scale-110"
-              : "text-muted-foreground hover:text-red-500 hover:scale-110"
+            "opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-all duration-200 shrink-0",
+            task.isImportant && "opacity-100 scale-110"
           )}
-        />
-      </button>
+        >
+          <Star
+            className={cn(
+              "h-5 w-5 transition-all duration-200",
+              task.isImportant
+                ? "fill-red-500 text-red-500 scale-110"
+                : "text-muted-foreground hover:text-red-500 hover:scale-110"
+            )}
+          />
+        </button>
+      )}
     </div>
   );
 }

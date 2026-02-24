@@ -1,19 +1,21 @@
 import { useNavigate, useLocation, Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { Search, Settings, Bell, User, Menu } from "lucide-react";
+import { Search, Settings, Bell, User, Menu, CheckSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useTaskStore } from "@/stores/taskStore";
 import { useUIStore } from "@/stores/uiStore";
+import { BatchActionBar } from "@/components/task/BatchActionBar";
 
 export function Header() {
   const navigate = useNavigate();
   const location = useLocation();
   const { t } = useTranslation("navigation");
-  const { currentView } = useTaskStore();
+  const { currentView, isBatchMode, toggleBatchMode } = useTaskStore();
   const { toggleMobileSidebar } = useUIStore();
 
   const isSearchPage = location.pathname === "/search";
+  const isSettingsPage = location.pathname === "/settings";
 
   const getTitle = () => {
     switch (currentView) {
@@ -36,8 +38,13 @@ export function Header() {
     navigate("/search");
   };
 
+  // Show batch mode button only on task list pages
+  const showBatchButton = !isSearchPage && !isSettingsPage;
+
   return (
-    <header className="h-14 border-b bg-card flex items-center justify-between px-4 lg:px-6">
+    <>
+      <BatchActionBar />
+      <header className="h-14 border-b bg-card flex items-center justify-between px-4 lg:px-6">
       <div className="flex items-center gap-3">
         {/* Mobile Menu Button */}
         <Button
@@ -78,6 +85,17 @@ export function Header() {
         <Button variant="ghost" size="icon" className="hidden sm:flex">
           <Bell className="h-5 w-5" />
         </Button>
+        {showBatchButton && (
+          <Button
+            variant={isBatchMode ? "secondary" : "ghost"}
+            size="icon"
+            className="hidden sm:flex"
+            onClick={toggleBatchMode}
+            title={t("batchMode") || "Batch select"}
+          >
+            <CheckSquare className="h-5 w-5" />
+          </Button>
+        )}
         <Link to="/settings">
           <Button variant="ghost" size="icon" className="hidden sm:flex">
             <Settings className="h-5 w-5" />
@@ -88,5 +106,6 @@ export function Header() {
         </Button>
       </div>
     </header>
+    </>
   );
 }

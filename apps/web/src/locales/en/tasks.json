@@ -45,5 +45,15 @@
   "emptyAllTitle": "No tasks",
   "emptyAllDesc": "Start by adding your first task!",
   "emptyListTitle": "Empty list",
-  "emptyListDesc": "Add tasks to this list"
+  "emptyListDesc": "Add tasks to this list",
+  "selected": "selected",
+  "batchCompleteSuccess": "Tasks completed",
+  "batchCompleteError": "Failed to complete tasks",
+  "batchDeleteSuccess": "{{count}} tasks deleted",
+  "batchDeleteError": "Failed to delete tasks",
+  "batchDeleteConfirmTitle": "Delete Tasks",
+  "batchDeleteConfirmDesc": "Are you sure you want to delete {{count}} tasks?",
+  "batchMoveSuccess": "Tasks moved",
+  "batchMoveError": "Failed to move tasks",
+  "moveToList": "Move to List"
 }

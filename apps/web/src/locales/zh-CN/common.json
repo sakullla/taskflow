@@ -15,7 +15,10 @@
     "update": "更新",
     "confirm": "确认",
     "back": "返回",
-    "deleting": "删除中..."
+    "deleting": "删除中...",
+    "complete": "完成",
+    "move": "移动",
+    "clear": "清除"
   },
   "empty": {
     "title": "暂无任务",

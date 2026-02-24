@@ -45,5 +45,15 @@
   "emptyAllTitle": "暂无任务",
   "emptyAllDesc": "开始添加你的第一个任务吧！",
   "emptyListTitle": "空列表",
-  "emptyListDesc": "向此列表添加任务"
+  "emptyListDesc": "向此列表添加任务",
+  "selected": "已选择",
+  "batchCompleteSuccess": "任务已完成",
+  "batchCompleteError": "完成任务失败",
+  "batchDeleteSuccess": "已删除 {{count}} 个任务",
+  "batchDeleteError": "删除任务失败",
+  "batchDeleteConfirmTitle": "删除任务",
+  "batchDeleteConfirmDesc": "确定要删除 {{count}} 个任务吗？",
+  "batchMoveSuccess": "任务已移动",
+  "batchMoveError": "移动任务失败",
+  "moveToList": "移动到列表"
 }

@@ -15,7 +15,10 @@
     "update": "Update",
     "confirm": "Confirm",
     "back": "Back",
-    "deleting": "Deleting..."
+    "deleting": "Deleting...",
+    "complete": "Complete",
+    "move": "Move",
+    "clear": "Clear"
   },
   "empty": {
     "title": "No tasks",
