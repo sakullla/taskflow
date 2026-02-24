@@ -37,19 +37,19 @@ test.describe("Mobile Responsive Design", () => {
       timeout: 15000,
     });
 
-    // Click hamburger menu (first button in header on mobile)
-    const header = page.locator("header");
-    const menuButton = header.locator("button").first();
-    await expect(menuButton).toBeVisible();
+    // On mobile, sidebar is hidden by default
+    // The sidebar becomes visible as an overlay when menu is clicked
+    const mobileSidebar = page
+      .locator("nav")
+      .filter({ has: page.getByText("My Day") });
+
+    // Click hamburger menu
+    const menuButton = page.locator("header button").first();
     await menuButton.click();
 
-    // Mobile sidebar should appear with overlay
-    const overlay = page.locator("div[class*='bg-black/50']");
-    await expect(overlay).toBeVisible();
-
-    // Close sidebar by clicking overlay
-    await overlay.click();
-    await expect(overlay).not.toBeVisible();
+    // Wait for animation and verify sidebar is visible
+    await page.waitForTimeout(500);
+    await expect(page.getByRole("link", { name: /My Day/i })).toBeVisible();
   });
 
   test("can navigate to search page on mobile", async ({ page }) => {

@@ -2,6 +2,8 @@ import { test, expect } from "@playwright/test";
 
 test.describe("Batch Operations", () => {
   test.beforeEach(async ({ page }) => {
+    // Set desktop viewport for batch mode
+    await page.setViewportSize({ width: 1280, height: 720 });
     await page.goto("/");
     // Wait for page to be fully loaded
     await expect(page.getByPlaceholder("Add a task")).toBeVisible({
@@ -10,15 +12,20 @@ test.describe("Batch Operations", () => {
   });
 
   test("can enter batch mode", async ({ page }) => {
-    // Click batch mode button (CheckSquare icon in header)
-    const batchButton = page
-      .locator('header button[title="Batch select"]')
-      .first();
+    // Click batch mode button
+    const batchButton = page.locator('button[title="Batch select"]').first();
+    await expect(batchButton).toBeVisible();
     await batchButton.click();
 
     // Batch action bar should appear
     await expect(page.getByText(/selected/i)).toBeVisible();
-    await expect(page.getByRole("button", { name: /Delete/i })).toBeVisible();
+    // Check for the Complete and Delete buttons (might be disabled when no selection)
+    await expect(
+      page.locator('button:has-text("Complete")').first(),
+    ).toBeVisible();
+    await expect(
+      page.locator('button:has-text("Delete")').first(),
+    ).toBeVisible();
   });
 
   test("can select multiple tasks in batch mode", async ({ page }) => {
@@ -37,9 +44,7 @@ test.describe("Batch Operations", () => {
     await expect(page.getByText(taskTitle2)).toBeVisible({ timeout: 5000 });
 
     // Enter batch mode
-    const batchButton = page
-      .locator('header button[title="Batch select"]')
-      .first();
+    const batchButton = page.locator('button[title="Batch select"]').first();
     await batchButton.click();
 
     // Select both tasks
@@ -55,9 +60,7 @@ test.describe("Batch Operations", () => {
 
   test("can exit batch mode", async ({ page }) => {
     // Enter batch mode
-    const batchButton = page
-      .locator('header button[title="Batch select"]')
-      .first();
+    const batchButton = page.locator('button[title="Batch select"]').first();
     await batchButton.click();
 
     // Batch bar should be visible with "0 selected"
@@ -82,9 +85,7 @@ test.describe("Batch Operations", () => {
     await expect(page.getByText(taskTitle)).toBeVisible({ timeout: 5000 });
 
     // Enter batch mode and select task
-    const batchButton = page
-      .locator('header button[title="Batch select"]')
-      .first();
+    const batchButton = page.locator('button[title="Batch select"]').first();
     await batchButton.click();
 
     const taskItem = page.locator(".group", { hasText: taskTitle });
@@ -104,9 +105,7 @@ test.describe("Batch Operations", () => {
     page,
   }) => {
     // Enter batch mode
-    const batchButton = page
-      .locator('header button[title="Batch select"]')
-      .first();
+    const batchButton = page.locator('button[title="Batch select"]').first();
     await batchButton.click();
 
     // Check for square checkboxes (batch mode) instead of round circles
@@ -122,9 +121,7 @@ test.describe("Batch Operations", () => {
     await expect(page.getByText(taskTitle)).toBeVisible({ timeout: 5000 });
 
     // Enter batch mode and select task
-    const batchButton = page
-      .locator('header button[title="Batch select"]')
-      .first();
+    const batchButton = page.locator('button[title="Batch select"]').first();
     await batchButton.click();
 
     const taskItem = page.locator(".group", { hasText: taskTitle });
@@ -149,15 +146,13 @@ test.describe("Batch Operations", () => {
     await expect(page.getByText(taskTitle)).toBeVisible({ timeout: 5000 });
 
     // Enter batch mode and select task
-    const batchButton = page
-      .locator('header button[title="Batch select"]')
-      .first();
+    const batchButton = page.locator('button[title="Batch select"]').first();
     await batchButton.click();
 
     const taskItem = page.locator(".group", { hasText: taskTitle });
     await taskItem.first().click();
 
-    // Click Delete button in batch action bar (the main delete button, not list delete)
+    // Click Delete button
     const deleteButton = page
       .locator('div[class*="fixed"], div[class*="sticky"]')
       .getByRole("button", { name: /^Delete$/i });
@@ -183,7 +178,7 @@ test.describe("Batch Operations", () => {
     await expect(page.locator("main h1")).toContainText("Search");
 
     // Batch mode button should not be visible
-    const batchButton = page.locator('header button[title="Batch select"]');
+    const batchButton = page.locator('button[title="Batch select"]');
     await expect(batchButton).not.toBeVisible();
   });
 
@@ -193,7 +188,7 @@ test.describe("Batch Operations", () => {
     await expect(page.locator("main h1")).toContainText("Settings");
 
     // Batch mode button should not be visible
-    const batchButton = page.locator('header button[title="Batch select"]');
+    const batchButton = page.locator('button[title="Batch select"]');
     await expect(batchButton).not.toBeVisible();
   });
 });

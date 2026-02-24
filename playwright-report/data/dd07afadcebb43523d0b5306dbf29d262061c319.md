@@ -1,0 +1,96 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e3]:
+  - complementary [ref=e5]:
+    - heading "Todo" [level=1] [ref=e7]
+    - navigation [ref=e8]:
+      - link "My Day" [ref=e9] [cursor=pointer]:
+        - /url: /
+        - img [ref=e10]
+        - text: My Day
+      - link "Important" [ref=e16] [cursor=pointer]:
+        - /url: /important
+        - img [ref=e17]
+        - text: Important
+      - link "Planned" [ref=e19] [cursor=pointer]:
+        - /url: /planned
+        - img [ref=e20]
+        - text: Planned
+      - link "All Tasks" [ref=e22] [cursor=pointer]:
+        - /url: /tasks
+        - img [ref=e23]
+        - text: All Tasks
+      - generic [ref=e26]:
+        - generic [ref=e27]:
+          - heading "Lists" [level=3] [ref=e28]
+          - button [ref=e29]:
+            - img [ref=e30]
+        - generic [ref=e31]:
+          - link "任务 5" [ref=e32] [cursor=pointer]:
+            - /url: /lists/9e67aa89-c7d4-4524-be09-d38760bf51c5
+            - generic [ref=e35]: 任务
+            - generic [ref=e37]: "5"
+          - link "工作 1" [ref=e38] [cursor=pointer]:
+            - /url: /lists/c8b3d7a6-1a5b-4512-a27f-236e36f5fa55
+            - generic [ref=e41]: 工作
+            - generic [ref=e42]:
+              - generic [ref=e43]: "1"
+              - button "Delete" [ref=e44]:
+                - img [ref=e45]
+  - generic [ref=e48]:
+    - banner [ref=e49]:
+      - heading "My Day" [level=2] [ref=e51]
+      - generic [ref=e52]:
+        - generic [ref=e53]:
+          - img [ref=e54]
+          - textbox "Search" [ref=e57] [cursor=pointer]
+        - button "Batch select" [ref=e58]:
+          - img [ref=e59]
+        - button [ref=e63]:
+          - img [ref=e64]
+        - button [ref=e68]:
+          - img [ref=e70]
+    - main [ref=e73]:
+      - generic [ref=e76]:
+        - generic [ref=e77]:
+          - generic [ref=e78]:
+            - img [ref=e79]
+            - heading "My Day" [level=1] [ref=e85]
+          - paragraph [ref=e86]: 2026年2月24日
+        - generic [ref=e89]:
+          - textbox "Add a task" [ref=e90]
+          - button "Add" [disabled]:
+            - img
+            - text: Add
+        - generic [ref=e91]:
+          - generic [ref=e92] [cursor=pointer]:
+            - button [ref=e93]
+            - generic [ref=e94]:
+              - paragraph [ref=e95]: 完成项目规划文档
+              - generic [ref=e97]:
+                - img [ref=e98]
+                - text: 今天
+            - button [ref=e100]:
+              - img [ref=e101]
+          - generic [ref=e103] [cursor=pointer]:
+            - button [ref=e104]
+            - paragraph [ref=e106]: BatchTask1 1771900607574
+            - button [ref=e107]:
+              - img [ref=e108]
+          - generic [ref=e110] [cursor=pointer]:
+            - button [ref=e111]
+            - paragraph [ref=e113]: BatchTask2 1771900607574
+            - button [ref=e114]:
+              - img [ref=e115]
+          - generic [ref=e117] [cursor=pointer]:
+            - button [ref=e118]
+            - paragraph [ref=e120]: ClearTest 1771900607461
+            - button [ref=e121]:
+              - img [ref=e122]
+          - generic [ref=e124] [cursor=pointer]:
+            - button [ref=e125]
+            - paragraph [ref=e127]: DeleteBatch 1771900608951
+            - button [ref=e128]:
+              - img [ref=e129]
+```
