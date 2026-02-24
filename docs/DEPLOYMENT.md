@@ -14,10 +14,10 @@ cp .env.example .env
 # 编辑 .env 文件，设置 JWT_SECRET 等敏感信息
 
 # 3. 启动服务
-docker-compose -f docker/docker-compose.yml up -d
+docker-compose -f docker-compose.yml up -d
 
 # 4. 运行数据库迁移
-docker-compose exec api npx prisma migrate deploy
+docker-compose exec app npx prisma migrate deploy
 
 # 5. 访问应用
 # 打开浏览器访问 http://localhost
@@ -69,10 +69,10 @@ npm run dev
 
 ```bash
 # 1. 构建镜像
-docker-compose -f docker/docker-compose.yml build
+docker-compose -f docker-compose.yml pull
 
 # 2. 启动服务
-docker-compose -f docker/docker-compose.yml up -d
+docker-compose -f docker-compose.yml up -d
 
 # 3. 查看日志
 docker-compose logs -f
@@ -93,10 +93,10 @@ docker-compose logs -f
 
 ```bash
 # 备份数据库
-docker-compose exec api sh -c 'cp /app/data/todo.db /app/data/backup-$(date +%Y%m%d).db'
+docker-compose exec app sh -c 'cp /app/data/todo.db /app/data/backup-$(date +%Y%m%d).db'
 
 # 下载备份
-docker cp todo-api:/app/data/backup-20240101.db ./backup/
+docker cp taskflow-app:/app/data/backup-20240101.db ./backup/
 ```
 
 ### 恢复备份
@@ -106,7 +106,7 @@ docker cp todo-api:/app/data/backup-20240101.db ./backup/
 docker-compose down
 
 # 恢复数据库
-docker cp ./backup/todo.db todo-api:/app/data/todo.db
+docker cp ./backup/todo.db taskflow-app:/app/data/todo.db
 
 # 重启服务
 docker-compose up -d
@@ -137,7 +137,7 @@ docker run -it --rm \
 
 ```bash
 # API 健康检查
-curl http://localhost/api/health
+curl http://localhost/health
 
 # 完整检查
 curl http://localhost/health
@@ -150,6 +150,5 @@ curl http://localhost/health
 docker-compose logs -f
 
 # 查看特定服务日志
-docker-compose logs -f api
-docker-compose logs -f web
+docker-compose logs -f app
 ```

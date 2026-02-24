@@ -133,9 +133,11 @@ npm run db:seed      # Seed database
 npm run backup       # Create database backup
 
 # Docker
-npm run docker:build # Build Docker images
-npm run docker:up    # Start Docker containers
-npm run docker:down  # Stop Docker containers
+npm run docker:build # Build local images for testing
+npm run docker:pull  # Pull production images from registry
+npm run docker:up    # Start production containers
+npm run docker:down  # Stop containers
+npm run docker:push  # Build and push unified app image to Docker Hub
 ```
 
 ### Project Structure
@@ -159,7 +161,7 @@ npm run docker:down  # Stop Docker containers
 │       └── prisma/
 ├── e2e/                  # Playwright E2E tests
 ├── scripts/              # Automation scripts
-├── docker/               # Docker configuration
+├── docker-compose.yml    # Production compose file
 └── docs/                 # Documentation
 ```
 

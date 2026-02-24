@@ -1,161 +1,128 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
-# 生产环境部署脚本
+# Production deploy script (Docker Compose, image pull mode)
 # Usage: ./scripts/deploy.sh
 
-set -e
+set -euo pipefail
 
-# 颜色定义
+COMPOSE_FILE="docker-compose.yml"
+
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
-NC='\033[0m' # No Color
+NC='\033[0m'
 
-# 打印带颜色的信息
 info() {
-    echo -e "${GREEN}[INFO]${NC} $1"
+  echo -e "${GREEN}[INFO]${NC} $1"
 }
 
 warn() {
-    echo -e "${YELLOW}[WARN]${NC} $1"
+  echo -e "${YELLOW}[WARN]${NC} $1"
 }
 
 error() {
-    echo -e "${RED}[ERROR]${NC} $1"
+  echo -e "${RED}[ERROR]${NC} $1"
 }
 
-# 检查 Docker 和 Docker Compose
-check_docker() {
-    if ! command -v docker &> /dev/null; then
-        error "Docker 未安装，请先安装 Docker"
-        exit 1
-    fi
-
-    if ! command -v docker-compose &> /dev/null; then
-        error "Docker Compose 未安装，请先安装 Docker Compose"
-        exit 1
-    fi
-
-    info "Docker 环境检查通过"
+check_deps() {
+  command -v docker >/dev/null 2>&1 || {
+    error "Docker is not installed."
+    exit 1
+  }
+  command -v docker-compose >/dev/null 2>&1 || {
+    error "docker-compose is not installed."
+    exit 1
+  }
+  info "Docker environment check passed."
 }
 
-# 检查环境变量
-check_env() {
-    if [ ! -f ".env" ]; then
-        warn ".env 文件不存在，使用默认配置"
-        warn "建议在生产环境创建 .env 文件并设置 JWT_SECRET"
-    else
-        info "加载 .env 文件"
-        export $(grep -v '^#' .env | xargs)
-    fi
+load_env() {
+  if [[ -f .env ]]; then
+    info "Loading .env"
+    export "$(grep -v '^#' .env | xargs)"
+  else
+    warn ".env not found, using defaults from compose."
+  fi
 
-    # 检查关键环境变量
-    if [ -z "$JWT_SECRET" ] || [ "$JWT_SECRET" = "change-me-in-production" ]; then
-        warn "JWT_SECRET 未设置或使用了默认值"
-        warn "请设置一个强密码，例如: JWT_SECRET=$(openssl rand -base64 32)"
-    fi
+  if [[ -z "${JWT_SECRET:-}" || "${JWT_SECRET:-}" == "change-me-in-production" ]]; then
+    warn "JWT_SECRET is missing or weak. Please set a strong value for production."
+  fi
+
+  if [[ -z "${IMAGE_TAG:-}" ]]; then
+    warn "IMAGE_TAG not configured, defaulting to latest."
+  fi
 }
 
-# 拉取最新代码 (可选)
 pull_code() {
-    if [ -d ".git" ]; then
-        info "拉取最新代码..."
-        git pull origin main || warn "拉取代码失败，使用当前版本"
-    fi
+  if [[ -d .git ]]; then
+    info "Pulling latest code from main..."
+    git pull origin main || warn "git pull failed, continue with current checkout."
+  fi
 }
 
-# 构建并启动服务
 deploy() {
-    info "开始构建 Docker 镜像..."
-    docker-compose -f docker/docker-compose.yml build --no-cache
+  info "Pulling images..."
+  docker-compose -f "${COMPOSE_FILE}" pull
 
-    info "启动服务..."
-    docker-compose -f docker/docker-compose.yml up -d
-
-    info "等待服务启动..."
-    sleep 5
+  info "Starting services..."
+  docker-compose -f "${COMPOSE_FILE}" up -d
 }
 
-# 运行数据库迁移
 migrate() {
-    info "检查数据库迁移..."
+  info "Waiting for app to become healthy..."
+  until docker-compose -f "${COMPOSE_FILE}" exec -T app wget -q --spider http://localhost:3000/health; do
+    sleep 2
+  done
 
-    # 等待 API 服务就绪
-    until docker-compose -f docker/docker-compose.yml exec -T api wget -q --spider http://localhost:4000/health; do
-        warn "等待 API 服务就绪..."
-        sleep 2
-    done
-
-    # 运行迁移
-    docker-compose -f docker/docker-compose.yml exec -T api npx prisma migrate deploy || warn "数据库迁移失败"
+  info "Running Prisma migrations..."
+  docker-compose -f "${COMPOSE_FILE}" exec -T app npx prisma migrate deploy || warn "Migration failed."
 }
 
-# 健康检查
 health_check() {
-    info "执行健康检查..."
+  info "Running health checks..."
 
-    # 检查 Nginx
-    if curl -s http://localhost/health > /dev/null; then
-        info "✓ Nginx 服务正常"
-    else
-        error "✗ Nginx 服务异常"
-        return 1
-    fi
+  curl -sf http://localhost/health >/dev/null || {
+    error "Health endpoint check failed."
+    return 1
+  }
 
-    # 检查 API
-    if curl -s http://localhost/api/health > /dev/null; then
-        info "✓ API 服务正常"
-    else
-        error "✗ API 服务异常"
-        return 1
-    fi
+  curl -sf http://localhost/ >/dev/null || {
+    error "Web entry check failed."
+    return 1
+  }
 
-    info "所有服务健康检查通过！"
+  info "All services are healthy."
 }
 
-# 清理旧镜像
 cleanup() {
-    info "清理未使用的 Docker 资源..."
-    docker system prune -f --volumes=false
+  info "Pruning unused Docker cache..."
+  docker system prune -f --volumes=false
 }
 
-# 显示访问信息
 show_info() {
-    echo ""
-    echo "========================================"
-    echo "  🎉 部署成功！"
-    echo "========================================"
-    echo ""
-    echo "  访问地址:"
-    echo "    - 应用: http://localhost"
-    echo "    - API:  http://localhost/api"
-    echo ""
-    echo "  常用命令:"
-    echo "    查看日志: docker-compose -f docker/docker-compose.yml logs -f"
-    echo "    停止服务: docker-compose -f docker/docker-compose.yml down"
-    echo "    重启服务: docker-compose -f docker/docker-compose.yml restart"
-    echo ""
-    echo "========================================"
+  echo ""
+  echo "========================================"
+  echo "Deploy completed."
+  echo "========================================"
+  echo "App: http://localhost"
+  echo "API: http://localhost/api"
+  echo ""
+  echo "Useful commands:"
+  echo "  docker-compose -f ${COMPOSE_FILE} logs -f"
+  echo "  docker-compose -f ${COMPOSE_FILE} down"
+  echo "  docker-compose -f ${COMPOSE_FILE} restart"
 }
 
-# 主函数
 main() {
-    echo "========================================"
-    echo "  Todo 应用部署脚本"
-    echo "========================================"
-    echo ""
-
-    cd "$(dirname "$0")/.."
-
-    check_docker
-    check_env
-    pull_code
-    deploy
-    migrate
-    health_check
-    cleanup
-    show_info
+  cd "$(dirname "$0")/.."
+  check_deps
+  load_env
+  pull_code
+  deploy
+  migrate
+  health_check
+  cleanup
+  show_info
 }
 
-# 运行主函数
 main "$@"

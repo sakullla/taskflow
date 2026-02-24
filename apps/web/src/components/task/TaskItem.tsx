@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Star, Calendar, Check } from "lucide-react";
 import { cn, formatDate, isOverdue, isToday } from "@/lib/utils";
 import { api } from "@/lib/api/client";
@@ -15,8 +15,17 @@ export function TaskItem({ task, isSelected, onClick }: TaskItemProps) {
   const { updateTask, isBatchMode, selectedTaskIds, toggleTaskSelection } =
     useTaskStore();
   const [isCompleting, setIsCompleting] = useState(false);
+  const completionTimerRef = useRef<number | null>(null);
 
   const isBatchSelected = selectedTaskIds.includes(task.id);
+
+  useEffect(() => {
+    return () => {
+      if (completionTimerRef.current !== null) {
+        window.clearTimeout(completionTimerRef.current);
+      }
+    };
+  }, []);
 
   const handleToggleComplete = async (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -25,8 +34,14 @@ export function TaskItem({ task, isSelected, onClick }: TaskItemProps) {
 
     if (newStatus) {
       // Trigger completion animation
+      if (completionTimerRef.current !== null) {
+        window.clearTimeout(completionTimerRef.current);
+      }
       setIsCompleting(true);
-      setTimeout(() => setIsCompleting(false), 400);
+      completionTimerRef.current = window.setTimeout(() => {
+        setIsCompleting(false);
+        completionTimerRef.current = null;
+      }, 400);
     }
 
     // Optimistic update

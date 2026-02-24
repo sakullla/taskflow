@@ -1,5 +1,8 @@
 import fastify from "fastify";
 import cors from "@fastify/cors";
+import fastifyStatic from "@fastify/static";
+import fs from "node:fs";
+import path from "node:path";
 // import jwt from "@fastify/jwt";
 // JWT is disabled for now
 import swagger from "@fastify/swagger";
@@ -18,7 +21,7 @@ import type { FastifyError, FastifyInstance, FastifyRequest } from "fastify";
 // Extend Fastify types
 declare module "fastify" {
   interface FastifyInstance {
-    authenticate: (request: FastifyRequest, reply: FastifyReply) => Promise<void>;
+    authenticate: (request: FastifyRequest) => Promise<void>;
   }
 
   interface FastifyRequest {
@@ -114,6 +117,31 @@ export async function createApp(): Promise<FastifyInstance> {
   await app.register(myDayRoutes, { prefix: "/api/my-day" });
   await app.register(notificationRoutes, { prefix: "/api/notifications" });
 
+  // Serve built web app from the API container in production.
+  const webDistPath = path.resolve(process.cwd(), "../web/dist");
+  const hasWebDist = fs.existsSync(webDistPath);
+
+  if (env.NODE_ENV === "production" && hasWebDist) {
+    await app.register(fastifyStatic, {
+      root: webDistPath,
+      prefix: "/",
+      index: false,
+      decorateReply: false,
+    });
+
+    app.get("/*", async (request, reply) => {
+      if (
+        request.url.startsWith("/api") ||
+        request.url.startsWith("/docs") ||
+        request.url === "/health"
+      ) {
+        return reply.callNotFound();
+      }
+
+      return reply.sendFile("index.html");
+    });
+  }
+
   // Start notification checking interval (every minute)
   setInterval(async () => {
     try {
@@ -126,6 +154,11 @@ export async function createApp(): Promise<FastifyInstance> {
 
   // 404 handler
   app.setNotFoundHandler((request, reply) => {
+    if (!request.url.startsWith("/api")) {
+      reply.status(404).send({ success: false, error: { code: "NOT_FOUND", message: "Not found" } });
+      return;
+    }
+
     reply.status(404).send({
       success: false,
       error: {
