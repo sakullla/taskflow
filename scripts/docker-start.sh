@@ -42,4 +42,5 @@ echo "Starting server..."
 echo "================================"
 
 # Start the API server
-exec node apps/api/dist/server.js
+cd /app/apps/api
+exec node dist/server.js
