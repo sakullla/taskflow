@@ -3,7 +3,7 @@
 # ============================================
 # Stage 1: Builder
 # ============================================
-FROM node:20-alpine AS builder
+FROM --platform=$BUILDPLATFORM node:20-alpine AS builder
 
 # Build dependencies for native modules (e.g. better-sqlite3)
 RUN apk add --no-cache python3 make g++
