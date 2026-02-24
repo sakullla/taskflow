@@ -5,10 +5,10 @@
   "type": "module",
   "scripts": {
     "dev": "npm run db:push && tsx watch src/server.ts",
-    "build": "tsc -p tsconfig.json",
+    "build": "npm run db:generate && tsc -p tsconfig.json",
     "start": "node dist/server.js",
     "test": "npm run db:push && vitest run --passWithNoTests",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "npm run db:generate && tsc --noEmit",
     "lint": "eslint src --ext .ts",
     "db:prepare:schema": "node ./scripts/prepare-prisma-schema.mjs",
     "db:generate": "npm run db:prepare:schema && prisma generate",
