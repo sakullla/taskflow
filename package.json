@@ -21,12 +21,6 @@
     "db:migrate": "npm --workspace apps/api run db:migrate",
     "db:generate": "npm --workspace apps/api run db:generate",
     "db:seed": "npm --workspace apps/api run db:seed",
-    "docker:build": "docker build -f Dockerfile -t taskflow:local .",
-    "docker:push": "node scripts/docker-push.mjs",
-    "docker:pull": "docker-compose -f docker-compose.yml pull",
-    "docker:up": "docker-compose -f docker-compose.yml up -d",
-    "docker:down": "docker-compose -f docker-compose.yml down",
-    "docker:logs": "docker-compose -f docker-compose.yml logs -f",
     "deploy": "./scripts/deploy.sh",
     "backup": "./scripts/backup.sh"
   },
