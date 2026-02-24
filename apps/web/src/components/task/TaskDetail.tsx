@@ -318,7 +318,7 @@ export function TaskDetail({ task, onClose }: TaskDetailProps) {
   return (
     <Card className="h-full">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <span className="text-sm font-medium text-muted-foreground">Task Details</span>
+        <span className="text-sm font-medium text-muted-foreground">{t("tasks:detailTitle")}</span>
         <Button variant="ghost" size="icon" onClick={onClose}>
           <X className="h-4 w-4" />
         </Button>

@@ -55,5 +55,10 @@
   "batchDeleteConfirmDesc": "确定要删除 {{count}} 个任务吗？",
   "batchMoveSuccess": "任务已移动",
   "batchMoveError": "移动任务失败",
-  "moveToList": "移动到列表"
+  "moveToList": "移动到列表",
+  "detailTitle": "任务详情",
+  "save": "保存",
+  "important": "重要",
+  "inMyDay": "在我的一天中",
+  "addToMyDay": "添加到我的一天"
 }

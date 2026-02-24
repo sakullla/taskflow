@@ -266,3 +266,5 @@ export function MyDayPage() {
     </div>
   );
 }
+
+export default MyDayPage;

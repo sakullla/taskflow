@@ -151,3 +151,5 @@ export function PlannedPage() {
     </div>
   );
 }
+
+export default PlannedPage;

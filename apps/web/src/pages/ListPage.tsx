@@ -154,3 +154,5 @@ export function ListPage() {
     </div>
   );
 }
+
+export default ListPage;

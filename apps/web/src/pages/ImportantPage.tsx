@@ -156,3 +156,5 @@ export function ImportantPage() {
     </div>
   );
 }
+
+export default ImportantPage;

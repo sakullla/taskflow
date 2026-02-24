@@ -55,5 +55,10 @@
   "batchDeleteConfirmDesc": "Are you sure you want to delete {{count}} tasks?",
   "batchMoveSuccess": "Tasks moved",
   "batchMoveError": "Failed to move tasks",
-  "moveToList": "Move to List"
+  "moveToList": "Move to List",
+  "detailTitle": "Task Details",
+  "save": "Save",
+  "important": "Important",
+  "inMyDay": "In My Day",
+  "addToMyDay": "Add to My Day"
 }

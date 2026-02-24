@@ -149,3 +149,5 @@ export function AllTasksPage() {
     </div>
   );
 }
+
+export default AllTasksPage;
