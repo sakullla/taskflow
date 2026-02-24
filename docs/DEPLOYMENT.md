@@ -24,6 +24,7 @@ Set at least these values in `.env`:
 - `TZ` (IANA timezone, for example `Asia/Shanghai`)
 - `CORS_ORIGINS` (comma-separated allowlist)
 - `ALLOW_REGISTRATION=true|false` (set to `false` to close public signup)
+  - When enabled on a fresh database, the first registered account is promoted to `admin`.
 - `ENABLE_API_DOCS=false` in production
 
 TLS mode also needs:

@@ -105,10 +105,10 @@ export function ListPage() {
 
         <Card className="mb-4">
           <CardContent className="p-3">
-            <div className="flex gap-2">
+            <div className="flex items-center gap-2">
               <Input
                 placeholder={t("tasks:addPlaceholder")}
-                className="border-0 focus-visible:ring-0"
+                className="flex-1 border-0 focus-visible:ring-0"
                 value={newTaskTitle}
                 onChange={(e) => setNewTaskTitle(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && handleAddTask()}
@@ -116,6 +116,7 @@ export function ListPage() {
               />
               <Button
                 size="sm"
+                className="shrink-0"
                 onClick={handleAddTask}
                 disabled={!newTaskTitle.trim() || isAdding || isLoading}
               >

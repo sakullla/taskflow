@@ -37,13 +37,18 @@ export async function registerUser(data: RegisterInput) {
   const hashedPassword = await hashPassword(data.password);
 
   const user = await prisma.$transaction(async (tx) => {
+    const existingUser = await tx.user.findFirst({
+      select: { id: true },
+    });
+    const role: "admin" | "user" = existingUser ? "user" : "admin";
+
     const created = await tx.user.create({
       data: {
         email,
         password: hashedPassword,
         isActive: true,
         name: data.name ?? null,
-        role: "user",
+        role,
         locale: "zh-CN",
         theme: "system",
         dueDateReminders: true,

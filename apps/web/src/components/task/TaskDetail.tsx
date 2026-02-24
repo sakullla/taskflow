@@ -416,22 +416,24 @@ export function TaskDetail({ task, onClose }: TaskDetailProps) {
           </label>
 
           {/* Add Step Input */}
-          <div className="flex gap-2 mb-3">
+          <div className="flex items-center gap-2 mb-3">
             <Input
               placeholder={t("tasks:stepPlaceholder") || "Add a step..."}
               value={newStepTitle}
               onChange={(e) => setNewStepTitle(e.target.value)}
               onKeyDown={(e) => handleStepKeyDown(e)}
               disabled={isAddingStep}
-              className="h-8 text-sm"
+              className="h-8 flex-1 text-sm"
+              data-testid="step-add-input"
             />
             <Button
               size="sm"
               variant="ghost"
-              className="h-8 px-2"
+              className="h-8 px-2 shrink-0"
               onClick={handleAddStep}
               disabled={!newStepTitle.trim() || isAddingStep}
               aria-label={t("tasks:addStep") || "Add step"}
+              data-testid="step-add-submit"
             >
               <Plus className="h-4 w-4" />
             </Button>

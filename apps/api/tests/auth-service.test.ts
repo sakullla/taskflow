@@ -1,71 +1,105 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import { prisma } from "../src/config/db.js";
-import { loginUser } from "../src/modules/auth/service.js";
+import { loginUser, registerUser } from "../src/modules/auth/service.js";
 
 const legacyHash = "demo-salt:dc548fb7432bad5dafda603929473162cc79e81fbaf8934de53ea41879b164d1";
 
 describe("auth service", () => {
-  beforeEach(async () => {
-    const user = await prisma.user.upsert({
-      where: { email: "demo@example.com" },
-      update: {
-        password: legacyHash,
-        isActive: true,
-        role: "admin",
-        locale: "zh-CN",
-        theme: "system",
-        dueDateReminders: true,
-        weeklyDigest: false,
-      },
-      create: {
-        email: "demo@example.com",
-        password: legacyHash,
-        isActive: true,
-        name: "Demo User",
-        role: "admin",
-        locale: "zh-CN",
-        theme: "system",
-        dueDateReminders: true,
-        weeklyDigest: false,
-      },
-      select: { id: true },
-    });
-
-    const defaultList = await prisma.list.findFirst({
-      where: {
-        userId: user.id,
-        isDefault: true,
-      },
-      select: { id: true },
-    });
-
-    if (!defaultList) {
-      await prisma.list.create({
-        data: {
-          userId: user.id,
-          name: "Tasks",
-          color: "#3b82f6",
-          isDefault: true,
-          isArchived: false,
-          order: 0,
+  describe("legacy password migration", () => {
+    beforeEach(async () => {
+      const user = await prisma.user.upsert({
+        where: { email: "demo@example.com" },
+        update: {
+          password: legacyHash,
+          isActive: true,
+          role: "admin",
+          locale: "zh-CN",
+          theme: "system",
+          dueDateReminders: true,
+          weeklyDigest: false,
         },
+        create: {
+          email: "demo@example.com",
+          password: legacyHash,
+          isActive: true,
+          name: "Demo User",
+          role: "admin",
+          locale: "zh-CN",
+          theme: "system",
+          dueDateReminders: true,
+          weeklyDigest: false,
+        },
+        select: { id: true },
       });
-    }
+
+      const defaultList = await prisma.list.findFirst({
+        where: {
+          userId: user.id,
+          isDefault: true,
+        },
+        select: { id: true },
+      });
+
+      if (!defaultList) {
+        await prisma.list.create({
+          data: {
+            userId: user.id,
+            name: "Tasks",
+            color: "#3b82f6",
+            isDefault: true,
+            isArchived: false,
+            order: 0,
+          },
+        });
+      }
+    });
+
+    it("migrates legacy password hash to bcrypt after successful login", async () => {
+      const result = await loginUser({
+        email: "demo@example.com",
+        password: "password123",
+      });
+
+      expect(result.user.email).toBe("demo@example.com");
+
+      const demoUser = await prisma.user.findUnique({
+        where: { email: "demo@example.com" },
+        select: { password: true },
+      });
+      expect(demoUser).toBeDefined();
+      expect(demoUser?.password.startsWith("$2")).toBe(true);
+    });
   });
 
-  it("migrates legacy password hash to bcrypt after successful login", async () => {
-    const result = await loginUser({
-      email: "demo@example.com",
-      password: "password123",
+  describe("registration role assignment", () => {
+    beforeEach(async () => {
+      await prisma.user.deleteMany();
     });
 
-    expect(result.user.email).toBe("demo@example.com");
+    it("assigns admin role to the first registered user", async () => {
+      const result = await registerUser({
+        email: `first-${Date.now()}@example.com`,
+        password: "password123",
+        name: "First User",
+      });
 
-    const demoUser = await prisma.user.findUnique({
-      where: { email: "demo@example.com" },
-      select: { password: true },
+      expect(result.user.role).toBe("admin");
     });
-    expect(demoUser).toBeDefined();
-    expect(demoUser?.password.startsWith("$2")).toBe(true);
+
+    it("assigns user role to registrations after the first user", async () => {
+      await registerUser({
+        email: `first-${Date.now()}@example.com`,
+        password: "password123",
+        name: "First User",
+      });
+
+      const secondResult = await registerUser({
+        email: `second-${Date.now()}@example.com`,
+        password: "password123",
+        name: "Second User",
+      });
+
+      expect(secondResult.user.role).toBe("user");
+    });
   });
 });
