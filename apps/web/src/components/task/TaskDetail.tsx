@@ -412,7 +412,7 @@ export function TaskDetail({ task, onClose }: TaskDetailProps) {
         {/* Steps */}
         <div>
           <label className="text-sm text-muted-foreground mb-2 block">
-            {(t("tasks:steps") || "Steps")} ({task.steps.filter((s) => s.isCompleted).length}/{task.steps.length})
+            {(t("tasks:steps") || "Steps")} ({(task.steps || []).filter((s) => s.isCompleted).length}/{(task.steps || []).length})
           </label>
 
           {/* Add Step Input */}
@@ -441,7 +441,7 @@ export function TaskDetail({ task, onClose }: TaskDetailProps) {
 
           {/* Steps List */}
           <div className="space-y-1">
-            {task.steps.map((step) => (
+            {(task.steps || []).map((step) => (
               <div
                 key={step.id}
                 className="flex items-center gap-2 p-2 rounded hover:bg-accent group"

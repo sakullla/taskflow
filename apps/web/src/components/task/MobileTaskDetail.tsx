@@ -17,13 +17,15 @@ export function MobileTaskDetail() {
 
   useEffect(() => {
     if (isMobile && selectedTaskId) {
-      closeMobileTaskDetail();
-      setTimeout(() => {
-        useUIStore.setState({ isMobileTaskDetailOpen: true });
-        controls.start("visible");
-      }, 0);
+      useUIStore.setState({ isMobileTaskDetailOpen: true });
     }
-  }, [isMobile, selectedTaskId, controls]);
+  }, [isMobile, selectedTaskId]);
+
+  useEffect(() => {
+    if (isMobileTaskDetailOpen) {
+      controls.start("visible");
+    }
+  }, [isMobileTaskDetailOpen, controls]);
 
   const task = tasks.find((t) => t.id === selectedTaskId) || null;
 
