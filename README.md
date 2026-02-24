@@ -27,6 +27,10 @@ npx concurrently "cd apps/api && npx tsx src/server.ts" "cd apps/web && npm run 
 - Web: `http://localhost:5173`
 - API: `http://localhost:4000`
 
+**Default login (dev):**
+- Email: `demo@example.com`
+- Password: `password123`
+
 ## Common Commands
 
 ```bash
