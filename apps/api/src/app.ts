@@ -10,6 +10,8 @@ import { listRoutes } from "./modules/lists/routes.js";
 import { taskRoutes } from "./modules/tasks/routes.js";
 import { stepRoutes } from "./modules/steps/routes.js";
 import { myDayRoutes } from "./modules/my-day/routes.js";
+import { notificationRoutes } from "./modules/notifications/routes.js";
+import { checkTaskReminders, checkDueTasks } from "./modules/notifications/service.js";
 import { AppError } from "./shared/errors/index.js";
 import type { FastifyError, FastifyInstance, FastifyRequest } from "fastify";
 
@@ -110,6 +112,17 @@ export async function createApp(): Promise<FastifyInstance> {
   await app.register(taskRoutes, { prefix: "/api/tasks" });
   await app.register(stepRoutes, { prefix: "/api/tasks/:taskId/steps" });
   await app.register(myDayRoutes, { prefix: "/api/my-day" });
+  await app.register(notificationRoutes, { prefix: "/api/notifications" });
+
+  // Start notification checking interval (every minute)
+  setInterval(async () => {
+    try {
+      await checkTaskReminders();
+      await checkDueTasks();
+    } catch (error) {
+      app.log.error(error, "Error checking notifications");
+    }
+  }, 60 * 1000);
 
   // 404 handler
   app.setNotFoundHandler((request, reply) => {

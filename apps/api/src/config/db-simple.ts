@@ -60,6 +60,17 @@ export interface MyDayTask {
   createdAt: string;
 }
 
+export interface Notification {
+  id: string;
+  userId: string;
+  title: string;
+  message: string;
+  type: "task_reminder" | "task_due" | "system";
+  isRead: boolean;
+  taskId: string | null;
+  createdAt: string;
+}
+
 // In-memory storage
 export const db = {
   users: new Map<string, User>(),
@@ -67,6 +78,7 @@ export const db = {
   tasks: new Map<string, Task>(),
   steps: new Map<string, Step>(),
   myDayTasks: new Map<string, MyDayTask>(),
+  notifications: new Map<string, Notification>(),
 };
 
 // Helper functions

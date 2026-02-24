@@ -1,11 +1,13 @@
-import { useNavigate, useLocation, Link } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { Search, Settings, Bell, User, Menu, CheckSquare } from "lucide-react";
+import { Search, Menu, CheckSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useTaskStore } from "@/stores/taskStore";
 import { useUIStore } from "@/stores/uiStore";
 import { BatchActionBar } from "@/components/task/BatchActionBar";
+import { NotificationBell } from "@/components/notifications/NotificationBell";
+import { UserMenu } from "@/components/user/UserMenu";
 
 export function Header() {
   const navigate = useNavigate();
@@ -82,9 +84,6 @@ export function Header() {
           <Search className="h-5 w-5" />
         </Button>
 
-        <Button variant="ghost" size="icon" className="hidden sm:flex">
-          <Bell className="h-5 w-5" />
-        </Button>
         {showBatchButton && (
           <Button
             variant={isBatchMode ? "secondary" : "ghost"}
@@ -96,14 +95,8 @@ export function Header() {
             <CheckSquare className="h-5 w-5" />
           </Button>
         )}
-        <Link to="/settings">
-          <Button variant="ghost" size="icon" className="hidden sm:flex">
-            <Settings className="h-5 w-5" />
-          </Button>
-        </Link>
-        <Button variant="ghost" size="icon" className="hidden sm:flex">
-          <User className="h-5 w-5" />
-        </Button>
+        <NotificationBell />
+        <UserMenu />
       </div>
     </header>
     </>
