@@ -170,7 +170,7 @@ export function SearchPage() {
 
       {/* Desktop Task Detail */}
       {!isMobile && selectedTaskId && (
-        <div className="w-96 animate-slide-in hidden lg:block">
+        <div className="w-96 animate-slide-in hidden lg:flex flex-col bg-card border rounded-2xl p-4 shadow-sm">
           <TaskDetail
             task={tasks.find((t) => t.id === selectedTaskId) || null}
             onClose={() => selectTask(null)}

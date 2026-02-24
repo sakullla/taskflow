@@ -71,19 +71,19 @@ export function MobileTaskDetail() {
               damping: 25,
               stiffness: 250,
             }}
-            className="fixed inset-x-0 bottom-0 z-50 flex flex-col bg-background border-t rounded-t-[2rem] lg:hidden"
-            style={{ 
-              height: "90dvh",
-              boxShadow: "0 -4px 24px rgba(0,0,0,0.1)",
+            className="fixed inset-x-0 bottom-0 z-50 flex flex-col bg-background border-t rounded-t-[1.5rem] lg:hidden"
+            style={{
+              height: "92dvh",
+              boxShadow: "0 -8px 32px rgba(0,0,0,0.12)",
             }}
           >
             {/* Drag Handle */}
-            <div className="w-full flex justify-center py-4 cursor-grab active:cursor-grabbing shrink-0">
-              <div className="w-12 h-1.5 bg-muted-foreground/30 rounded-full" />
+            <div className="w-full flex justify-center pt-3 pb-2 cursor-grab active:cursor-grabbing shrink-0">
+              <div className="w-10 h-1 bg-muted-foreground/25 rounded-full" />
             </div>
 
-            {/* Scrollable Content */}
-            <div className="flex-1 overflow-auto px-4 pb-[env(safe-area-inset-bottom)]">
+            {/* Content - TaskDetail manages its own scroll and layout */}
+            <div className="flex-1 min-h-0 px-4 pb-[env(safe-area-inset-bottom)]">
               <TaskDetail task={task} onClose={handleClose} />
             </div>
           </motion.div>

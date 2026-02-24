@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Sun, Plus, Sun as SunIcon } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
+import { Sun, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { TaskSplitList } from "@/components/task/TaskSplitList";
@@ -33,12 +32,10 @@ export function MyDayPage() {
   useEffect(() => {
     setCurrentView("myDay");
 
-    // Load lists and tasks from API
     const loadData = async () => {
       try {
         setIsLoading(true);
 
-        // Load lists
         interface ListsResponse {
           success: boolean;
           data: Array<{
@@ -60,7 +57,6 @@ export function MyDayPage() {
           setLists(listsRes.data);
         }
 
-        // Load My Day tasks
         interface MyDayResponse {
           success: boolean;
           data: {
@@ -126,10 +122,8 @@ export function MyDayPage() {
 
   const handleAddTask = async () => {
     if (!newTaskTitle.trim()) return;
-
     setIsAdding(true);
     try {
-      // Get default list ID if available
       const defaultList = lists.find((l) => l.isDefault) || lists[0];
 
       interface CreateTaskResponse {
@@ -160,7 +154,6 @@ export function MyDayPage() {
         title: newTaskTitle.trim(),
       };
 
-      // Only add listId if we have a valid one
       if (defaultList?.id) {
         payload.listId = defaultList.id;
       }
@@ -179,10 +172,8 @@ export function MyDayPage() {
           })),
         };
 
-        // Add task to store
         addTask(newTask);
 
-        // Also add to My Day
         try {
           await api.post("/my-day", { taskId: newTask.id });
         } catch (error) {
@@ -198,48 +189,43 @@ export function MyDayPage() {
     }
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter") {
-      handleAddTask();
-    }
-  };
-
   return (
-    <div className="flex gap-6 h-full">
-      <div className="flex-1 min-w-0">
-        <div className="mb-6">
-          <div className="flex items-center gap-3 mb-2">
-            <Sun className="h-8 w-8 text-amber-500" />
-            <h1 className="text-2xl font-bold">{t("navigation:myDay")}</h1>
+    <div className="flex gap-5 h-full">
+      {/* Main column */}
+      <div className="flex-1 min-w-0 flex flex-col">
+        {/* Page header */}
+        <div className="mb-5">
+          <div className="flex items-center gap-2 mb-0.5">
+            <Sun className="h-5 w-5 text-amber-500" />
+            <h1 className="text-xl font-bold">{t("navigation:myDay")}</h1>
           </div>
-          <p className="text-muted-foreground">{formatDateFull(new Date())}</p>
+          <p className="text-xs text-muted-foreground pl-7">{formatDateFull(new Date())}</p>
         </div>
 
-        <Card className="mb-4">
-          <CardContent className="p-3">
-            <div className="flex items-center gap-2">
-              <Input
-                placeholder={t("tasks:addPlaceholder")}
-                className="flex-1 border-0 focus-visible:ring-0"
-                value={newTaskTitle}
-                onChange={(e) => setNewTaskTitle(e.target.value)}
-                onKeyDown={handleKeyDown}
-                disabled={isAdding || isLoading}
-                data-testid="quick-add-input"
-              />
-              <Button
-                size="sm"
-                className="shrink-0"
-                onClick={handleAddTask}
-                disabled={!newTaskTitle.trim() || isAdding || isLoading}
-                data-testid="quick-add-submit"
-              >
-                <Plus className="h-4 w-4 mr-1" />
-                {t("common:actions.add")}
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
+        {/* Add task input */}
+        <div className="flex items-center gap-3 mb-4 px-4 py-2.5 rounded-xl border border-dashed border-border/80 bg-card/50 hover:border-primary/40 transition-colors focus-within:border-primary/60 focus-within:bg-card">
+          <Plus className="h-4 w-4 text-muted-foreground/50 shrink-0" />
+          <Input
+            placeholder={t("tasks:addPlaceholder")}
+            className="flex-1 border-0 bg-transparent focus-visible:ring-0 px-0 text-sm shadow-none h-auto py-0 placeholder:text-muted-foreground/40"
+            value={newTaskTitle}
+            onChange={(e) => setNewTaskTitle(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && handleAddTask()}
+            disabled={isAdding || isLoading}
+            data-testid="quick-add-input"
+          />
+          {newTaskTitle.trim() && (
+            <Button
+              size="sm"
+              className="shrink-0 h-7 px-3 text-xs rounded-lg"
+              onClick={handleAddTask}
+              disabled={isAdding || isLoading}
+              data-testid="quick-add-submit"
+            >
+              {t("common:actions.add")}
+            </Button>
+          )}
+        </div>
 
         {isLoading ? (
           <TaskListSkeleton />
@@ -251,7 +237,7 @@ export function MyDayPage() {
             onSelect={selectTask}
             emptyTitle={t("tasks:emptyMyDayTitle") || "No tasks for today"}
             emptyDescription={t("tasks:emptyMyDayDesc") || "Add tasks to My Day to focus on what matters"}
-            emptyIcon={SunIcon}
+            emptyIcon={Sun}
             completedTitle={t("tasks:completed") || "Completed"}
             noPendingText={t("common:empty.noPending") || "No pending tasks"}
           />
@@ -260,7 +246,7 @@ export function MyDayPage() {
 
       {/* Desktop Task Detail */}
       {!isMobile && selectedTaskId && (
-        <div className="w-96 animate-slide-in hidden lg:block">
+        <div className="w-80 xl:w-96 animate-slide-in hidden lg:flex flex-col bg-card border rounded-2xl p-5 shadow-sm shrink-0 self-start sticky top-6">
           <TaskDetail
             task={tasks.find((t) => t.id === selectedTaskId) || null}
             onClose={() => selectTask(null)}

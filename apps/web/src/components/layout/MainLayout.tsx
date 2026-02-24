@@ -29,7 +29,7 @@ export function MainLayout() {
   }, [setIsMobile]);
 
   return (
-    <div className="flex h-screen bg-background overflow-hidden">
+    <div className="flex h-screen bg-muted/20 overflow-hidden">
       {/* Desktop Sidebar */}
       <div className="hidden lg:block">
         <Sidebar />
@@ -52,7 +52,7 @@ export function MainLayout() {
                 duration: 0.2,
                 ease: [0.4, 0, 0.2, 1],
               }}
-              className="h-full"
+              className="h-full max-w-5xl mx-auto"
             >
               <Outlet />
             </motion.div>

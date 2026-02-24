@@ -32,7 +32,7 @@ export function Header() {
       case "search":
         return t("search");
       default:
-        return "Todo";
+        return "TaskFlow";
     }
   };
 
@@ -46,64 +46,64 @@ export function Header() {
   return (
     <>
       <BatchActionBar />
-      <header className="h-14 border-b bg-card flex items-center justify-between px-4 lg:px-6">
-      <div className="flex items-center gap-3">
-        {/* Mobile Lists Button */}
-        <Button
-          variant="ghost"
-          size="icon"
-          className="lg:hidden"
-          onClick={toggleMobileSidebar}
-          aria-label={t("lists")}
-        >
-          <ListIcon className="h-5 w-5" />
-        </Button>
+      <header className="h-14 border-b bg-card/95 backdrop-blur-sm flex items-center justify-between px-4 lg:px-5 sticky top-0 z-30">
+        <div className="flex items-center gap-2.5">
+          {/* Mobile Lists Button */}
+          <Button
+            variant="ghost"
+            size="icon"
+            className="lg:hidden h-9 w-9 rounded-xl"
+            onClick={toggleMobileSidebar}
+            aria-label={t("lists")}
+          >
+            <ListIcon className="h-5 w-5" />
+          </Button>
 
-        <h2 className="text-lg font-bold tracking-tight">{getTitle()}</h2>
-      </div>
-
-      <div className="flex items-center gap-1 sm:gap-4">
-        {/* Search - Hidden on small mobile */}
-        <div className="relative hidden sm:block w-48 lg:w-64">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder={t("search")}
-            className="pl-9 h-9 cursor-pointer"
-            onClick={handleSearchClick}
-            readOnly
-            value={isSearchPage ? "" : undefined}
-            aria-label={t("search")}
-          />
+          <h2 className="text-base font-semibold tracking-tight">{getTitle()}</h2>
         </div>
 
-        {/* Mobile Search Button */}
-        <Button
-          variant="ghost"
-          size="icon"
-          className="sm:hidden"
-          onClick={handleSearchClick}
-          aria-label={t("search")}
-        >
-          <Search className="h-5 w-5" />
-        </Button>
+        <div className="flex items-center gap-1">
+          {/* Search - Hidden on small mobile */}
+          <div className="relative hidden sm:block w-44 lg:w-60">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+            <Input
+              placeholder={t("search")}
+              className="pl-8 h-8 text-sm rounded-xl bg-muted/60 border-0 focus-visible:ring-1 cursor-pointer"
+              onClick={handleSearchClick}
+              readOnly
+              value={isSearchPage ? "" : undefined}
+              aria-label={t("search")}
+            />
+          </div>
 
-        {showBatchButton && (
+          {/* Mobile Search Button */}
           <Button
-            variant={isBatchMode ? "secondary" : "ghost"}
+            variant="ghost"
             size="icon"
-            className="hidden sm:flex"
-            onClick={toggleBatchMode}
-            title={t("batchMode") || "Batch select"}
-            aria-label={t("batchMode") || "Batch select"}
-            aria-pressed={isBatchMode}
+            className="sm:hidden h-9 w-9 rounded-xl"
+            onClick={handleSearchClick}
+            aria-label={t("search")}
           >
-            <CheckSquare className="h-5 w-5" />
+            <Search className="h-4.5 w-4.5" />
           </Button>
-        )}
-        <NotificationBell />
-        <UserMenu />
-      </div>
-    </header>
+
+          {showBatchButton && (
+            <Button
+              variant={isBatchMode ? "secondary" : "ghost"}
+              size="icon"
+              className="hidden sm:flex h-9 w-9 rounded-xl"
+              onClick={toggleBatchMode}
+              title={t("batchMode") || "Batch select"}
+              aria-label={t("batchMode") || "Batch select"}
+              aria-pressed={isBatchMode}
+            >
+              <CheckSquare className="h-4.5 w-4.5" />
+            </Button>
+          )}
+          <NotificationBell />
+          <UserMenu />
+        </div>
+      </header>
     </>
   );
 }

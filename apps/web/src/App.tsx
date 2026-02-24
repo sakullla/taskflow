@@ -93,6 +93,20 @@ function App() {
   const { token, user, setUser, logout } = useAuthStore();
 
   useEffect(() => {
+    // Initialize theme and accent on startup
+    const savedTheme = localStorage.getItem("theme") || "system";
+    const savedAccent = localStorage.getItem("accent-theme") || "blue";
+    const root = document.documentElement;
+    if (savedTheme === "system") {
+      root.classList.toggle("dark", window.matchMedia("(prefers-color-scheme: dark)").matches);
+    } else {
+      root.classList.toggle("dark", savedTheme === "dark");
+    }
+    ["blue", "purple", "green", "orange", "rose"].forEach((t) => root.classList.remove(`theme-${t}`));
+    root.classList.add(`theme-${savedAccent}`);
+  }, []);
+
+  useEffect(() => {
     if (!token || user) {
       return;
     }

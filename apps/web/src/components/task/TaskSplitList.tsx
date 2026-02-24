@@ -2,7 +2,6 @@ import { useState } from "react";
 import { ChevronDown, ChevronRight } from "lucide-react";
 import { TaskList } from "./TaskList";
 import { EmptyState } from "@/components/ui/empty-state";
-import { cn } from "@/lib/utils";
 import type { Task } from "@/types";
 import type { LucideIcon } from "lucide-react";
 
@@ -56,33 +55,26 @@ export function TaskSplitList({
       )}
 
       {completedTasks.length > 0 && (
-        <div className="rounded-lg border bg-card">
+        <div>
           <button
             type="button"
-            className={cn(
-              "w-full px-3 py-2 flex items-center justify-between text-sm font-medium hover:bg-accent/50 transition-colors",
-              isCompletedExpanded && "border-b"
-            )}
+            className="flex items-center gap-2 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors mb-2 px-1"
             onClick={() => setIsCompletedExpanded((prev) => !prev)}
           >
-            <span>
-              {completedTitle} ({completedTasks.length})
-            </span>
             {isCompletedExpanded ? (
-              <ChevronDown className="h-4 w-4" />
+              <ChevronDown className="h-3.5 w-3.5" />
             ) : (
-              <ChevronRight className="h-4 w-4" />
+              <ChevronRight className="h-3.5 w-3.5" />
             )}
+            {completedTitle} ({completedTasks.length})
           </button>
 
           {isCompletedExpanded && (
-            <div className="p-2">
-              <TaskList
-                tasks={completedTasks}
-                selectedId={selectedId}
-                onSelect={onSelect}
-              />
-            </div>
+            <TaskList
+              tasks={completedTasks}
+              selectedId={selectedId}
+              onSelect={onSelect}
+            />
           )}
         </div>
       )}

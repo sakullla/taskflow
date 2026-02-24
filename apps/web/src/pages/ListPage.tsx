@@ -1,8 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { List, Plus, List as ListIcon } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
+import { Plus, List as ListIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { TaskSplitList } from "@/components/task/TaskSplitList";
@@ -89,43 +88,39 @@ export function ListPage() {
   };
 
   return (
-    <div className="flex gap-6 h-full">
-      <div className="flex-1 min-w-0">
-        <div className="mb-6">
-          <div className="flex items-center gap-3 mb-2">
+    <div className="flex gap-5 h-full">
+      <div className="flex-1 min-w-0 flex flex-col">
+        <div className="mb-5">
+          <div className="flex items-center gap-2 mb-0.5">
             <div
-              className="w-8 h-8 rounded-lg flex items-center justify-center"
+              className="w-5 h-5 rounded-full shrink-0"
               style={{ backgroundColor: list?.color || "#3b82f6" }}
-            >
-              <List className="h-5 w-5 text-white" />
-            </div>
-            <h1 className="text-2xl font-bold">{list?.name || t("lists")}</h1>
+            />
+            <h1 className="text-xl font-bold">{list?.name || t("lists")}</h1>
           </div>
         </div>
 
-        <Card className="mb-4">
-          <CardContent className="p-3">
-            <div className="flex items-center gap-2">
-              <Input
-                placeholder={t("tasks:addPlaceholder")}
-                className="flex-1 border-0 focus-visible:ring-0"
-                value={newTaskTitle}
-                onChange={(e) => setNewTaskTitle(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && handleAddTask()}
-                disabled={isAdding || isLoading}
-              />
-              <Button
-                size="sm"
-                className="shrink-0"
-                onClick={handleAddTask}
-                disabled={!newTaskTitle.trim() || isAdding || isLoading}
-              >
-                <Plus className="h-4 w-4 mr-1" />
-                {t("common:actions.add")}
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
+        <div className="flex items-center gap-3 mb-4 px-4 py-2.5 rounded-xl border border-dashed border-border/80 bg-card/50 hover:border-primary/40 transition-colors focus-within:border-primary/60 focus-within:bg-card">
+          <Plus className="h-4 w-4 text-muted-foreground/50 shrink-0" />
+          <Input
+            placeholder={t("tasks:addPlaceholder")}
+            className="flex-1 border-0 bg-transparent focus-visible:ring-0 px-0 text-sm shadow-none h-auto py-0 placeholder:text-muted-foreground/40"
+            value={newTaskTitle}
+            onChange={(e) => setNewTaskTitle(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && handleAddTask()}
+            disabled={isAdding || isLoading}
+          />
+          {newTaskTitle.trim() && (
+            <Button
+              size="sm"
+              className="shrink-0 h-7 px-3 text-xs rounded-lg"
+              onClick={handleAddTask}
+              disabled={isAdding || isLoading}
+            >
+              {t("common:actions.add")}
+            </Button>
+          )}
+        </div>
 
         {isLoading ? (
           <TaskListSkeleton />
@@ -146,7 +141,7 @@ export function ListPage() {
 
       {/* Desktop Task Detail */}
       {!isMobile && selectedTaskId && (
-        <div className="w-96 animate-slide-in hidden lg:block">
+        <div className="w-80 xl:w-96 animate-slide-in hidden lg:flex flex-col bg-card border rounded-2xl p-5 shadow-sm shrink-0 self-start sticky top-6">
           <TaskDetail
             task={tasks.find((t) => t.id === selectedTaskId) || null}
             onClose={() => selectTask(null)}

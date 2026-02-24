@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Settings, Moon, Sun, Globe, User, Bell, Shield } from "lucide-react";
+import { Settings, Moon, Sun, Globe, User, Bell, Shield, Monitor, Check } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
@@ -10,11 +10,21 @@ import { api } from "@/lib/api/client";
 import { useTaskStore } from "@/stores/taskStore";
 import { useAuthStore } from "@/stores/authStore";
 import { toast } from "@/components/ui/toast";
+import { cn } from "@/lib/utils";
 import type { User as UserType } from "@/types";
 
 type Theme = "light" | "dark" | "system";
+type AccentTheme = "blue" | "purple" | "green" | "orange" | "rose";
 type Language = "en" | "zh-CN";
 type Role = "admin" | "user";
+
+const ACCENT_THEMES: { id: AccentTheme; label: string; color: string }[] = [
+  { id: "blue",   label: "Ocean",   color: "#3b82f6" },
+  { id: "purple", label: "Violet",  color: "#9333ea" },
+  { id: "green",  label: "Forest",  color: "#10b981" },
+  { id: "orange", label: "Sunset",  color: "#f97316" },
+  { id: "rose",   label: "Rose",    color: "#f43f5e" },
+];
 
 interface ApiResponse<T> {
   success: boolean;
@@ -27,6 +37,7 @@ export function SettingsPage() {
   const { user, setUser } = useAuthStore();
 
   const [currentTheme, setCurrentTheme] = useState<Theme>("system");
+  const [accentTheme, setAccentTheme] = useState<AccentTheme>("blue");
   const [profileName, setProfileName] = useState("");
   const [dueDateReminders, setDueDateReminders] = useState(true);
   const [weeklyDigest, setWeeklyDigest] = useState(false);
@@ -53,8 +64,11 @@ export function SettingsPage() {
   useEffect(() => {
     setCurrentView("settings" as never);
     const savedTheme = (localStorage.getItem("theme") as Theme) || "system";
+    const savedAccent = (localStorage.getItem("accent-theme") as AccentTheme) || "blue";
     setCurrentTheme(savedTheme);
+    setAccentTheme(savedAccent);
     applyTheme(savedTheme);
+    applyAccentTheme(savedAccent);
     void loadMe();
   }, [setCurrentView]);
 
@@ -184,6 +198,18 @@ export function SettingsPage() {
     root.classList.toggle("dark", theme === "dark");
   };
 
+  const handleAccentThemeChange = (accent: AccentTheme) => {
+    localStorage.setItem("accent-theme", accent);
+    setAccentTheme(accent);
+    applyAccentTheme(accent);
+  };
+
+  const applyAccentTheme = (accent: AccentTheme) => {
+    const root = document.documentElement;
+    ACCENT_THEMES.forEach((t) => root.classList.remove(`theme-${t.id}`));
+    root.classList.add(`theme-${accent}`);
+  };
+
   const handleLanguageChange = async (lang: Language) => {
     i18n.changeLanguage(lang);
     localStorage.setItem("i18nextLng", lang);
@@ -291,35 +317,68 @@ export function SettingsPage() {
               <CardTitle>{t("settings:appearance") || "Appearance"}</CardTitle>
             </div>
           </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-3 gap-3">
-              <Button
-                variant={currentTheme === "light" ? "default" : "outline"}
-                className="flex-col h-auto py-4 gap-2"
-                onClick={() => handleThemeChange("light")}
-              >
-                <Sun className="h-6 w-6" />
-                <span className="text-xs">{t("settings:light") || "Light"}</span>
-              </Button>
-              <Button
-                variant={currentTheme === "dark" ? "default" : "outline"}
-                className="flex-col h-auto py-4 gap-2"
-                onClick={() => handleThemeChange("dark")}
-              >
-                <Moon className="h-6 w-6" />
-                <span className="text-xs">{t("settings:dark") || "Dark"}</span>
-              </Button>
-              <Button
-                variant={currentTheme === "system" ? "default" : "outline"}
-                className="flex-col h-auto py-4 gap-2"
-                onClick={() => handleThemeChange("system")}
-              >
-                <div className="flex">
-                  <Sun className="h-5 w-5" />
-                  <Moon className="h-5 w-5 -ml-1" />
-                </div>
-                <span className="text-xs">{t("settings:system") || "System"}</span>
-              </Button>
+          <CardContent className="space-y-5">
+            {/* Mode selector */}
+            <div>
+              <p className="text-sm font-medium mb-3 text-muted-foreground">{t("settings:colorMode") || "Color mode"}</p>
+              <div className="grid grid-cols-3 gap-2">
+                {[
+                  { id: "light" as Theme, icon: Sun, label: t("settings:light") || "Light" },
+                  { id: "dark"  as Theme, icon: Moon, label: t("settings:dark") || "Dark" },
+                  { id: "system" as Theme, icon: Monitor, label: t("settings:system") || "System" },
+                ].map(({ id, icon: Icon, label }) => (
+                  <button
+                    key={id}
+                    type="button"
+                    onClick={() => handleThemeChange(id)}
+                    className={cn(
+                      "relative flex flex-col items-center gap-2 rounded-xl border-2 py-4 px-2 text-xs font-medium transition-all",
+                      currentTheme === id
+                        ? "border-primary bg-primary/5 text-primary"
+                        : "border-border bg-muted/30 text-muted-foreground hover:border-primary/40 hover:text-foreground"
+                    )}
+                  >
+                    <Icon className="h-5 w-5" />
+                    {label}
+                    {currentTheme === id && (
+                      <span className="absolute top-1.5 right-1.5 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-primary text-primary-foreground">
+                        <Check className="h-2 w-2 stroke-[3]" />
+                      </span>
+                    )}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Accent color picker */}
+            <div>
+              <p className="text-sm font-medium mb-3 text-muted-foreground">{t("settings:accentColor") || "Accent color"}</p>
+              <div className="flex gap-3">
+                {ACCENT_THEMES.map(({ id, label, color }) => (
+                  <button
+                    key={id}
+                    type="button"
+                    title={label}
+                    onClick={() => handleAccentThemeChange(id)}
+                    className="group flex flex-col items-center gap-1.5"
+                  >
+                    <span
+                      className={cn(
+                        "flex h-9 w-9 items-center justify-center rounded-full border-2 transition-all",
+                        accentTheme === id
+                          ? "border-foreground scale-110 shadow-md"
+                          : "border-transparent hover:scale-105"
+                      )}
+                      style={{ backgroundColor: color }}
+                    >
+                      {accentTheme === id && <Check className="h-4 w-4 stroke-[3] text-white" />}
+                    </span>
+                    <span className="text-[10px] text-muted-foreground group-hover:text-foreground transition-colors">
+                      {label}
+                    </span>
+                  </button>
+                ))}
+              </div>
             </div>
           </CardContent>
         </Card>
