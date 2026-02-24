@@ -1,3 +1,4 @@
+import { motion, AnimatePresence } from "framer-motion";
 import { TaskDetail } from "./TaskDetail";
 import { useTaskStore } from "@/stores/taskStore";
 import { useUIStore } from "@/stores/uiStore";
@@ -25,8 +26,6 @@ export function MobileTaskDetail() {
     }
   }, [isMobile, selectedTaskId]);
 
-  if (!isMobile || !isMobileTaskDetailOpen || !selectedTaskId) return null;
-
   const task = tasks.find((t) => t.id === selectedTaskId) || null;
 
   const handleClose = () => {
@@ -35,10 +34,24 @@ export function MobileTaskDetail() {
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-background lg:hidden animate-slide-in">
-      <div className="h-full overflow-auto">
-        <TaskDetail task={task} onClose={handleClose} />
-      </div>
-    </div>
+    <AnimatePresence>
+      {isMobile && isMobileTaskDetailOpen && selectedTaskId && (
+        <motion.div
+          initial={{ opacity: 0, x: "100%" }}
+          animate={{ opacity: 1, x: 0 }}
+          exit={{ opacity: 0, x: "100%" }}
+          transition={{
+            type: "spring",
+            damping: 30,
+            stiffness: 300,
+          }}
+          className="fixed inset-0 z-50 bg-background lg:hidden"
+        >
+          <div className="h-full overflow-auto">
+            <TaskDetail task={task} onClose={handleClose} />
+          </div>
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 }

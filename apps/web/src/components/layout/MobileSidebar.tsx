@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import { motion, AnimatePresence } from "framer-motion";
 import { Sun, Star, Calendar, CheckSquare, Plus, Trash2, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -107,18 +108,33 @@ export function MobileSidebar() {
     }
   };
 
-  if (!isMobileSidebarOpen) return null;
-
   return (
-    <>
-      {/* Overlay */}
-      <div className="fixed inset-0 bg-black/50 z-40 lg:hidden" />
+    <AnimatePresence>
+      {isMobileSidebarOpen && (
+        <>
+          {/* Overlay */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+            onClick={closeMobileSidebar}
+          />
 
-      {/* Sidebar */}
-      <div
-        ref={sidebarRef}
-        className="fixed inset-y-0 left-0 w-72 bg-card border-r z-50 flex flex-col lg:hidden animate-slide-in-left"
-      >
+          {/* Sidebar */}
+          <motion.div
+            ref={sidebarRef}
+            initial={{ x: "-100%" }}
+            animate={{ x: 0 }}
+            exit={{ x: "-100%" }}
+            transition={{
+              type: "spring",
+              damping: 30,
+              stiffness: 300,
+            }}
+            className="fixed inset-y-0 left-0 w-72 bg-card border-r z-50 flex flex-col lg:hidden"
+          >
         <div className="p-4 border-b flex items-center justify-between">
           <h1 className="text-xl font-bold text-primary">Todo</h1>
           <Button variant="ghost" size="icon" onClick={closeMobileSidebar}>
@@ -256,7 +272,9 @@ export function MobileSidebar() {
             </div>
           </div>
         </nav>
-      </div>
-    </>
+      </motion.div>
+        </>
+      )}
+    </AnimatePresence>
   );
 }
