@@ -1,44 +1,241 @@
-# To-Do List (Microsoft To Do style)
+# Todo App
 
-A checklist/task-first application scaffold focused on lists, tasks, and My Day.
+A Microsoft To Do-style task management application with a modern tech stack.
 
-## Structure
+![Version](https://img.shields.io/badge/version-2.0.0-blue)
+![License](https://img.shields.io/badge/license-MIT-green)
 
-- `apps/web`: React + TypeScript web app (Vite scaffold)
-- `apps/api`: Node + TypeScript API service scaffold
-- `docs/DEVELOPMENT_PLAN.md`: phased development plan
-- `TODO.md`: execution checklist for the first build iteration
-- `agents/*.agent.md`: multi-agent role definitions
-- `docs/AGENT_RUNBOOK.md`: orchestration rules and handoff contract
-- `docs/AGENT_TASK_BOARD.md`: auto-generated task queue by agent
+## Features
 
-## Quick start
+### Core Features
+- ✅ Task management with title, notes, due dates, and priorities
+- ✅ Subtasks (steps) support
+- ✅ Task lists with customizable colors
+- ✅ "My Day" daily focus view
+- ✅ Important tasks view
+- ✅ Planned tasks (calendar) view
+- ✅ Search functionality
+- ✅ Batch operations (complete, delete, move)
 
-1. Install dependencies:
-   - `npm install`
-2. Run local testing (Builds and runs both API and web preview):
-   - `npm run deploy:mvp:local`
-3. Build agent board:
-   - `npm run agent:dispatch`
+### User Experience
+- 🎨 Light/Dark theme support
+- 🌐 Internationalization (English/Chinese)
+- 📱 Mobile responsive design
+- ⚡ Smooth animations and transitions
+- 🦴 Skeleton loading screens
+- 💬 Toast notifications
+- 🎯 Keyboard shortcuts
 
-## Development (Optional)
+### Technical
+- 🔐 JWT authentication (demo mode)
+- 💾 SQLite database with Prisma ORM
+- 🔄 Optimistic UI updates
+- 📦 Docker deployment ready
+- 🧪 E2E tests with Playwright
 
-- Run web:
-   - `npm run dev:web`
-- Run api:
-   - `npm run dev:api`
+## Tech Stack
 
-## Environment
+### Frontend
+- React 18 + TypeScript 5
+- Vite (build tool)
+- Tailwind CSS 4 + shadcn/ui
+- Zustand (state management)
+- React Query (data fetching)
+- Framer Motion (animations)
+- i18next (internationalization)
 
-- Copy `.env.example` to `.env` and adjust values.
-- API defaults: `PORT=4000`, `TODO_DB_PATH=data/todo.sqlite`
-- Web default: `VITE_API_BASE_URL=http://localhost:4000`
+### Backend
+- Fastify 5 + TypeScript
+- Prisma ORM
+- SQLite database
+- Zod (validation)
 
-## Local MVP deploy
+### DevOps
+- Docker + Docker Compose
+- Nginx reverse proxy
+- Playwright (E2E testing)
 
-- Run `npm run deploy:mvp:local` to build and launch API + web preview.
-- See `docs/DEPLOYMENT.md` for deployment and health-check steps.
+## Quick Start
 
-## Current scope
+### Prerequisites
+- Node.js >= 20.0.0
+- npm >= 10.0.0
 
-This repository is initialized for MVP delivery with multi-agent execution support.
+### Installation
+
+```bash
+# Clone repository
+git clone <repository-url>
+cd to-do-list
+
+# Install dependencies
+npm install
+
+# Set up environment
+cp .env.example .env
+
+# Start development server
+npm run dev
+```
+
+The application will be available at:
+- Frontend: http://localhost:5173
+- API: http://localhost:4000
+
+### Build for Production
+
+```bash
+# Build both frontend and backend
+npm run build
+
+# Start production server
+npm run start
+```
+
+### Docker Deployment
+
+```bash
+# Build and start with Docker Compose
+npm run docker:up
+
+# View logs
+npm run docker:logs
+
+# Stop services
+npm run docker:down
+```
+
+## Development
+
+### Available Scripts
+
+```bash
+# Development
+npm run dev          # Start both web and API in dev mode
+npm run dev:web      # Start frontend only
+npm run dev:api      # Start backend only
+
+# Building
+npm run build        # Build for production
+npm run build:web    # Build frontend only
+npm run build:api    # Build backend only
+
+# Testing
+npm run test         # Run all tests
+npx playwright test  # Run E2E tests
+
+# Database
+npm run db:migrate   # Run database migrations
+npm run db:generate  # Generate Prisma client
+npm run db:seed      # Seed database
+
+# Backup
+npm run backup       # Create database backup
+
+# Docker
+npm run docker:build # Build Docker images
+npm run docker:up    # Start Docker containers
+npm run docker:down  # Stop Docker containers
+```
+
+### Project Structure
+
+```
+.
+├── apps/
+│   ├── web/              # React frontend
+│   │   ├── src/
+│   │   │   ├── components/   # React components
+│   │   │   ├── pages/        # Page components
+│   │   │   ├── stores/       # Zustand stores
+│   │   │   ├── locales/      # i18n translations
+│   │   │   └── lib/          # Utilities
+│   │   └── package.json
+│   └── api/              # Fastify backend
+│       ├── src/
+│       │   ├── modules/      # Feature modules
+│       │   ├── config/       # Configuration
+│       │   └── shared/       # Shared utilities
+│       └── prisma/
+├── e2e/                  # Playwright E2E tests
+├── scripts/              # Automation scripts
+├── docker/               # Docker configuration
+└── docs/                 # Documentation
+```
+
+## Testing
+
+### E2E Tests
+
+```bash
+# Run all E2E tests
+npx playwright test
+
+# Run with UI mode
+npx playwright test --ui
+
+# Run specific test file
+npx playwright test tasks.spec.ts
+```
+
+Test coverage includes:
+- Task management (create, complete, delete)
+- List management
+- Navigation
+- Search functionality
+- Settings (theme, language)
+- Mobile responsiveness
+- Batch operations
+
+## Deployment
+
+### Environment Variables
+
+Copy `.env.example` to `.env` and configure:
+
+```env
+# API
+JWT_SECRET=your-jwt-secret
+DATABASE_URL=file:./dev.db
+CORS_ORIGIN=http://localhost:5173
+
+# Web
+VITE_API_BASE_URL=http://localhost:4000
+```
+
+### Production Checklist
+
+- [ ] Set strong `JWT_SECRET`
+- [ ] Configure `CORS_ORIGIN` for your domain
+- [ ] Set up SSL/TLS certificates
+- [ ] Configure database backups
+- [ ] Run database migrations
+- [ ] Build and test Docker images
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit changes (`git commit -m 'feat: add amazing feature'`)
+4. Push to branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+### Commit Convention
+
+- `feat:` New feature
+- `fix:` Bug fix
+- `docs:` Documentation
+- `style:` Code style (formatting)
+- `refactor:` Code refactoring
+- `test:` Tests
+- `chore:` Build/process changes
+
+## License
+
+MIT License - see LICENSE file for details
+
+## Acknowledgments
+
+- Design inspired by Microsoft To Do
+- Icons by Lucide
+- UI components by shadcn/ui
