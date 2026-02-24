@@ -1,3 +1,5 @@
+# syntax=docker/dockerfile:1.7
+
 # Multi-stage build for Todo App
 # Single image containing both API and Web
 
@@ -6,40 +8,44 @@
 # ============================================
 FROM node:20-alpine AS web-builder
 
-WORKDIR /app/web
+WORKDIR /app
 
-# Copy web package files
-COPY apps/web/package*.json ./
-RUN npm install
+# Copy lockfile and workspace manifests first to maximize cache hits.
+COPY package.json package-lock.json ./
+COPY apps/api/package.json ./apps/api/package.json
+COPY apps/web/package.json ./apps/web/package.json
 
-# Copy web source
-COPY apps/web/ ./
+RUN --mount=type=cache,target=/root/.npm \
+  npm ci --workspace apps/web
 
-# Build web
-RUN npm run build
+# Copy web source and build
+COPY apps/web ./apps/web
+RUN npm --workspace apps/web run build
 
 # ============================================
 # Stage 2: Build API
 # ============================================
 FROM node:20-alpine AS api-builder
 
-# Install build dependencies for native modules
+# Install build dependencies for native modules (e.g. better-sqlite3)
 RUN apk add --no-cache python3 make g++
 
-WORKDIR /app/api
+WORKDIR /app
 
-# Copy API package files
-COPY apps/api/package*.json ./
-RUN npm install
+# Copy lockfile and workspace manifests first to maximize cache hits.
+COPY package.json package-lock.json ./
+COPY apps/api/package.json ./apps/api/package.json
+COPY apps/web/package.json ./apps/web/package.json
 
-# Copy API source
-COPY apps/api/ ./
+RUN --mount=type=cache,target=/root/.npm \
+  npm ci --workspace apps/api
 
-# Generate Prisma client
-RUN npx prisma generate
+# Workspace symlinks are not needed at runtime.
+RUN rm -f node_modules/api node_modules/web || true
 
-# Build API
-RUN npm run build
+# Copy API source and build
+COPY apps/api ./apps/api
+RUN npm --workspace apps/api run build
 
 # ============================================
 # Stage 3: Production
@@ -55,24 +61,26 @@ WORKDIR /app
 # Create data directory for SQLite
 RUN mkdir -p /app/data
 
-# Copy API production files
-COPY --from=api-builder /app/api/dist ./api/dist
-COPY --from=api-builder /app/api/node_modules ./api/node_modules
-COPY --from=api-builder /app/api/package*.json ./api/
-COPY --from=api-builder /app/api/prisma ./api/prisma
+# Copy API runtime files
+COPY --from=api-builder /app/node_modules ./node_modules
+COPY --from=api-builder /app/apps/api/package.json ./api/package.json
+COPY --from=api-builder /app/apps/api/prisma ./api/prisma
+COPY --from=api-builder /app/apps/api/prisma.config.ts ./api/prisma.config.ts
+COPY --from=api-builder /app/apps/api/scripts ./api/scripts
+COPY --from=api-builder /app/apps/api/dist ./api/dist
 
 # Copy web dist
-COPY --from=web-builder /app/web/dist ./web/dist
+COPY --from=web-builder /app/apps/web/dist ./web/dist
 
 # Copy startup script
 COPY scripts/docker-start.sh /app/start.sh
 RUN chmod +x /app/start.sh
 
 # Environment variables
-ENV NODE_ENV=production
-ENV PORT=3000
-ENV DATABASE_URL=file:/app/data/todo.db
-ENV DB_TYPE=sqlite
+ENV NODE_ENV=production \
+    PORT=3000 \
+    DATABASE_URL=file:/app/data/todo.db \
+    DB_TYPE=sqlite
 
 # Expose port
 EXPOSE 3000
