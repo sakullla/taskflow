@@ -36,6 +36,10 @@ export function TaskDetail({ task, onClose }: TaskDetailProps) {
   const [isInMyDay, setIsInMyDay] = useState(task?.inMyDay || false);
   const [isTogglingMyDay, setIsTogglingMyDay] = useState(false);
 
+  const refreshNotifications = () => {
+    window.dispatchEvent(new Event("notifications:refresh"));
+  };
+
   // Sync isInMyDay when task changes
   useEffect(() => {
     if (task) {
@@ -309,7 +313,7 @@ export function TaskDetail({ task, onClose }: TaskDetailProps) {
     return (
       <Card className="h-full">
         <CardContent className="flex items-center justify-center h-full text-muted-foreground">
-          Select a task to view details
+          {t("tasks:selectTaskPrompt") || "Select a task to view details"}
         </CardContent>
       </Card>
     );
@@ -319,7 +323,7 @@ export function TaskDetail({ task, onClose }: TaskDetailProps) {
     <Card className="h-full">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <span className="text-sm font-medium text-muted-foreground">{t("tasks:detailTitle")}</span>
-        <Button variant="ghost" size="icon" onClick={onClose}>
+        <Button variant="ghost" size="icon" onClick={onClose} aria-label={t("common:actions.close") || "Close"}>
           <X className="h-4 w-4" />
         </Button>
       </CardHeader>
@@ -333,7 +337,7 @@ export function TaskDetail({ task, onClose }: TaskDetailProps) {
             onBlur={handleTitleBlur}
             disabled={isSaving}
             className="font-medium text-lg border-0 px-0 focus-visible:ring-0"
-            placeholder="Task title"
+            placeholder={t("tasks:titleLabel") || "Task title"}
           />
         </div>
 
@@ -348,7 +352,9 @@ export function TaskDetail({ task, onClose }: TaskDetailProps) {
             <Star
               className={`h-4 w-4 mr-1 ${task.isImportant ? "fill-current" : ""}`}
             />
-            Important
+            {task.isImportant
+              ? t("tasks:unmarkImportant") || "Unmark as important"
+              : t("tasks:markImportant") || "Mark as important"}
           </Button>
           <Button
             variant="outline"
@@ -360,7 +366,9 @@ export function TaskDetail({ task, onClose }: TaskDetailProps) {
             <Sun
               className={`h-4 w-4 mr-1 ${isInMyDay ? "fill-current" : ""}`}
             />
-            {isInMyDay ? "In My Day" : "Add to My Day"}
+            {isInMyDay
+              ? t("tasks:inMyDay") || "In My Day"
+              : t("tasks:addToMyDay") || "Add to My Day"}
           </Button>
           <DatePicker
             value={task.dueDate}
@@ -377,6 +385,7 @@ export function TaskDetail({ task, onClose }: TaskDetailProps) {
                 await api.patch<UpdateTaskResponse>(`/tasks/${task.id}`, {
                   dueDate: date,
                 });
+                refreshNotifications();
               } catch (error) {
                 // Rollback
                 updateTask(task.id, { dueDate: task.dueDate });
@@ -389,27 +398,27 @@ export function TaskDetail({ task, onClose }: TaskDetailProps) {
 
         {/* Note */}
         <div>
-          <label className="text-sm text-muted-foreground mb-1 block">Note</label>
+          <label className="text-sm text-muted-foreground mb-1 block">{t("tasks:note") || "Note"}</label>
           <textarea
             value={note}
             onChange={(e) => setNote(e.target.value)}
             onBlur={handleNoteBlur}
             disabled={isSaving}
             className="w-full min-h-[100px] p-3 rounded-md border bg-transparent text-sm resize-none focus:outline-none focus:ring-2 focus:ring-ring"
-            placeholder="Add a note..."
+            placeholder={t("tasks:notePlaceholder") || "Add a note..."}
           />
         </div>
 
         {/* Steps */}
         <div>
           <label className="text-sm text-muted-foreground mb-2 block">
-            Steps ({task.steps.filter((s) => s.isCompleted).length}/{task.steps.length})
+            {(t("tasks:steps") || "Steps")} ({task.steps.filter((s) => s.isCompleted).length}/{task.steps.length})
           </label>
 
           {/* Add Step Input */}
           <div className="flex gap-2 mb-3">
             <Input
-              placeholder="Add a step..."
+              placeholder={t("tasks:stepPlaceholder") || "Add a step..."}
               value={newStepTitle}
               onChange={(e) => setNewStepTitle(e.target.value)}
               onKeyDown={(e) => handleStepKeyDown(e)}
@@ -422,6 +431,7 @@ export function TaskDetail({ task, onClose }: TaskDetailProps) {
               className="h-8 px-2"
               onClick={handleAddStep}
               disabled={!newStepTitle.trim() || isAddingStep}
+              aria-label={t("tasks:addStep") || "Add step"}
             >
               <Plus className="h-4 w-4" />
             </Button>
@@ -442,6 +452,11 @@ export function TaskDetail({ task, onClose }: TaskDetailProps) {
                       ? "bg-primary border-primary text-primary-foreground"
                       : "border-muted-foreground hover:border-primary"
                   )}
+                  aria-label={
+                    step.isCompleted
+                      ? t("tasks:markIncomplete") || "Mark as incomplete"
+                      : t("tasks:markCompleted") || "Mark as completed"
+                  }
                 >
                   {step.isCompleted && <Check className="h-3 w-3" />}
                 </button>
@@ -469,6 +484,7 @@ export function TaskDetail({ task, onClose }: TaskDetailProps) {
                     <button
                       onClick={() => handleDeleteStep(step.id)}
                       className="opacity-0 group-hover:opacity-100 p-1 hover:text-destructive transition-opacity"
+                      aria-label={t("common:actions.delete") || "Delete"}
                     >
                       <Trash2 className="h-3 w-3" />
                     </button>

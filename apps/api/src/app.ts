@@ -3,32 +3,34 @@ import cors from "@fastify/cors";
 import fastifyStatic from "@fastify/static";
 import fs from "node:fs";
 import path from "node:path";
-// import jwt from "@fastify/jwt";
-// JWT is disabled for now
+import jwt from "@fastify/jwt";
 import swagger from "@fastify/swagger";
 import swaggerUi from "@fastify/swagger-ui";
 import { env } from "./config/env.js";
+import { db } from "./config/db.js";
 import { authRoutes } from "./modules/auth/routes.js";
 import { listRoutes } from "./modules/lists/routes.js";
 import { taskRoutes } from "./modules/tasks/routes.js";
 import { stepRoutes } from "./modules/steps/routes.js";
 import { myDayRoutes } from "./modules/my-day/routes.js";
 import { notificationRoutes } from "./modules/notifications/routes.js";
+import { userRoutes } from "./modules/users/routes.js";
 import { checkTaskReminders, checkDueTasks } from "./modules/notifications/service.js";
-import { AppError } from "./shared/errors/index.js";
+import { AppError, AuthenticationError } from "./shared/errors/index.js";
+import { tokenPayloadSchema, type TokenPayload } from "./modules/auth/schemas.js";
 import type { FastifyError, FastifyInstance, FastifyRequest } from "fastify";
 
 // Extend Fastify types
+declare module "@fastify/jwt" {
+  interface FastifyJWT {
+    payload: TokenPayload;
+    user: TokenPayload;
+  }
+}
+
 declare module "fastify" {
   interface FastifyInstance {
     authenticate: (request: FastifyRequest) => Promise<void>;
-  }
-
-  interface FastifyRequest {
-    user: {
-      userId: string;
-      email: string;
-    };
   }
 }
 
@@ -49,26 +51,33 @@ export async function createApp(): Promise<FastifyInstance> {
 
   // Register plugins
   await app.register(cors, {
-    origin: env.CORS_ORIGIN,
+    origin: true,
     credentials: true,
   });
 
-  // JWT plugin disabled for now
-  // await app.register(jwt, {
-  //   secret: env.JWT_SECRET,
-  //   sign: {
-  //     expiresIn: env.JWT_EXPIRES_IN,
-  //   },
-  // });
+  await app.register(jwt, {
+    secret: env.JWT_SECRET,
+    sign: {
+      expiresIn: env.JWT_EXPIRES_IN,
+    },
+  });
 
-  // JWT authenticate decorator (mock for now)
-  app.decorate(
-    "authenticate",
-    async (request: FastifyRequest) => {
-      // Mock authentication - use demo user
-      request.user = { userId: "demo-user", email: "demo@example.com" };
+  app.decorate("authenticate", async (request: FastifyRequest) => {
+    try {
+      await request.jwtVerify();
+      const parsed = tokenPayloadSchema.safeParse(request.user);
+      if (!parsed.success) {
+        throw new AuthenticationError("Invalid token payload");
+      }
+
+      const user = db.users.get(parsed.data.userId);
+      if (!user) {
+        throw new AuthenticationError("User not found");
+      }
+    } catch {
+      throw new AuthenticationError("Authentication required");
     }
-  );
+  });
 
   // Swagger documentation
   await app.register(swagger, {
@@ -116,6 +125,7 @@ export async function createApp(): Promise<FastifyInstance> {
   await app.register(stepRoutes, { prefix: "/api/tasks/:taskId/steps" });
   await app.register(myDayRoutes, { prefix: "/api/my-day" });
   await app.register(notificationRoutes, { prefix: "/api/notifications" });
+  await app.register(userRoutes, { prefix: "/api/users" });
 
   // Serve built web app from the API container in production.
   const webDistPath = path.resolve(process.cwd(), "../web/dist");
@@ -142,15 +152,20 @@ export async function createApp(): Promise<FastifyInstance> {
     });
   }
 
-  // Start notification checking interval (every minute)
-  setInterval(async () => {
+  const runNotificationChecks = async () => {
     try {
       await checkTaskReminders();
       await checkDueTasks();
     } catch (error) {
       app.log.error(error, "Error checking notifications");
     }
-  }, 60 * 1000);
+  };
+
+  // Run once on startup so users can see initial notifications immediately.
+  void runNotificationChecks();
+
+  // Continue checking every minute.
+  setInterval(runNotificationChecks, 60 * 1000);
 
   // 404 handler
   app.setNotFoundHandler((request, reply) => {
@@ -189,16 +204,22 @@ export async function createApp(): Promise<FastifyInstance> {
       return;
     }
 
-    // JWT error (disabled for now)
-    // if (error.code === "FST_JWT_NO_AUTHORIZATION_IN_COOKIE" || error.code === "FST_JWT_NO_AUTHORIZATION_IN_HEADER") {
-    //   return reply.status(401).send({
-    //     success: false,
-    //     error: {
-    //       code: "UNAUTHORIZED",
-    //       message: "Authentication required",
-    //     },
-    //   });
-    // }
+    // JWT error
+    if (
+      error.code === "FST_JWT_NO_AUTHORIZATION_IN_COOKIE" ||
+      error.code === "FST_JWT_NO_AUTHORIZATION_IN_HEADER" ||
+      error.code === "FST_JWT_AUTHORIZATION_TOKEN_EXPIRED" ||
+      error.code === "FST_JWT_AUTHORIZATION_TOKEN_INVALID"
+    ) {
+      reply.status(401).send({
+        success: false,
+        error: {
+          code: "AUTHENTICATION_ERROR",
+          message: "Authentication required",
+        },
+      });
+      return;
+    }
 
     // Log error
     app.log.error(error);

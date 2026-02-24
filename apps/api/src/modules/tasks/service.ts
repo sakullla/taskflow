@@ -1,7 +1,38 @@
 import { db, generateId, now } from "../../config/db.js";
 import { NotFoundError, ValidationError } from "../../shared/errors/index.js";
+import { getDateKey, getTodayDateKey } from "../../shared/utils/timezone.js";
 import type { CreateTaskInput, UpdateTaskInput, TaskQuery } from "./schemas.js";
 import type { Task, Step } from "../../config/db-simple.js";
+
+function ensureDueTodayNotification(task: Task) {
+  if (task.isCompleted || !task.dueDate) return;
+
+  const today = getTodayDateKey();
+  const taskDueDate = getDateKey(task.dueDate);
+  if (taskDueDate !== today) return;
+
+  for (const notification of db.notifications.values()) {
+    if (
+      notification.taskId === task.id &&
+      notification.type === "task_due" &&
+      getDateKey(notification.createdAt) === today
+    ) {
+      return;
+    }
+  }
+
+  const notificationId = generateId();
+  db.notifications.set(notificationId, {
+    id: notificationId,
+    userId: task.userId,
+    title: "Task Due Today",
+    message: `"${task.title}" is due today`,
+    type: "task_due",
+    isRead: false,
+    taskId: task.id,
+    createdAt: now(),
+  });
+}
 
 // Extended task type with steps
 interface TaskWithSteps extends Task {
@@ -18,7 +49,7 @@ export async function getTasks(userId: string, query: TaskQuery) {
     if (query.isCompleted !== undefined && task.isCompleted !== (query.isCompleted === "true")) continue;
     if (query.isImportant !== undefined && task.isImportant !== (query.isImportant === "true")) continue;
     if (query.dueDate) {
-      const taskDate = task.dueDate?.split("T")[0];
+      const taskDate = task.dueDate ? getDateKey(task.dueDate) : null;
       if (taskDate !== query.dueDate) continue;
     }
     if (query.search) {
@@ -110,6 +141,7 @@ export async function createTask(userId: string, data: CreateTaskInput) {
   };
 
   db.tasks.set(taskId, task);
+  ensureDueTodayNotification(task);
   return enrichTaskWithSteps(task);
 }
 
@@ -143,6 +175,7 @@ export async function updateTask(id: string, userId: string, data: UpdateTaskInp
   };
 
   db.tasks.set(id, updated);
+  ensureDueTodayNotification(updated);
   return enrichTaskWithSteps(updated);
 }
 

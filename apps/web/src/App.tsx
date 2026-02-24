@@ -8,6 +8,9 @@ import { MainLayout } from "@/components/layout/MainLayout";
 import { LoginPage } from "@/pages/LoginPage";
 import { ToastContainer } from "@/components/ui/toast";
 import { Loading } from "@/components/ui/loading";
+import { api } from "@/lib/api/client";
+import { useAuthStore } from "@/stores/authStore";
+import type { User } from "@/types";
 import "./index.css";
 
 // Lazy load pages for better code splitting
@@ -29,7 +32,15 @@ const queryClient = new QueryClient({
 });
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  // For demo purposes, always authenticated
+  const { token, user } = useAuthStore();
+  if (!token) return <Navigate to="/login" replace />;
+  if (!user) return <Loading fullScreen text="Loading..." />;
+  return <>{children}</>;
+}
+
+function PublicRoute({ children }: { children: React.ReactNode }) {
+  const { token, user } = useAuthStore();
+  if (token && user) return <Navigate to="/" replace />;
   return <>{children}</>;
 }
 
@@ -48,7 +59,14 @@ function AnimatedRoutes() {
   return (
     <AnimatePresence mode="wait">
       <Routes location={location} key={location.pathname}>
-        <Route path="/login" element={<LoginPage />} />
+        <Route
+          path="/login"
+          element={(
+            <PublicRoute>
+              <LoginPage />
+            </PublicRoute>
+          )}
+        />
         <Route
           path="/"
           element={
@@ -72,13 +90,39 @@ function AnimatedRoutes() {
 }
 
 function App() {
+  const { token, user, setUser, logout } = useAuthStore();
+
   useEffect(() => {
-    // Initialize auth from localStorage
-    const token = localStorage.getItem("token");
-    if (token) {
-      // Token loaded
+    if (!token || user) {
+      return;
     }
-  }, []);
+
+    let mounted = true;
+
+    interface MeResponse {
+      success: boolean;
+      data: User;
+    }
+
+    const restoreUser = async () => {
+      try {
+        const response = (await api.get<MeResponse>("/auth/me")) as unknown as MeResponse;
+        if (mounted && response.success) {
+          setUser(response.data);
+        }
+      } catch {
+        if (mounted) {
+          logout();
+        }
+      }
+    };
+
+    void restoreUser();
+
+    return () => {
+      mounted = false;
+    };
+  }, [logout, setUser, token, user]);
 
   return (
     <I18nextProvider i18n={i18n}>

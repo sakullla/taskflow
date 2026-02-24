@@ -1,6 +1,8 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { CalendarIcon, X } from "lucide-react";
 import { format, isToday, isTomorrow, isYesterday } from "date-fns";
+import { enUS, zhCN } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 
@@ -10,22 +12,24 @@ interface DatePickerProps {
   disabled?: boolean;
 }
 
-const PRESET_DATES = [
-  { label: "Today", getDate: () => new Date() },
-  { label: "Tomorrow", getDate: () => new Date(Date.now() + 86400000) },
-  { label: "Next Week", getDate: () => new Date(Date.now() + 7 * 86400000) },
-];
-
 export function DatePicker({ value, onChange, disabled }: DatePickerProps) {
+  const { t, i18n } = useTranslation(["tasks"]);
   const [isOpen, setIsOpen] = useState(false);
+  const dateLocale = i18n.resolvedLanguage?.startsWith("zh") ? zhCN : enUS;
+  const dateFormat = i18n.resolvedLanguage?.startsWith("zh") ? "M月d日" : "MMM d";
+  const presetDates = [
+    { label: t("tasks:today") || "Today", getDate: () => new Date() },
+    { label: t("tasks:tomorrow") || "Tomorrow", getDate: () => new Date(Date.now() + 86400000) },
+    { label: t("tasks:nextWeek") || "Next Week", getDate: () => new Date(Date.now() + 7 * 86400000) },
+  ];
 
   const selectedDate = value ? new Date(value) : null;
 
   const formatDateLabel = (date: Date) => {
-    if (isToday(date)) return "Today";
-    if (isTomorrow(date)) return "Tomorrow";
-    if (isYesterday(date)) return "Yesterday";
-    return format(date, "MMM d");
+    if (isToday(date)) return t("tasks:today") || "Today";
+    if (isTomorrow(date)) return t("tasks:tomorrow") || "Tomorrow";
+    if (isYesterday(date)) return t("tasks:yesterday") || "Yesterday";
+    return format(date, dateFormat, { locale: dateLocale });
   };
 
   const handleSelectDate = (date: Date) => {
@@ -52,11 +56,12 @@ export function DatePicker({ value, onChange, disabled }: DatePickerProps) {
         )}
       >
         <CalendarIcon className="h-4 w-4" />
-        {selectedDate ? formatDateLabel(selectedDate) : "Due Date"}
+        {selectedDate ? formatDateLabel(selectedDate) : t("tasks:dueDate") || "Due Date"}
         {selectedDate && (
           <button
             onClick={handleClear}
             className="ml-1 hover:bg-blue-500/20 rounded-full p-0.5"
+            aria-label={t("tasks:removeDueDate") || "Remove due date"}
           >
             <X className="h-3 w-3" />
           </button>
@@ -71,7 +76,7 @@ export function DatePicker({ value, onChange, disabled }: DatePickerProps) {
           />
           <div className="absolute top-full mt-2 left-0 z-50 w-56 p-3 bg-popover border rounded-lg shadow-lg">
             <div className="space-y-2">
-              {PRESET_DATES.map((preset) => {
+              {presetDates.map((preset) => {
                 const date = preset.getDate();
                 const isSelected = selectedDate?.toDateString() === date.toDateString();
 
@@ -89,7 +94,7 @@ export function DatePicker({ value, onChange, disabled }: DatePickerProps) {
                   >
                     {preset.label}
                     <span className="ml-2 text-xs opacity-60">
-                      {format(date, "MMM d")}
+                      {format(date, dateFormat, { locale: dateLocale })}
                     </span>
                   </button>
                 );
@@ -117,7 +122,7 @@ export function DatePicker({ value, onChange, disabled }: DatePickerProps) {
                   }}
                   className="w-full text-left px-3 py-2 rounded-md text-sm text-destructive hover:bg-destructive/10 transition-colors"
                 >
-                  Remove Due Date
+                  {t("tasks:removeDueDate") || "Remove Due Date"}
                 </button>
               )}
             </div>

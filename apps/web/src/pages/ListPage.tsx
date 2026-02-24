@@ -5,7 +5,7 @@ import { List, Plus, List as ListIcon } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { TaskList } from "@/components/task/TaskList";
+import { TaskSplitList } from "@/components/task/TaskSplitList";
 import { TaskListSkeleton } from "@/components/ui/skeleton";
 import { TaskDetail } from "@/components/task/TaskDetail";
 import { MobileTaskDetail } from "@/components/task/MobileTaskDetail";
@@ -60,6 +60,7 @@ export function ListPage() {
   }, [listId, setCurrentView, setTasks]);
 
   const listTasks = tasks.filter((t) => t.listId === listId && !t.isCompleted);
+  const completedListTasks = tasks.filter((t) => t.listId === listId && t.isCompleted);
 
   const handleAddTask = async () => {
     if (!newTaskTitle.trim() || !listId) return;
@@ -128,13 +129,16 @@ export function ListPage() {
         {isLoading ? (
           <TaskListSkeleton />
         ) : (
-          <TaskList
-            tasks={listTasks}
+          <TaskSplitList
+            incompleteTasks={listTasks}
+            completedTasks={completedListTasks}
             selectedId={selectedTaskId}
             onSelect={selectTask}
             emptyTitle={t("tasks:emptyListTitle") || "Empty list"}
             emptyDescription={t("tasks:emptyListDesc") || "Add tasks to this list"}
             emptyIcon={ListIcon}
+            completedTitle={t("tasks:completed") || "Completed"}
+            noPendingText={t("common:empty.noPending") || "No pending tasks"}
           />
         )}
       </div>

@@ -1,5 +1,6 @@
 // 简化版数据库 - 使用内存存储
 import { randomUUID } from "node:crypto";
+import { getTodayDateKey } from "../shared/utils/timezone.js";
 
 export interface User {
   id: string;
@@ -7,8 +8,11 @@ export interface User {
   password: string;
   name: string | null;
   avatar: string | null;
+  role: "admin" | "user";
   locale: string;
   theme: string;
+  dueDateReminders: boolean;
+  weeklyDigest: boolean;
   createdAt: string;
 }
 
@@ -91,7 +95,7 @@ export function now(): string {
 }
 
 export function getTodayString(): string {
-  return new Date().toISOString().split("T")[0];
+  return getTodayDateKey();
 }
 
 // Database health check
@@ -108,11 +112,14 @@ function seedData() {
   db.users.set(demoUserId, {
     id: demoUserId,
     email: "demo@example.com",
-    password: "hashed-password",
+    password: "demo-salt:dc548fb7432bad5dafda603929473162cc79e81fbaf8934de53ea41879b164d1",
     name: "Demo User",
     avatar: null,
+    role: "admin",
     locale: "zh-CN",
     theme: "light",
+    dueDateReminders: true,
+    weeklyDigest: false,
     createdAt: nowStr,
   });
 
@@ -185,6 +192,19 @@ function seedData() {
     taskId: task1Id,
     userId: demoUserId,
     date: getTodayString(),
+    createdAt: nowStr,
+  });
+
+  // Seed a welcome notification so new sessions are not empty.
+  const notificationId = generateId();
+  db.notifications.set(notificationId, {
+    id: notificationId,
+    userId: demoUserId,
+    title: "Welcome to TaskFlow",
+    message: "You will receive reminders and due task notifications here.",
+    type: "system",
+    isRead: false,
+    taskId: null,
     createdAt: nowStr,
   });
 

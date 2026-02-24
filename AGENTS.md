@@ -17,6 +17,13 @@
 - `npm run typecheck --workspaces`
 - `npx playwright test`
 
+## Testing & i18n Requirements
+
+- Any user-visible feature change must include E2E coverage in `e2e/*.spec.ts`.
+- Any user-visible copy change must update both locales:
+  - `apps/web/src/locales/en/*.json`
+  - `apps/web/src/locales/zh-CN/*.json`
+
 ## Code Style
 
 - TypeScript strict, 2-space indent
@@ -35,3 +42,4 @@
 - Never commit `.env` or secrets
 - Use `.env.example`
 - Production must set strong `JWT_SECRET`
+- Set `TZ` (IANA, e.g. `Asia/Shanghai`) to align due/reminder date logic

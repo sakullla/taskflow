@@ -22,9 +22,10 @@ export async function authRoutes(fastify: FastifyInstance) {
     async (request, reply) => {
       const data = registerSchema.parse(request.body);
       const result = await registerUser(data);
-
-      // Mock token
-      const token = "mock-jwt-token";
+      const token = fastify.jwt.sign({
+        userId: result.user.id,
+        email: result.user.email,
+      });
 
       reply.status(201).send({
         success: true,
@@ -54,9 +55,10 @@ export async function authRoutes(fastify: FastifyInstance) {
     async (request, reply) => {
       const data = loginSchema.parse(request.body);
       const result = await loginUser(data);
-
-      // Mock token
-      const token = "mock-jwt-token";
+      const token = fastify.jwt.sign({
+        userId: result.user.id,
+        email: result.user.email,
+      });
 
       reply.send({
         success: true,

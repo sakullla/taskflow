@@ -1,5 +1,6 @@
 import { db } from "../../config/db-simple.js";
 import { NotFoundError } from "../../shared/errors/index.js";
+import { getDateKey, getTodayDateKey } from "../../shared/utils/timezone.js";
 import type { Notification } from "../../config/db-simple.js";
 
 export interface NotificationInput {
@@ -130,24 +131,23 @@ export async function checkTaskReminders(): Promise<void> {
 
 // Check for tasks due today
 export async function checkDueTasks(): Promise<void> {
-  const today = new Date().toISOString().split("T")[0];
+  const today = getTodayDateKey();
 
   for (const task of db.tasks.values()) {
     if (task.isCompleted) continue;
     if (!task.dueDate) continue;
 
-    const taskDueDate = task.dueDate.split("T")[0];
+    const taskDueDate = getDateKey(task.dueDate);
 
     if (taskDueDate === today) {
       // Check if notification already sent today
       let exists = false;
-      const todayStart = today + "T00:00:00.000Z";
 
       for (const notification of db.notifications.values()) {
         if (
           notification.taskId === task.id &&
           notification.type === "task_due" &&
-          notification.createdAt >= todayStart
+          getDateKey(notification.createdAt) === today
         ) {
           exists = true;
           break;

@@ -7,7 +7,14 @@ const envSchema = z.object({
   DATABASE_URL: z.string().default("file:./data/todo.db"),
   JWT_SECRET: z.string().min(1, "JWT_SECRET is required"),
   JWT_EXPIRES_IN: z.string().default("7d"),
-  CORS_ORIGIN: z.string().default("http://localhost:5173"),
+  TZ: z.string().default("Asia/Shanghai").refine((value) => {
+    try {
+      new Intl.DateTimeFormat("en-US", { timeZone: value });
+      return true;
+    } catch {
+      return false;
+    }
+  }, "TZ must be a valid IANA timezone, e.g. Asia/Shanghai"),
   LOG_LEVEL: z.enum(["fatal", "error", "warn", "info", "debug", "trace"]).default("info"),
 });
 

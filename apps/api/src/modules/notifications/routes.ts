@@ -2,6 +2,9 @@ import type { FastifyInstance } from "fastify";
 import { getNotifications, markAsRead, markAllAsRead, deleteNotification } from "./service.js";
 
 export async function notificationRoutes(fastify: FastifyInstance) {
+  // All notification routes require authenticated user context.
+  fastify.addHook("onRequest", fastify.authenticate);
+
   // Get all notifications for user
   fastify.get("/", async (request, reply) => {
     const { unreadOnly } = request.query as { unreadOnly?: string };

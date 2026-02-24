@@ -5,8 +5,11 @@ export interface User {
   email: string;
   name: string | null;
   avatar: string | null;
+  role?: "admin" | "user";
   locale: string;
   theme: string;
+  dueDateReminders?: boolean;
+  weeklyDigest?: boolean;
 }
 
 export interface List {

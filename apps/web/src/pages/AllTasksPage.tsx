@@ -4,7 +4,7 @@ import { CheckSquare, Plus, ClipboardList } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { TaskList } from "@/components/task/TaskList";
+import { TaskSplitList } from "@/components/task/TaskSplitList";
 import { TaskListSkeleton } from "@/components/ui/skeleton";
 import { TaskDetail } from "@/components/task/TaskDetail";
 import { MobileTaskDetail } from "@/components/task/MobileTaskDetail";
@@ -54,6 +54,7 @@ export function AllTasksPage() {
   }, [setCurrentView, setTasks]);
 
   const incompleteTasks = tasks.filter((t) => !t.isCompleted);
+  const completedTasks = tasks.filter((t) => t.isCompleted);
 
   const handleAddTask = async () => {
     if (!newTaskTitle.trim()) return;
@@ -123,13 +124,16 @@ export function AllTasksPage() {
         {isLoading ? (
           <TaskListSkeleton />
         ) : (
-          <TaskList
-            tasks={incompleteTasks}
+          <TaskSplitList
+            incompleteTasks={incompleteTasks}
+            completedTasks={completedTasks}
             selectedId={selectedTaskId}
             onSelect={selectTask}
             emptyTitle={t("tasks:emptyAllTitle") || "No tasks"}
             emptyDescription={t("tasks:emptyAllDesc") || "Start by adding your first task!"}
             emptyIcon={ClipboardList}
+            completedTitle={t("tasks:completed") || "Completed"}
+            noPendingText={t("common:empty.noPending") || "No pending tasks"}
           />
         )}
       </div>

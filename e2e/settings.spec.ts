@@ -1,92 +1,104 @@
-import { test, expect } from "@playwright/test";
+﻿import { test, expect } from "@playwright/test";
+import { loginAsDemo } from "./utils/auth";
 
 test.describe("Settings Page", () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto("/");
-    await expect(page.getByPlaceholder("Add a task")).toBeVisible({
-      timeout: 15000,
-    });
+    await loginAsDemo(page);
+    await page.goto("/settings");
   });
 
   test("can navigate to settings page", async ({ page }) => {
-    // Navigate directly to settings
-    await page.goto("/settings");
-
-    // Should show settings page
-    await expect(page.locator("main h1")).toContainText("Settings");
+    await expect(page.locator("main h1")).toContainText(/Settings|设置/);
   });
 
   test("settings page displays all sections", async ({ page }) => {
-    await page.goto("/settings");
-
-    // Check all main sections are visible (using role for headings)
     await expect(
-      page.getByRole("heading", { name: /Appearance/i }),
+      page.getByRole("heading", { name: /Appearance|外观/i }),
     ).toBeVisible();
     await expect(
-      page.getByRole("heading", { name: /Language/i }),
+      page.getByRole("heading", { name: /Language|语言/i }),
     ).toBeVisible();
     await expect(
-      page.getByRole("heading", { name: /Notifications/i }),
+      page.getByRole("heading", { name: /Notifications|通知/i }),
     ).toBeVisible();
-    await expect(page.getByRole("heading", { name: /Account/i })).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: /Account|账户/i }),
+    ).toBeVisible();
   });
 
   test("can switch theme", async ({ page }) => {
-    await page.goto("/settings");
-
-    // Click dark theme button
-    const darkButton = page.getByRole("button", { name: /^Dark$/ }).first();
+    const darkButton = page
+      .getByRole("button", { name: /^Dark$|^深色$/ })
+      .first();
     await darkButton.click();
+    await expect(page.locator("html")).toHaveClass(/dark/);
 
-    // Check that dark class is applied to html element
-    const html = page.locator("html");
-    await expect(html).toHaveClass(/dark/);
-
-    // Switch back to light
-    const lightButton = page.getByRole("button", { name: /^Light$/ }).first();
+    const lightButton = page
+      .getByRole("button", { name: /^Light$|^浅色$/ })
+      .first();
     await lightButton.click();
-
-    // Dark class should be removed
-    await expect(html).not.toHaveClass(/dark/);
+    await expect(page.locator("html")).not.toHaveClass(/dark/);
   });
 
   test("can switch language", async ({ page }) => {
-    await page.goto("/settings");
-
-    // Click language button (Simplified Chinese)
-    const chineseButton = page.getByRole("button", { name: /简体中文/i });
-    await chineseButton.click();
-
-    // Check that the heading is now in Chinese
-    await expect(page.getByRole("heading", { name: /外观/i })).toBeVisible();
-
-    // Switch back to English
-    const englishButton = page.getByRole("button", { name: /English/i });
-    await englishButton.click();
-
-    // Should show English text again
+    await page.getByRole("button", { name: /简体中文/ }).click();
+    await expect(page.getByRole("heading", { name: /外观/ })).toBeVisible();
+    await page.getByRole("button", { name: /English/ }).click();
     await expect(
-      page.getByRole("heading", { name: /Appearance/i }),
+      page.getByRole("heading", { name: /Appearance/ }),
     ).toBeVisible();
   });
 
-  test("theme preference is saved to localStorage", async ({ page }) => {
-    await page.goto("/settings");
+  test("notification switch can be changed and persisted after reload", async ({
+    page,
+  }) => {
+    const dueReminderSwitch = page.getByRole("checkbox", {
+      name: /Due date reminders|截止日期提醒/,
+    });
+    const initialDue = await dueReminderSwitch.isChecked();
 
-    // Switch to dark theme
-    const darkButton = page.getByRole("button", { name: /^Dark$/ }).first();
-    await darkButton.click();
+    await dueReminderSwitch.click({ force: true });
+    await expect(dueReminderSwitch).toHaveJSProperty("checked", !initialDue);
 
-    // Check localStorage
-    const theme = await page.evaluate(() => localStorage.getItem("theme"));
-    expect(theme).toBe("dark");
+    await page.reload();
+    await expect(dueReminderSwitch).toHaveJSProperty("checked", !initialDue);
+  });
 
-    // Reset to light theme
-    const lightButton = page.getByRole("button", { name: /^Light$/ }).first();
-    await lightButton.click();
+  test("can open change password dialog and submit", async ({ page }) => {
+    await page.route("**/api/users/me/password", async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({ success: true }),
+      });
+    });
 
-    const newTheme = await page.evaluate(() => localStorage.getItem("theme"));
-    expect(newTheme).toBe("light");
+    await page
+      .getByRole("button", { name: /Change Password|修改密码/ })
+      .click();
+    await expect(
+      page.getByRole("heading", { name: /Change Password|修改密码/ }),
+    ).toBeVisible();
+
+    await page
+      .getByPlaceholder(/Current password|当前密码/)
+      .fill("password123");
+    await page.getByPlaceholder(/New password|新密码/).fill("newpassword123");
+    await page
+      .getByPlaceholder(/Confirm new password|确认新密码/)
+      .fill("newpassword123");
+    await page
+      .getByRole("button", { name: /Update Password|更新密码/ })
+      .click();
+
+    await expect(
+      page.getByRole("heading", { name: /Change Password|修改密码/ }),
+    ).not.toBeVisible();
+  });
+
+  test("user management section is visible", async ({ page }) => {
+    await expect(
+      page.getByRole("heading", { name: /User Management|用户管理/ }),
+    ).toBeVisible();
   });
 });

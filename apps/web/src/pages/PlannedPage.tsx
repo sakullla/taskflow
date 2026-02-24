@@ -4,7 +4,7 @@ import { Calendar, Plus, Calendar as CalendarIcon } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { TaskList } from "@/components/task/TaskList";
+import { TaskSplitList } from "@/components/task/TaskSplitList";
 import { TaskListSkeleton } from "@/components/ui/skeleton";
 import { TaskDetail } from "@/components/task/TaskDetail";
 import { MobileTaskDetail } from "@/components/task/MobileTaskDetail";
@@ -55,6 +55,7 @@ export function PlannedPage() {
   }, [setCurrentView, setTasks]);
 
   const plannedTasks = tasks.filter((t) => t.dueDate && !t.isCompleted);
+  const completedPlannedTasks = tasks.filter((t) => t.dueDate && t.isCompleted);
 
   const handleAddTask = async () => {
     if (!newTaskTitle.trim()) return;
@@ -81,6 +82,7 @@ export function PlannedPage() {
       if (response.success) {
         addTask(response.data);
         setNewTaskTitle("");
+        window.dispatchEvent(new Event("notifications:refresh"));
       }
     } catch (error) {
       console.error("Failed to add task:", error);
@@ -125,13 +127,16 @@ export function PlannedPage() {
         {isLoading ? (
           <TaskListSkeleton />
         ) : (
-          <TaskList
-            tasks={plannedTasks}
+          <TaskSplitList
+            incompleteTasks={plannedTasks}
+            completedTasks={completedPlannedTasks}
             selectedId={selectedTaskId}
             onSelect={selectTask}
             emptyTitle={t("tasks:emptyPlannedTitle") || "No planned tasks"}
             emptyDescription={t("tasks:emptyPlannedDesc") || "Add due dates to tasks to see them here"}
             emptyIcon={CalendarIcon}
+            completedTitle={t("tasks:completed") || "Completed"}
+            noPendingText={t("common:empty.noPending") || "No pending tasks"}
           />
         )}
       </div>

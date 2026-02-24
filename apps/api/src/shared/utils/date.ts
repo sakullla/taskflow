@@ -1,5 +1,7 @@
+import { getDateKey, getTodayDateKey } from "./timezone.js";
+
 export function getTodayString(): string {
-  return new Date().toISOString().split("T")[0];
+  return getTodayDateKey();
 }
 
 export function getStartOfDay(date: Date): Date {
@@ -25,5 +27,5 @@ export function isSameDay(date1: Date, date2: Date): boolean {
 export function formatDate(date: Date | string | null): string | null {
   if (!date) return null;
   const d = typeof date === "string" ? new Date(date) : date;
-  return d.toISOString().split("T")[0];
+  return getDateKey(d);
 }

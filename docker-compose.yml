@@ -5,17 +5,25 @@ services:
     container_name: taskflow-app
     restart: unless-stopped
     ports:
-      - "${APP_PORT:-3000}:3000"
+      - "${PORT:-3000}:${PORT:-3000}"
     environment:
       - NODE_ENV=production
-      - PORT=3000
+      - PORT=${PORT:-3000}
+      - TZ=${TZ:-Asia/Shanghai}
       - DB_TYPE=${DB_TYPE:-sqlite}
       - DATABASE_URL=${DATABASE_URL:-file:/app/data/todo.db}
       - JWT_SECRET=${JWT_SECRET:-change-me-in-production}
     volumes:
       - todo-data:/app/data
     healthcheck:
-      test: ["CMD", "wget", "-q", "--spider", "http://localhost:3000/health"]
+      test:
+        [
+          "CMD",
+          "wget",
+          "-q",
+          "--spider",
+          "http://localhost:${PORT:-3000}/health",
+        ]
       interval: 30s
       timeout: 10s
       retries: 3

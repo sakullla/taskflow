@@ -24,7 +24,7 @@ Set at least:
 
 - `JWT_SECRET` (required, use a strong random value)
 - `IMAGE_TAG` (for example `latest` or `v2.0.0`)
-- `APP_PORT` if you do not want `3000`
+- `TZ` (optional, default `Asia/Shanghai`)
 
 ## 3) Deploy
 
@@ -99,4 +99,3 @@ The container itself serves HTTP. For production HTTPS:
 - Forward traffic to `http://app:3000` (or host `localhost:3000`)
 
 If you already use Cloudflare/Ingress, terminate TLS there.
-

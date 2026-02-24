@@ -29,9 +29,12 @@ class ApiClient {
     this.client.interceptors.response.use(
       (response) => response.data,
       (error: AxiosError) => {
-        if (error.response?.status === 401) {
+        if (error.response?.status === 401 && localStorage.getItem("token")) {
           localStorage.removeItem("token");
-          window.location.href = "/login";
+          localStorage.removeItem("auth-storage");
+          if (window.location.pathname !== "/login") {
+            window.location.href = "/login";
+          }
         }
         return Promise.reject(error);
       }

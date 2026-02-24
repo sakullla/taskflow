@@ -22,8 +22,11 @@ export async function registerUser(data: RegisterInput) {
     password: hashedPassword,
     name: data.name ?? null,
     avatar: null,
+    role: "user" as const,
     locale: "zh-CN",
     theme: "system",
+    dueDateReminders: true,
+    weeklyDigest: false,
     createdAt: now(),
   };
   db.users.set(userId, user);
@@ -47,8 +50,11 @@ export async function registerUser(data: RegisterInput) {
       id: user.id,
       email: user.email,
       name: user.name,
+      role: user.role,
       locale: user.locale,
       theme: user.theme,
+      dueDateReminders: user.dueDateReminders,
+      weeklyDigest: user.weeklyDigest,
     },
   };
 }
@@ -79,8 +85,11 @@ export async function loginUser(data: LoginInput) {
       id: user.id,
       email: user.email,
       name: user.name,
+      role: user.role,
       locale: user.locale,
       theme: user.theme,
+      dueDateReminders: user.dueDateReminders,
+      weeklyDigest: user.weeklyDigest,
     },
   };
 }
@@ -99,6 +108,9 @@ export async function getCurrentUser(userId: string) {
     avatar: user.avatar,
     locale: user.locale,
     theme: user.theme,
+    dueDateReminders: user.dueDateReminders,
+    weeklyDigest: user.weeklyDigest,
+    role: user.role,
     createdAt: user.createdAt,
   };
 }

@@ -4,7 +4,7 @@ import { Sun, Plus, Sun as SunIcon } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { TaskList } from "@/components/task/TaskList";
+import { TaskSplitList } from "@/components/task/TaskSplitList";
 import { TaskDetail } from "@/components/task/TaskDetail";
 import { MobileTaskDetail } from "@/components/task/MobileTaskDetail";
 import { TaskListSkeleton } from "@/components/ui/skeleton";
@@ -122,6 +122,7 @@ export function MyDayPage() {
   }, [setCurrentView, setTasks, setLists]);
 
   const myDayTasks = tasks.filter((t) => !t.isCompleted);
+  const completedMyDayTasks = tasks.filter((t) => t.isCompleted);
 
   const handleAddTask = async () => {
     if (!newTaskTitle.trim()) return;
@@ -240,13 +241,16 @@ export function MyDayPage() {
         {isLoading ? (
           <TaskListSkeleton />
         ) : (
-          <TaskList
-            tasks={myDayTasks}
+          <TaskSplitList
+            incompleteTasks={myDayTasks}
+            completedTasks={completedMyDayTasks}
             selectedId={selectedTaskId}
             onSelect={selectTask}
             emptyTitle={t("tasks:emptyMyDayTitle") || "No tasks for today"}
             emptyDescription={t("tasks:emptyMyDayDesc") || "Add tasks to My Day to focus on what matters"}
             emptyIcon={SunIcon}
+            completedTitle={t("tasks:completed") || "Completed"}
+            noPendingText={t("common:empty.noPending") || "No pending tasks"}
           />
         )}
       </div>

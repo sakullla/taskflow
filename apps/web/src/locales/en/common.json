@@ -23,7 +23,29 @@
   "empty": {
     "title": "No tasks",
     "description": "Start by adding your first task!",
-    "listDescription": "This list has no tasks yet"
+    "listDescription": "This list has no tasks yet",
+    "noPending": "No pending tasks"
+  },
+  "userMenu": {
+    "openMenu": "Open user menu",
+    "defaultName": "Demo User",
+    "totalTasks": "Total Tasks",
+    "completed": "Completed"
+  },
+  "notifications": {
+    "open": "Open notifications",
+    "title": "Notifications",
+    "empty": "No notifications",
+    "markAllRead": "Mark all read",
+    "markAllSuccess": "All notifications marked as read",
+    "markAllError": "Failed to mark all as read",
+    "deleteError": "Failed to delete notification",
+    "taskCompleted": "Task completed",
+    "completeTaskError": "Failed to complete task",
+    "justNow": "Just now",
+    "minutesAgo": "{{count}}m ago",
+    "hoursAgo": "{{count}}h ago",
+    "daysAgo": "{{count}}d ago"
   },
   "loading": "Loading...",
   "error": {

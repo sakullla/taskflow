@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Star, Calendar, Check } from "lucide-react";
 import { cn, formatDate, isOverdue, isToday } from "@/lib/utils";
 import { api } from "@/lib/api/client";
@@ -12,6 +13,7 @@ interface TaskItemProps {
 }
 
 export function TaskItem({ task, isSelected, onClick }: TaskItemProps) {
+  const { t } = useTranslation(["tasks"]);
   const { updateTask, isBatchMode, selectedTaskIds, toggleTaskSelection } =
     useTaskStore();
   const [isCompleting, setIsCompleting] = useState(false);
@@ -172,7 +174,7 @@ export function TaskItem({ task, isSelected, onClick }: TaskItemProps) {
               )}
             >
               <Calendar className="h-3 w-3" />
-              {isToday(task.dueDate) ? "今天" : formatDate(task.dueDate)}
+              {isToday(task.dueDate) ? t("tasks:today") || "Today" : formatDate(task.dueDate)}
             </span>
           )}
           {task.steps.length > 0 && (

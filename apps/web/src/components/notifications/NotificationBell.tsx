@@ -1,6 +1,7 @@
-import { useEffect, useState } from "react";
-import { Bell, BellRing, Check, Trash2 } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
+import { Bell, BellRing, Check, CheckCheck, Trash2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { useNotificationStore, type Notification } from "@/stores/notificationStore";
 import { api } from "@/lib/api/client";
@@ -8,19 +9,11 @@ import { toast } from "@/components/ui/toast";
 import { cn } from "@/lib/utils";
 
 export function NotificationBell() {
+  const { t } = useTranslation(["common"]);
   const [isOpen, setIsOpen] = useState(false);
   const { notifications, unreadCount, setNotifications, markAsRead, markAllAsRead, deleteNotification } = useNotificationStore();
 
-  // Load notifications on mount
-  useEffect(() => {
-    loadNotifications();
-
-    // Poll for new notifications every 30 seconds
-    const interval = setInterval(loadNotifications, 30000);
-    return () => clearInterval(interval);
-  }, []);
-
-  const loadNotifications = async () => {
+  const loadNotifications = useCallback(async () => {
     try {
       const response = await api.get("/notifications") as unknown as { success: boolean; data: Notification[] };
       if (response.success) {
@@ -29,6 +22,34 @@ export function NotificationBell() {
     } catch (error) {
       console.error("Failed to load notifications:", error);
     }
+  }, [setNotifications]);
+
+  // Load notifications on mount and keep unread count fresh.
+  useEffect(() => {
+    void loadNotifications();
+
+    // Poll for new notifications every 10 seconds.
+    const interval = setInterval(loadNotifications, 10000);
+
+    const handleRefresh = () => {
+      void loadNotifications();
+    };
+    window.addEventListener("notifications:refresh", handleRefresh);
+
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener("notifications:refresh", handleRefresh);
+    };
+  }, [loadNotifications]);
+
+  useEffect(() => {
+    if (isOpen) {
+      void loadNotifications();
+    }
+  }, [isOpen, loadNotifications]);
+
+  const handleToggleOpen = () => {
+    setIsOpen((prev) => !prev);
   };
 
   const handleMarkAsRead = async (id: string, e: React.MouseEvent) => {
@@ -45,9 +66,10 @@ export function NotificationBell() {
     try {
       await api.patch("/notifications/read-all");
       markAllAsRead();
-      toast("All notifications marked as read", "success");
+      toast(t("common:notifications.markAllSuccess") || "All notifications marked as read", "success");
     } catch (error) {
       console.error("Failed to mark all as read:", error);
+      toast(t("common:notifications.markAllError") || "Failed to mark all as read", "error");
     }
   };
 
@@ -58,6 +80,26 @@ export function NotificationBell() {
       deleteNotification(id);
     } catch (error) {
       console.error("Failed to delete notification:", error);
+      toast(t("common:notifications.deleteError") || "Failed to delete notification", "error");
+    }
+  };
+
+  const handleCompleteFromNotification = async (
+    notification: Notification,
+    e: React.MouseEvent
+  ) => {
+    e.stopPropagation();
+    if (!notification.taskId) return;
+
+    try {
+      await api.patch(`/tasks/${notification.taskId}`, { isCompleted: true });
+      await api.patch(`/notifications/${notification.id}/read`);
+      markAsRead(notification.id);
+      toast(t("common:notifications.taskCompleted") || "Task completed", "success");
+      void loadNotifications();
+    } catch (error) {
+      console.error("Failed to complete task from notification:", error);
+      toast(t("common:notifications.completeTaskError") || "Failed to complete task", "error");
     }
   };
 
@@ -70,10 +112,10 @@ export function NotificationBell() {
     const hours = Math.floor(diff / 3600000);
     const days = Math.floor(diff / 86400000);
 
-    if (minutes < 1) return "Just now";
-    if (minutes < 60) return `${minutes}m ago`;
-    if (hours < 24) return `${hours}h ago`;
-    if (days < 7) return `${days}d ago`;
+    if (minutes < 1) return t("common:notifications.justNow") || "Just now";
+    if (minutes < 60) return t("common:notifications.minutesAgo", { count: minutes }) || `${minutes}m ago`;
+    if (hours < 24) return t("common:notifications.hoursAgo", { count: hours }) || `${hours}h ago`;
+    if (days < 7) return t("common:notifications.daysAgo", { count: days }) || `${days}d ago`;
     return date.toLocaleDateString();
   };
 
@@ -83,7 +125,8 @@ export function NotificationBell() {
         variant="ghost"
         size="icon"
         className="relative"
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={handleToggleOpen}
+        aria-label={t("common:notifications.open") || "Open notifications"}
       >
         {unreadCount > 0 ? (
           <BellRing className="h-5 w-5 text-primary" />
@@ -115,11 +158,11 @@ export function NotificationBell() {
               className="absolute right-0 top-full mt-2 w-80 sm:w-96 bg-card rounded-xl border shadow-lg z-50 overflow-hidden"
             >
               <div className="flex items-center justify-between p-4 border-b">
-                <h3 className="font-semibold">Notifications</h3>
+                <h3 className="font-semibold">{t("common:notifications.title") || "Notifications"}</h3>
                 {unreadCount > 0 && (
                   <Button variant="ghost" size="sm" onClick={handleMarkAllAsRead}>
                     <Check className="h-4 w-4 mr-1" />
-                    Mark all read
+                    {t("common:notifications.markAllRead") || "Mark all read"}
                   </Button>
                 )}
               </div>
@@ -128,7 +171,7 @@ export function NotificationBell() {
                 {notifications.length === 0 ? (
                   <div className="p-8 text-center text-muted-foreground">
                     <Bell className="h-12 w-12 mx-auto mb-3 opacity-20" />
-                    <p>No notifications</p>
+                    <p>{t("common:notifications.empty") || "No notifications"}</p>
                   </div>
                 ) : (
                   notifications.map((notification) => (
@@ -158,6 +201,17 @@ export function NotificationBell() {
                               onClick={(e) => handleMarkAsRead(notification.id, e)}
                             >
                               <Check className="h-4 w-4" />
+                            </Button>
+                          )}
+                          {notification.taskId && !notification.isRead && (
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-7 w-7 text-primary"
+                              onClick={(e) => handleCompleteFromNotification(notification, e)}
+                              title={t("common:actions.complete") || "Complete"}
+                            >
+                              <CheckCheck className="h-4 w-4" />
                             </Button>
                           )}
                           <Button
