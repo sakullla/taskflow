@@ -10,7 +10,7 @@ WORKDIR /app/web
 
 # Copy web package files
 COPY apps/web/package*.json ./
-RUN npm ci
+RUN npm install
 
 # Copy web source
 COPY apps/web/ ./
@@ -30,7 +30,7 @@ WORKDIR /app/api
 
 # Copy API package files
 COPY apps/api/package*.json ./
-RUN npm ci
+RUN npm install
 
 # Copy API source
 COPY apps/api/ ./
