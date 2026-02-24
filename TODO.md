@@ -31,10 +31,10 @@ This document outlines the step-by-step plan to optimize the frontend for a mode
   - Ensure keyboard avoidance (input fields don't get hidden under the mobile virtual keyboard).
 
 ## Phase 4: Visual Polish & Styling
-- [ ] **Modern UI Aesthetics:**
+- [x] **Modern UI Aesthetics:**
   - Update Tailwind utility classes to use softer, more modern shadows (`shadow-sm`, `shadow-md` with lower opacity).
   - Refine card border radiuses (e.g., `rounded-xl` or `rounded-2xl` for a softer look).
-- [ ] **Dark Mode Refinement:**
+- [x] **Dark Mode Refinement:**
   - Ensure pure black backgrounds (`bg-black` or very dark gray `bg-zinc-950`) for OLED mobile screens if applicable.
-- [ ] **PWA Enhancements:**
+- [x] **PWA Enhancements:**
   - Configure `safe-area-inset-bottom` in CSS to prevent the bottom navigation from overlapping with iOS home indicators.
