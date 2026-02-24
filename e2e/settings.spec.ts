@@ -105,6 +105,7 @@ test.describe("Settings Page", () => {
   test("admin can create and disable a user", async ({ page }) => {
     const email = `managed-${Date.now()}@example.com`;
 
+    await page.getByTestId("open-create-user-dialog").click();
     await page.getByTestId("create-user-name").fill("Managed User");
     await page.getByTestId("create-user-email").fill(email);
     await page.getByTestId("create-user-password").fill("password123");

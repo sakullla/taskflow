@@ -60,6 +60,7 @@
   "createUser": "新增用户",
   "creatingUser": "创建中...",
   "createUserRequired": "邮箱和密码必填",
+  "createUserInvalidEmail": "请输入有效邮箱",
   "createUserPasswordTooShort": "密码至少 6 位",
   "userCreated": "用户创建成功",
   "userCreateFailed": "用户创建失败",

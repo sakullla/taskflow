@@ -194,7 +194,7 @@ export function Sidebar() {
                 to={`/lists/${list.id}`}
                 className={({ isActive }) =>
                   cn(
-                    "flex items-center justify-between px-3 py-2 rounded-lg text-sm transition-colors group",
+                    "relative flex items-center justify-between px-3 py-2 rounded-lg text-sm transition-colors group",
                     isActive
                       ? "bg-primary/10 text-primary"
                       : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
@@ -208,22 +208,22 @@ export function Sidebar() {
                   />
                   <span className="truncate">{list.name}</span>
                 </div>
-                <div className="flex items-center gap-1 shrink-0">
+                <div className="ml-2 shrink-0 text-right">
                   {list.taskCount ? (
                     <span className="text-xs text-muted-foreground">
                       {list.taskCount}
                     </span>
                   ) : null}
-                  {!list.isDefault && (
-                    <button
-                      onClick={(e) => handleDeleteListClick(list.id, e)}
-                      className="opacity-0 group-hover:opacity-100 p-1 hover:bg-destructive/10 hover:text-destructive rounded transition-all"
-                      title={t("navigation:delete") || "Delete"}
-                    >
-                      <Trash2 className="h-3 w-3" />
-                    </button>
-                  )}
                 </div>
+                {!list.isDefault && (
+                  <button
+                    onClick={(e) => handleDeleteListClick(list.id, e)}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 p-1 hover:bg-destructive/10 hover:text-destructive rounded transition-all"
+                    title={t("navigation:delete") || "Delete"}
+                  >
+                    <Trash2 className="h-3 w-3" />
+                  </button>
+                )}
               </NavLink>
             ))}
           </div>

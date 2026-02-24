@@ -40,6 +40,7 @@ export function SettingsPage() {
   const [users, setUsers] = useState<UserType[]>([]);
   const [isLoadingUsers, setIsLoadingUsers] = useState(false);
   const [isCreatingUser, setIsCreatingUser] = useState(false);
+  const [createUserDialogOpen, setCreateUserDialogOpen] = useState(false);
   const [updatingUserId, setUpdatingUserId] = useState<string | null>(null);
   const [newUserName, setNewUserName] = useState("");
   const [newUserEmail, setNewUserEmail] = useState("");
@@ -104,8 +105,14 @@ export function SettingsPage() {
   };
 
   const handleCreateUser = async () => {
-    if (!newUserEmail.trim() || !newUserPassword) {
+    const email = newUserEmail.trim();
+    if (!email || !newUserPassword) {
       toast(t("settings:createUserRequired") || "Email and password are required", "error");
+      return;
+    }
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      toast(t("settings:createUserInvalidEmail") || "Please enter a valid email", "error");
       return;
     }
 
@@ -118,7 +125,7 @@ export function SettingsPage() {
     try {
       const res = (await api.post<ApiResponse<UserType>>("/users", {
         name: newUserName.trim() || undefined,
-        email: newUserEmail.trim(),
+        email,
         password: newUserPassword,
         role: newUserRole,
       })) as unknown as ApiResponse<UserType>;
@@ -126,6 +133,7 @@ export function SettingsPage() {
       if (res.success) {
         setUsers((prev) => [res.data, ...prev]);
         resetCreateUserForm();
+        setCreateUserDialogOpen(false);
         toast(t("settings:userCreated") || "User created", "success");
       }
     } catch (error) {
@@ -422,74 +430,30 @@ export function SettingsPage() {
         {isAdmin && (
           <Card>
             <CardHeader>
-              <div className="flex items-center gap-2">
-                <Shield className="h-5 w-5 text-primary" />
-                <CardTitle>{t("settings:userManagement") || "User Management"}</CardTitle>
-              </div>
-              <CardDescription>{t("settings:userManagementDesc") || "View all users in current environment."}</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="grid gap-3 mb-4 p-3 border rounded-md bg-muted/30">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <Input
-                    value={newUserName}
-                    onChange={(e) => setNewUserName(e.target.value)}
-                    placeholder={t("settings:newUserName") || "User name (optional)"}
-                    data-testid="create-user-name"
-                  />
-                  <Input
-                    value={newUserEmail}
-                    onChange={(e) => setNewUserEmail(e.target.value)}
-                    placeholder={t("settings:newUserEmail") || "User email"}
-                    type="email"
-                    data-testid="create-user-email"
-                  />
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <Input
-                    value={newUserPassword}
-                    onChange={(e) => setNewUserPassword(e.target.value)}
-                    placeholder={t("settings:newUserPassword") || "Initial password"}
-                    type="password"
-                    data-testid="create-user-password"
-                  />
-                  <div className="flex gap-2">
-                    <Button
-                      variant={newUserRole === "user" ? "default" : "outline"}
-                      size="sm"
-                      className="flex-1"
-                      onClick={() => setNewUserRole("user")}
-                    >
-                      {t("settings:userRoleUser") || "User"}
-                    </Button>
-                    <Button
-                      variant={newUserRole === "admin" ? "default" : "outline"}
-                      size="sm"
-                      className="flex-1"
-                      onClick={() => setNewUserRole("admin")}
-                    >
-                      {t("settings:userRoleAdmin") || "Admin"}
-                    </Button>
-                  </div>
-                </div>
+              <div className="flex items-start justify-between gap-3">
                 <div>
+                  <div className="flex items-center gap-2">
+                    <Shield className="h-5 w-5 text-primary" />
+                    <CardTitle>{t("settings:userManagement") || "User Management"}</CardTitle>
+                  </div>
+                  <CardDescription className="mt-1">
+                    {t("settings:userManagementDesc") || "View all users in current environment."}
+                  </CardDescription>
+                </div>
+                <div className="flex items-center gap-2 shrink-0">
                   <Button
-                    onClick={() => void handleCreateUser()}
-                    disabled={isCreatingUser}
-                    data-testid="create-user-submit"
+                    onClick={() => setCreateUserDialogOpen(true)}
+                    data-testid="open-create-user-dialog"
                   >
-                    {isCreatingUser
-                      ? t("settings:creatingUser") || "Creating..."
-                      : t("settings:createUser") || "Create User"}
+                    {t("settings:createUser") || "Create User"}
+                  </Button>
+                  <Button variant="outline" size="sm" onClick={() => void loadUsers()} disabled={isLoadingUsers}>
+                    {isLoadingUsers ? t("settings:loading") || "Loading..." : t("settings:refresh") || "Refresh"}
                   </Button>
                 </div>
               </div>
-
-              <div className="flex justify-end mb-3">
-                <Button variant="outline" size="sm" onClick={() => void loadUsers()} disabled={isLoadingUsers}>
-                  {isLoadingUsers ? t("settings:loading") || "Loading..." : t("settings:refresh") || "Refresh"}
-                </Button>
-              </div>
+            </CardHeader>
+            <CardContent>
               <div className="space-y-2">
                 {users.map((item) => (
                   <div key={item.id} className="border rounded-md p-3" data-testid={`user-row-${item.id}`}>
@@ -550,9 +514,9 @@ export function SettingsPage() {
             <Button onClick={() => void handleChangePassword()} disabled={isSavingPassword}>
               {isSavingPassword ? t("settings:updating") || "Updating..." : t("settings:updatePassword") || "Update Password"}
             </Button>
-          </>
-        }
-      >
+        </>
+      }
+    >
         <div className="space-y-3">
           <Input
             type="password"
@@ -572,6 +536,76 @@ export function SettingsPage() {
             onChange={(e) => setConfirmPassword(e.target.value)}
             placeholder={t("settings:confirmPassword") || "Confirm new password"}
           />
+        </div>
+      </Dialog>
+
+      <Dialog
+        isOpen={createUserDialogOpen}
+        onClose={() => {
+          setCreateUserDialogOpen(false);
+          resetCreateUserForm();
+        }}
+        title={t("settings:createUser") || "Create User"}
+        description={t("settings:userManagementDesc") || "View all users in current environment."}
+        size="md"
+        footer={
+          <>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setCreateUserDialogOpen(false);
+                resetCreateUserForm();
+              }}
+            >
+              {t("common:actions.cancel") || "Cancel"}
+            </Button>
+            <Button onClick={() => void handleCreateUser()} disabled={isCreatingUser} data-testid="create-user-submit">
+              {isCreatingUser
+                ? t("settings:creatingUser") || "Creating..."
+                : t("settings:createUser") || "Create User"}
+            </Button>
+          </>
+        }
+      >
+        <div className="space-y-3">
+          <Input
+            value={newUserName}
+            onChange={(e) => setNewUserName(e.target.value)}
+            placeholder={t("settings:newUserName") || "User name (optional)"}
+            data-testid="create-user-name"
+          />
+          <Input
+            value={newUserEmail}
+            onChange={(e) => setNewUserEmail(e.target.value)}
+            placeholder={t("settings:newUserEmail") || "User email"}
+            type="email"
+            data-testid="create-user-email"
+          />
+          <Input
+            value={newUserPassword}
+            onChange={(e) => setNewUserPassword(e.target.value)}
+            placeholder={t("settings:newUserPassword") || "Initial password"}
+            type="password"
+            data-testid="create-user-password"
+          />
+          <div className="flex gap-2">
+            <Button
+              variant={newUserRole === "user" ? "default" : "outline"}
+              size="sm"
+              className="flex-1"
+              onClick={() => setNewUserRole("user")}
+            >
+              {t("settings:userRoleUser") || "User"}
+            </Button>
+            <Button
+              variant={newUserRole === "admin" ? "default" : "outline"}
+              size="sm"
+              className="flex-1"
+              onClick={() => setNewUserRole("admin")}
+            >
+              {t("settings:userRoleAdmin") || "Admin"}
+            </Button>
+          </div>
         </div>
       </Dialog>
     </div>
