@@ -5,6 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { TaskList } from "@/components/task/TaskList";
+import { TaskListSkeleton } from "@/components/ui/skeleton";
 import { TaskDetail } from "@/components/task/TaskDetail";
 import { MobileTaskDetail } from "@/components/task/MobileTaskDetail";
 import { useTaskStore } from "@/stores/taskStore";
@@ -126,14 +127,18 @@ export function ImportantPage() {
           </CardContent>
         </Card>
 
-        <TaskList
-          tasks={importantTasks}
-          selectedId={selectedTaskId}
-          onSelect={selectTask}
-          emptyTitle={t("tasks:emptyImportantTitle") || "No important tasks"}
-          emptyDescription={t("tasks:emptyImportantDesc") || "Mark tasks as important to see them here"}
-          emptyIcon={StarIcon}
-        />
+        {isLoading ? (
+          <TaskListSkeleton />
+        ) : (
+          <TaskList
+            tasks={importantTasks}
+            selectedId={selectedTaskId}
+            onSelect={selectTask}
+            emptyTitle={t("tasks:emptyImportantTitle") || "No important tasks"}
+            emptyDescription={t("tasks:emptyImportantDesc") || "Mark tasks as important to see them here"}
+            emptyIcon={StarIcon}
+          />
+        )}
       </div>
 
       {/* Desktop Task Detail */}

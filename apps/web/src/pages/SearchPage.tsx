@@ -5,6 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { TaskList } from "@/components/task/TaskList";
+import { TaskListSkeleton } from "@/components/ui/skeleton";
 import { TaskDetail } from "@/components/task/TaskDetail";
 import { MobileTaskDetail } from "@/components/task/MobileTaskDetail";
 import { useTaskStore } from "@/stores/taskStore";
@@ -136,11 +137,15 @@ export function SearchPage() {
                 <h3 className="text-sm font-semibold text-muted-foreground mb-3 px-1">
                   {t("tasks:tasks")} ({incompleteResults.length})
                 </h3>
-                <TaskList
-                  tasks={incompleteResults}
-                  selectedId={selectedTaskId}
-                  onSelect={selectTask}
-                />
+                {isSearching ? (
+                  <TaskListSkeleton />
+                ) : (
+                  <TaskList
+                    tasks={incompleteResults}
+                    selectedId={selectedTaskId}
+                    onSelect={selectTask}
+                  />
+                )}
               </div>
             )}
             {completedResults.length > 0 && (
@@ -148,11 +153,15 @@ export function SearchPage() {
                 <h3 className="text-sm font-semibold text-muted-foreground mb-3 px-1">
                   {t("tasks:completed")} ({completedResults.length})
                 </h3>
-                <TaskList
-                  tasks={completedResults}
-                  selectedId={selectedTaskId}
-                  onSelect={selectTask}
-                />
+                {isSearching ? (
+                  <TaskListSkeleton />
+                ) : (
+                  <TaskList
+                    tasks={completedResults}
+                    selectedId={selectedTaskId}
+                    onSelect={selectTask}
+                  />
+                )}
               </div>
             )}
           </div>

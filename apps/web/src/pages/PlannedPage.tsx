@@ -5,6 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { TaskList } from "@/components/task/TaskList";
+import { TaskListSkeleton } from "@/components/ui/skeleton";
 import { TaskDetail } from "@/components/task/TaskDetail";
 import { MobileTaskDetail } from "@/components/task/MobileTaskDetail";
 import { useTaskStore } from "@/stores/taskStore";
@@ -121,14 +122,18 @@ export function PlannedPage() {
           </CardContent>
         </Card>
 
-        <TaskList
-          tasks={plannedTasks}
-          selectedId={selectedTaskId}
-          onSelect={selectTask}
-          emptyTitle={t("tasks:emptyPlannedTitle") || "No planned tasks"}
-          emptyDescription={t("tasks:emptyPlannedDesc") || "Add due dates to tasks to see them here"}
-          emptyIcon={CalendarIcon}
-        />
+        {isLoading ? (
+          <TaskListSkeleton />
+        ) : (
+          <TaskList
+            tasks={plannedTasks}
+            selectedId={selectedTaskId}
+            onSelect={selectTask}
+            emptyTitle={t("tasks:emptyPlannedTitle") || "No planned tasks"}
+            emptyDescription={t("tasks:emptyPlannedDesc") || "Add due dates to tasks to see them here"}
+            emptyIcon={CalendarIcon}
+          />
+        )}
       </div>
 
       {/* Desktop Task Detail */}

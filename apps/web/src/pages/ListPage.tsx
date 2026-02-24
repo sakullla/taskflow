@@ -6,6 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { TaskList } from "@/components/task/TaskList";
+import { TaskListSkeleton } from "@/components/ui/skeleton";
 import { TaskDetail } from "@/components/task/TaskDetail";
 import { MobileTaskDetail } from "@/components/task/MobileTaskDetail";
 import { useTaskStore } from "@/stores/taskStore";
@@ -124,14 +125,18 @@ export function ListPage() {
           </CardContent>
         </Card>
 
-        <TaskList
-          tasks={listTasks}
-          selectedId={selectedTaskId}
-          onSelect={selectTask}
-          emptyTitle={t("tasks:emptyListTitle") || "Empty list"}
-          emptyDescription={t("tasks:emptyListDesc") || "Add tasks to this list"}
-          emptyIcon={ListIcon}
-        />
+        {isLoading ? (
+          <TaskListSkeleton />
+        ) : (
+          <TaskList
+            tasks={listTasks}
+            selectedId={selectedTaskId}
+            onSelect={selectTask}
+            emptyTitle={t("tasks:emptyListTitle") || "Empty list"}
+            emptyDescription={t("tasks:emptyListDesc") || "Add tasks to this list"}
+            emptyIcon={ListIcon}
+          />
+        )}
       </div>
 
       {/* Desktop Task Detail */}

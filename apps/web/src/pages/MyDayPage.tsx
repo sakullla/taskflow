@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { TaskList } from "@/components/task/TaskList";
 import { TaskDetail } from "@/components/task/TaskDetail";
 import { MobileTaskDetail } from "@/components/task/MobileTaskDetail";
+import { TaskListSkeleton } from "@/components/ui/skeleton";
 import { useTaskStore } from "@/stores/taskStore";
 import { useUIStore } from "@/stores/uiStore";
 import { api } from "@/lib/api/client";
@@ -236,14 +237,18 @@ export function MyDayPage() {
           </CardContent>
         </Card>
 
-        <TaskList
-          tasks={myDayTasks}
-          selectedId={selectedTaskId}
-          onSelect={selectTask}
-          emptyTitle={t("tasks:emptyMyDayTitle") || "No tasks for today"}
-          emptyDescription={t("tasks:emptyMyDayDesc") || "Add tasks to My Day to focus on what matters"}
-          emptyIcon={SunIcon}
-        />
+        {isLoading ? (
+          <TaskListSkeleton />
+        ) : (
+          <TaskList
+            tasks={myDayTasks}
+            selectedId={selectedTaskId}
+            onSelect={selectTask}
+            emptyTitle={t("tasks:emptyMyDayTitle") || "No tasks for today"}
+            emptyDescription={t("tasks:emptyMyDayDesc") || "Add tasks to My Day to focus on what matters"}
+            emptyIcon={SunIcon}
+          />
+        )}
       </div>
 
       {/* Desktop Task Detail */}

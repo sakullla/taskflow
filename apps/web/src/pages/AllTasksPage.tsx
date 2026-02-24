@@ -5,6 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { TaskList } from "@/components/task/TaskList";
+import { TaskListSkeleton } from "@/components/ui/skeleton";
 import { TaskDetail } from "@/components/task/TaskDetail";
 import { MobileTaskDetail } from "@/components/task/MobileTaskDetail";
 import { useTaskStore } from "@/stores/taskStore";
@@ -119,14 +120,18 @@ export function AllTasksPage() {
           </CardContent>
         </Card>
 
-        <TaskList
-          tasks={incompleteTasks}
-          selectedId={selectedTaskId}
-          onSelect={selectTask}
-          emptyTitle={t("tasks:emptyAllTitle") || "No tasks"}
-          emptyDescription={t("tasks:emptyAllDesc") || "Start by adding your first task!"}
-          emptyIcon={ClipboardList}
-        />
+        {isLoading ? (
+          <TaskListSkeleton />
+        ) : (
+          <TaskList
+            tasks={incompleteTasks}
+            selectedId={selectedTaskId}
+            onSelect={selectTask}
+            emptyTitle={t("tasks:emptyAllTitle") || "No tasks"}
+            emptyDescription={t("tasks:emptyAllDesc") || "Start by adding your first task!"}
+            emptyIcon={ClipboardList}
+          />
+        )}
       </div>
 
       {/* Desktop Task Detail */}
