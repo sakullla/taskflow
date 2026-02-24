@@ -152,7 +152,8 @@ export async function createApp(): Promise<FastifyInstance> {
       root: webDistPath,
       prefix: "/",
       index: false,
-      decorateReply: false,
+      // Avoid registering plugin wildcard route so SPA fallback can own GET /*.
+      wildcard: false,
     });
 
     app.get("/*", async (request, reply) => {
