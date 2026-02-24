@@ -18,6 +18,12 @@ cp .env.example .env
 npm run dev
 ```
 
+Or manually with concurrently:
+
+```bash
+npx concurrently "npx tsx apps/api/src/server.ts" "cd apps/web && npm run dev"
+```
+
 - Web: `http://localhost:5173`
 - API: `http://localhost:4000`
 
