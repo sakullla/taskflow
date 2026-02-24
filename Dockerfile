@@ -16,7 +16,7 @@ COPY apps/api/package.json ./apps/api/package.json
 COPY apps/web/package.json ./apps/web/package.json
 
 RUN --mount=type=cache,target=/root/.npm \
-  npm ci --workspace apps/api --workspace apps/web
+    npm ci --workspace apps/api --workspace apps/web
 
 # Workspace symlinks are not needed in the image.
 RUN rm -f node_modules/api node_modules/web || true
@@ -24,7 +24,7 @@ RUN rm -f node_modules/api node_modules/web || true
 # Copy sources and build both apps.
 COPY apps ./apps
 RUN npm --workspace apps/web run build \
-  && npm --workspace apps/api run build
+    && npm --workspace apps/api run build
 
 # ============================================
 # Stage 2: Production
@@ -42,15 +42,15 @@ COPY apps/api/package.json ./apps/api/package.json
 COPY apps/web/package.json ./apps/web/package.json
 
 RUN --mount=type=cache,target=/root/.npm \
-  npm ci --omit=dev --workspace apps/api \
-  && rm -f node_modules/api node_modules/web || true
+    npm ci --omit=dev --workspace apps/api \
+    && rm -f node_modules/api node_modules/web || true
 
 # Copy runtime artifacts.
-COPY --from=builder /app/apps/api/dist ./api/dist
-COPY --from=builder /app/apps/api/prisma ./api/prisma
-COPY --from=builder /app/apps/api/prisma.config.ts ./api/prisma.config.ts
-COPY --from=builder /app/apps/api/scripts ./api/scripts
-COPY --from=builder /app/apps/web/dist ./web/dist
+COPY --from=builder /app/apps/api/dist ./apps/api/dist
+COPY --from=builder /app/apps/api/prisma ./apps/api/prisma
+COPY --from=builder /app/apps/api/prisma.config.ts ./apps/api/prisma.config.ts
+COPY --from=builder /app/apps/api/scripts ./apps/api/scripts
+COPY --from=builder /app/apps/web/dist ./apps/web/dist
 
 COPY scripts/docker-start.sh /app/start.sh
 RUN chmod +x /app/start.sh
@@ -63,6 +63,6 @@ ENV NODE_ENV=production \
 EXPOSE 3000
 
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD wget --no-verbose --tries=1 --spider http://localhost:3000/health || exit 1
+    CMD wget --no-verbose --tries=1 --spider http://localhost:3000/health || exit 1
 
 CMD ["/app/start.sh"]
