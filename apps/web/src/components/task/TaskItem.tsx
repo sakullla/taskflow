@@ -160,8 +160,7 @@ export function TaskItem({ task, isSelected, onClick }: TaskItemProps) {
             onClick={handleBatchSelect}
             type="button"
             className={cn(
-              "w-5 h-5 rounded border-2 flex items-center justify-center transition-all shrink-0",
-              isBatchSelected ? "bg-primary border-primary text-primary-foreground" : "border-muted-foreground"
+              "w-5 h-5 rounded border-2 flex items-center justify-center transition-all shrink-0",              isBatchSelected ? "bg-primary border-primary text-primary-foreground" : "border-muted-foreground"
             )}
             aria-label={task.title}
             aria-pressed={isBatchSelected}
@@ -197,7 +196,7 @@ export function TaskItem({ task, isSelected, onClick }: TaskItemProps) {
             {task.title}
           </p>
           {(task.dueDate || task.steps.length > 0) && (
-            <div className="flex items-center gap-2 mt-0.5 text-[11px] text-muted-foreground">
+            <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground">
               {task.dueDate && (
                 <span className={cn(
                   "flex items-center gap-1",

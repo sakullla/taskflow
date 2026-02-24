@@ -253,30 +253,32 @@ export function MobileSidebar() {
                   }
                 >
                   <div className="flex items-center gap-3 min-w-0">
-                    <div
-                      className="w-2 h-2 rounded-full shrink-0"
-                      style={{ backgroundColor: list.color }}
-                    />
-                    <span className="truncate">{list.name}</span>
+                    <div className="w-4 h-4 flex items-center justify-center shrink-0">
+                      <div
+                        className="w-2 h-2 rounded-full"
+                        style={{ backgroundColor: list.color }}
+                      />
+                    </div>
+                    <span className="truncate">{list.isDefault ? (t("navigation:defaultList") || list.name) : list.name}</span>
                   </div>
-                  <div className="ml-2 shrink-0 text-right">
+                  <div className="ml-2 shrink-0 flex items-center gap-1">
                     {list.taskCount ? (
-                      <span className="text-xs text-muted-foreground">
+                      <span className="text-xs text-muted-foreground tabular-nums">
                         {list.taskCount}
                       </span>
                     ) : null}
+                    {!list.isDefault && (
+                      <button
+                        type="button"
+                        onClick={(e) => handleDeleteList(list.id, e)}
+                        className="p-1.5 rounded-md hover:bg-destructive/10 hover:text-destructive text-muted-foreground/50 transition-colors"
+                        title={t("delete") || "Delete"}
+                        aria-label={`${t("delete") || "Delete"} ${list.name}`}
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </button>
+                    )}
                   </div>
-                  {!list.isDefault && (
-                    <button
-                      type="button"
-                      onClick={(e) => handleDeleteList(list.id, e)}
-                      className="absolute right-2 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 p-2 hover:bg-destructive/10 hover:text-destructive rounded transition-all"
-                      title={t("delete") || "Delete"}
-                      aria-label={`${t("delete") || "Delete"} ${list.name}`}
-                    >
-                      <Trash2 className="h-3 w-3" />
-                    </button>
-                  )}
                 </NavLink>
               ))}
             </div>

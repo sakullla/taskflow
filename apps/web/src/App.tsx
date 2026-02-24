@@ -93,7 +93,7 @@ function App() {
   const { token, user, setUser, logout } = useAuthStore();
 
   useEffect(() => {
-    // Initialize theme and accent on startup
+    // Sync theme on startup (index.html inline script handles initial paint)
     const savedTheme = localStorage.getItem("theme") || "system";
     const savedAccent = localStorage.getItem("accent-theme") || "blue";
     const root = document.documentElement;
@@ -102,7 +102,6 @@ function App() {
     } else {
       root.classList.toggle("dark", savedTheme === "dark");
     }
-    ["blue", "purple", "green", "orange", "rose"].forEach((t) => root.classList.remove(`theme-${t}`));
     root.classList.add(`theme-${savedAccent}`);
   }, []);
 

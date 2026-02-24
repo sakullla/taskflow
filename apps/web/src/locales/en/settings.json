@@ -70,5 +70,10 @@
   "enableUser": "Enable User",
   "userDisabled": "User disabled",
   "userEnabled": "User enabled",
-  "userStatusUpdateFailed": "Failed to update user status"
+  "userStatusUpdateFailed": "Failed to update user status",
+  "accentBlue": "Ocean",
+  "accentPurple": "Violet",
+  "accentGreen": "Forest",
+  "accentOrange": "Sunset",
+  "accentRose": "Rose"
 }

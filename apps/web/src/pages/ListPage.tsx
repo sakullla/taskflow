@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { Plus, List as ListIcon } from "lucide-react";
+import { List as ListIcon, PenLine } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { TaskSplitList } from "@/components/task/TaskSplitList";
@@ -21,7 +21,7 @@ export function ListPage() {
     lists,
     selectedTaskId,
     setCurrentView,
-    setTasks,
+    mergeTasks,
     addTask,
     selectTask,
   } = useTaskStore();
@@ -46,7 +46,7 @@ export function ListPage() {
         }
         const response = (await api.get<TasksResponse>("/tasks")) as unknown as TasksResponse;
         if (response.success) {
-          setTasks(response.data);
+          mergeTasks(response.data);
         }
       } catch (error) {
         console.error("Failed to load tasks:", error);
@@ -56,7 +56,7 @@ export function ListPage() {
     };
 
     void loadTasks();
-  }, [listId, setCurrentView, setTasks]);
+  }, [listId, setCurrentView, mergeTasks]);
 
   const listTasks = tasks.filter((t) => t.listId === listId && !t.isCompleted);
   const completedListTasks = tasks.filter((t) => t.listId === listId && t.isCompleted);
@@ -100,11 +100,12 @@ export function ListPage() {
           </div>
         </div>
 
-        <div className="flex items-center gap-3 mb-4 px-4 py-2.5 rounded-xl border border-dashed border-border/80 bg-card/50 hover:border-primary/40 transition-colors focus-within:border-primary/60 focus-within:bg-card">
-          <Plus className="h-4 w-4 text-muted-foreground/50 shrink-0" />
+        <div className="flex items-center gap-3 mb-2 px-4 py-3 rounded-xl bg-card shadow-sm border border-transparent hover:border-border/50 hover:shadow-md transition-all duration-150 focus-within:border-primary/40 focus-within:shadow-md">
+          <PenLine className="h-4 w-4 text-muted-foreground/40 shrink-0" />
+
           <Input
             placeholder={t("tasks:addPlaceholder")}
-            className="flex-1 border-0 bg-transparent focus-visible:ring-0 px-0 text-sm shadow-none h-auto py-0 placeholder:text-muted-foreground/40"
+            className="flex-1 border-0 bg-transparent focus-visible:ring-0 px-0 text-sm shadow-none h-8 py-0 placeholder:text-muted-foreground/40"
             value={newTaskTitle}
             onChange={(e) => setNewTaskTitle(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && handleAddTask()}

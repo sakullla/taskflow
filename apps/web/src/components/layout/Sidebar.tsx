@@ -126,6 +126,7 @@ export function Sidebar() {
                   isActive ? "text-primary-foreground" : item.color
                 )} />
                 <span className="flex-1">{t(item.labelKey)}</span>
+                <span className="w-6" />
               </>
             )}
           </NavLink>
@@ -221,37 +222,48 @@ export function Sidebar() {
               >
                 {({ isActive }) => (
                   <>
-                    <div
-                      className="w-2 h-2 rounded-full shrink-0"
-                      style={{ backgroundColor: list.color }}
-                    />
-                    <span className="flex-1 truncate">{list.name}</span>
-                    <div className="flex items-center gap-1 shrink-0">
-                      {list.taskCount ? (
+                    <div className="w-4 h-4 flex items-center justify-center shrink-0">
+                      <div
+                        className="w-2 h-2 rounded-full"
+                        style={{ backgroundColor: list.color }}
+                      />
+                    </div>
+                    <span className="flex-1 truncate">
+                      {list.isDefault ? (t("navigation:defaultList") || list.name) : list.name}
+                    </span>
+                    {!list.isDefault ? (
+                      <div className="relative shrink-0 w-6 flex items-center justify-center">
                         <span className={cn(
-                          "text-xs tabular-nums",
-                          isActive ? "text-primary-foreground/70" : "text-muted-foreground"
+                          "text-xs tabular-nums leading-none group-hover:opacity-0 transition-opacity",
+                          isActive ? "text-primary-foreground/70" : "text-muted-foreground/60"
                         )}>
-                          {list.taskCount}
+                          {list.taskCount || ""}
                         </span>
-                      ) : null}
-                      {!list.isDefault && (
                         <button
                           type="button"
                           onClick={(e) => handleDeleteListClick(list.id, e)}
                           className={cn(
-                            "opacity-0 group-hover:opacity-100 p-1 rounded-md transition-all",
+                            "absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 rounded-md transition-all",
                             isActive
                               ? "hover:bg-white/20 text-primary-foreground"
-                              : "hover:bg-destructive/10 hover:text-destructive"
+                              : "hover:bg-destructive/10 text-muted-foreground hover:text-destructive"
                           )}
                           title={t("navigation:delete") || "Delete"}
                           aria-label={`${t("navigation:delete") || "Delete"} ${list.name}`}
                         >
                           <Trash2 className="h-3 w-3" />
                         </button>
-                      )}
-                    </div>
+                      </div>
+                    ) : (
+                      <div className="shrink-0 w-6 flex items-center justify-center">
+                        <span className={cn(
+                          "text-xs tabular-nums leading-none",
+                          isActive ? "text-primary-foreground/70" : "text-muted-foreground/60"
+                        )}>
+                          {list.taskCount || ""}
+                        </span>
+                      </div>
+                    )}
                   </>
                 )}
               </NavLink>

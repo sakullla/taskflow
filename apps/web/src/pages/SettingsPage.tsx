@@ -18,12 +18,12 @@ type AccentTheme = "blue" | "purple" | "green" | "orange" | "rose";
 type Language = "en" | "zh-CN";
 type Role = "admin" | "user";
 
-const ACCENT_THEMES: { id: AccentTheme; label: string; color: string }[] = [
-  { id: "blue",   label: "Ocean",   color: "#3b82f6" },
-  { id: "purple", label: "Violet",  color: "#9333ea" },
-  { id: "green",  label: "Forest",  color: "#10b981" },
-  { id: "orange", label: "Sunset",  color: "#f97316" },
-  { id: "rose",   label: "Rose",    color: "#f43f5e" },
+const ACCENT_THEMES: { id: AccentTheme; labelKey: string; color: string }[] = [
+  { id: "blue",   labelKey: "accentBlue",   color: "#3b82f6" },
+  { id: "purple", labelKey: "accentPurple", color: "#9333ea" },
+  { id: "green",  labelKey: "accentGreen",  color: "#10b981" },
+  { id: "orange", labelKey: "accentOrange", color: "#f97316" },
+  { id: "rose",   labelKey: "accentRose",   color: "#f43f5e" },
 ];
 
 interface ApiResponse<T> {
@@ -354,11 +354,11 @@ export function SettingsPage() {
             <div>
               <p className="text-sm font-medium mb-3 text-muted-foreground">{t("settings:accentColor") || "Accent color"}</p>
               <div className="flex gap-3">
-                {ACCENT_THEMES.map(({ id, label, color }) => (
+                {ACCENT_THEMES.map(({ id, labelKey, color }) => (
                   <button
                     key={id}
                     type="button"
-                    title={label}
+                    title={t(`settings:${labelKey}`)}
                     onClick={() => handleAccentThemeChange(id)}
                     className="group flex flex-col items-center gap-1.5"
                   >
@@ -374,7 +374,7 @@ export function SettingsPage() {
                       {accentTheme === id && <Check className="h-4 w-4 stroke-[3] text-white" />}
                     </span>
                     <span className="text-[10px] text-muted-foreground group-hover:text-foreground transition-colors">
-                      {label}
+                      {t(`settings:${labelKey}`)}
                     </span>
                   </button>
                 ))}

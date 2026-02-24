@@ -165,76 +165,100 @@
     --secondary: 265 28% 18%;
   }
 
+  /* Purple */
+  .theme-purple {
+    --primary: 262 83% 58%;
+    --ring: 262 83% 58%;
+    --background: 270 15% 98%;
+    --muted: 270 10% 95%;
+    --accent: 270 10% 93%;
+    --border: 240 10% 88%;
+    --input: 240 10% 88%;
+    --secondary: 270 15% 96%;
+  }
+  .dark.theme-purple {
+    --primary: 263 85% 70%;
+    --ring: 263 85% 65%;
+    --background: 265 15% 8%;
+    --card: 265 12% 11%;
+    --popover: 265 12% 11%;
+    --muted: 265 12% 16%;
+    --accent: 265 12% 16%;
+    --border: 240 10% 18%;
+    --input: 240 10% 18%;
+    --secondary: 265 15% 18%;
+  }
+
   /* Green / Teal */
   .theme-green {
     --primary: 160 84% 39%;
     --ring: 160 84% 39%;
-    --background: 150 20% 98%;
-    --muted: 150 20% 95%;
-    --accent: 150 20% 93%;
-    --border: 150 20% 87%;
-    --input: 150 20% 87%;
-    --secondary: 150 30% 96%;
+    --background: 150 10% 98%;
+    --muted: 150 8% 95%;
+    --accent: 150 8% 93%;
+    --border: 214 12% 88%;
+    --input: 214 12% 88%;
+    --secondary: 150 10% 96%;
   }
   .dark.theme-green {
     --primary: 158 80% 52%;
     --ring: 158 80% 46%;
-    --background: 160 18% 8%;
-    --card: 160 16% 11%;
-    --popover: 160 16% 11%;
-    --muted: 160 20% 16%;
-    --accent: 160 20% 16%;
-    --border: 160 16% 18%;
-    --input: 160 16% 18%;
-    --secondary: 160 25% 18%;
+    --background: 160 12% 8%;
+    --card: 160 10% 11%;
+    --popover: 160 10% 11%;
+    --muted: 160 10% 16%;
+    --accent: 160 10% 16%;
+    --border: 214 10% 18%;
+    --input: 214 10% 18%;
+    --secondary: 160 12% 18%;
   }
 
   /* Orange / Warm */
   .theme-orange {
     --primary: 24 95% 53%;
     --ring: 24 95% 53%;
-    --background: 30 25% 98%;
-    --muted: 30 20% 95%;
-    --accent: 30 20% 93%;
-    --border: 30 20% 87%;
-    --input: 30 20% 87%;
-    --secondary: 30 30% 96%;
+    --background: 30 12% 98%;
+    --muted: 30 8% 95%;
+    --accent: 30 8% 93%;
+    --border: 214 12% 88%;
+    --input: 214 12% 88%;
+    --secondary: 30 10% 96%;
   }
   .dark.theme-orange {
     --primary: 24 95% 60%;
     --ring: 24 95% 55%;
-    --background: 25 18% 8%;
-    --card: 25 16% 11%;
-    --popover: 25 16% 11%;
-    --muted: 25 20% 16%;
-    --accent: 25 20% 16%;
-    --border: 25 16% 18%;
-    --input: 25 16% 18%;
-    --secondary: 25 25% 18%;
+    --background: 25 12% 8%;
+    --card: 25 10% 11%;
+    --popover: 25 10% 11%;
+    --muted: 25 10% 16%;
+    --accent: 25 10% 16%;
+    --border: 214 10% 18%;
+    --input: 214 10% 18%;
+    --secondary: 25 12% 18%;
   }
 
   /* Rose / Pink */
   .theme-rose {
     --primary: 346 84% 55%;
     --ring: 346 84% 55%;
-    --background: 350 20% 98%;
-    --muted: 350 18% 95%;
-    --accent: 350 18% 93%;
-    --border: 350 18% 87%;
-    --input: 350 18% 87%;
-    --secondary: 350 25% 96%;
+    --background: 350 10% 98%;
+    --muted: 350 8% 95%;
+    --accent: 350 8% 93%;
+    --border: 214 12% 88%;
+    --input: 214 12% 88%;
+    --secondary: 350 10% 96%;
   }
   .dark.theme-rose {
     --primary: 346 84% 66%;
     --ring: 346 84% 60%;
-    --background: 350 18% 8%;
-    --card: 350 16% 11%;
-    --popover: 350 16% 11%;
-    --muted: 350 20% 16%;
-    --accent: 350 20% 16%;
-    --border: 350 16% 18%;
-    --input: 350 16% 18%;
-    --secondary: 350 25% 18%;
+    --background: 350 12% 8%;
+    --card: 350 10% 11%;
+    --popover: 350 10% 11%;
+    --muted: 350 10% 16%;
+    --accent: 350 10% 16%;
+    --border: 214 10% 18%;
+    --input: 214 10% 18%;
+    --secondary: 350 12% 18%;
   }
 }
 

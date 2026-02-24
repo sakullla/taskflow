@@ -4,6 +4,19 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>TaskFlow</title>
+    <script>
+      (function () {
+        var theme = localStorage.getItem("theme") || "system";
+        var accent = localStorage.getItem("accent-theme") || "blue";
+        var root = document.documentElement;
+        if (theme === "system") {
+          if (window.matchMedia("(prefers-color-scheme: dark)").matches) root.classList.add("dark");
+        } else if (theme === "dark") {
+          root.classList.add("dark");
+        }
+        root.classList.add("theme-" + accent);
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

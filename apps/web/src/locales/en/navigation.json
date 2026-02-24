@@ -17,5 +17,6 @@
   "deleteListConfirmTitle": "Delete List",
   "deleteListConfirmDesc": "Are you sure you want to delete this list? Tasks in this list will be moved to the default list.",
   "search": "Search",
-  "batchMode": "Batch select"
+  "batchMode": "Batch select",
+  "defaultList": "Tasks"
 }

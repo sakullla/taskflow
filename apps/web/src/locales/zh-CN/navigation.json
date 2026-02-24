@@ -17,5 +17,6 @@
   "deleteListConfirmTitle": "删除列表",
   "deleteListConfirmDesc": "确定要删除这个列表吗？列表中的任务将移动到默认列表。",
   "search": "搜索",
-  "batchMode": "批量选择"
+  "batchMode": "批量选择",
+  "defaultList": "任务"
 }

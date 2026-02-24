@@ -43,7 +43,7 @@ export function TaskSplitList({
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-2">
       {incompleteTasks.length > 0 ? (
         <TaskList
           tasks={incompleteTasks}

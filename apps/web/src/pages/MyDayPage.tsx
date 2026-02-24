@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Sun, Plus } from "lucide-react";
+import { Sun, PenLine } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { TaskSplitList } from "@/components/task/TaskSplitList";
@@ -19,8 +19,7 @@ export function MyDayPage() {
     lists,
     selectedTaskId,
     setCurrentView,
-    setTasks,
-    setLists,
+    mergeTasks,
     addTask,
     selectTask,
   } = useTaskStore();
@@ -35,27 +34,6 @@ export function MyDayPage() {
     const loadData = async () => {
       try {
         setIsLoading(true);
-
-        interface ListsResponse {
-          success: boolean;
-          data: Array<{
-            id: string;
-            name: string;
-            color: string;
-            isDefault: boolean;
-            isArchived: boolean;
-            order: number;
-            userId: string;
-            taskCount?: number;
-            createdAt: string;
-            updatedAt: string;
-          }>;
-        }
-
-        const listsRes = (await api.get<ListsResponse>("/lists")) as unknown as ListsResponse;
-        if (listsRes.success) {
-          setLists(listsRes.data);
-        }
 
         interface MyDayResponse {
           success: boolean;
@@ -96,7 +74,7 @@ export function MyDayPage() {
 
         const myDayRes = (await api.get<MyDayResponse>("/my-day")) as unknown as MyDayResponse;
         if (myDayRes.success) {
-          setTasks(myDayRes.data.tasks.map(task => ({
+          mergeTasks(myDayRes.data.tasks.map(task => ({
             ...task,
             inMyDay: true,
             steps: task.steps.map(s => ({
@@ -115,10 +93,12 @@ export function MyDayPage() {
     };
 
     void loadData();
-  }, [setCurrentView, setTasks, setLists]);
+  }, [setCurrentView, mergeTasks]);
 
-  const myDayTasks = tasks.filter((t) => !t.isCompleted);
-  const completedMyDayTasks = tasks.filter((t) => t.isCompleted);
+  const myDayTasks = tasks
+    .filter((t) => t.inMyDay && !t.isCompleted)
+    .sort((a, b) => (b.isImportant ? 1 : 0) - (a.isImportant ? 1 : 0));
+  const completedMyDayTasks = tasks.filter((t) => t.inMyDay && t.isCompleted);
 
   const handleAddTask = async () => {
     if (!newTaskTitle.trim()) return;
@@ -203,11 +183,12 @@ export function MyDayPage() {
         </div>
 
         {/* Add task input */}
-        <div className="flex items-center gap-3 mb-4 px-4 py-2.5 rounded-xl border border-dashed border-border/80 bg-card/50 hover:border-primary/40 transition-colors focus-within:border-primary/60 focus-within:bg-card">
-          <Plus className="h-4 w-4 text-muted-foreground/50 shrink-0" />
+        <div className="flex items-center gap-3 mb-2 px-4 py-3 rounded-xl bg-card shadow-sm border border-transparent hover:border-border/50 hover:shadow-md transition-all duration-150 focus-within:border-primary/40 focus-within:shadow-md">
+          <PenLine className="h-4 w-4 text-muted-foreground/40 shrink-0" />
+
           <Input
             placeholder={t("tasks:addPlaceholder")}
-            className="flex-1 border-0 bg-transparent focus-visible:ring-0 px-0 text-sm shadow-none h-auto py-0 placeholder:text-muted-foreground/40"
+            className="flex-1 border-0 bg-transparent focus-visible:ring-0 px-0 text-sm shadow-none h-8 py-0 placeholder:text-muted-foreground/40"
             value={newTaskTitle}
             onChange={(e) => setNewTaskTitle(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && handleAddTask()}

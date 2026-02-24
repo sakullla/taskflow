@@ -201,7 +201,7 @@ export function TaskDetail({ task, onClose }: TaskDetailProps) {
       </div>
 
       {/* Scrollable content */}
-      <div className="overflow-y-auto max-h-[calc(100vh-12rem)] space-y-3">
+      <div className="overflow-y-auto max-h-[calc(100vh-12rem)] space-y-3 pr-0.5">
         {/* Title */}
         <Input
           value={title}
@@ -267,7 +267,7 @@ export function TaskDetail({ task, onClose }: TaskDetailProps) {
           onBlur={handleNoteBlur}
           disabled={isSaving}
           rows={3}
-          className="w-full p-2.5 rounded-xl border bg-muted/20 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-ring transition-all placeholder:text-muted-foreground/40"
+          className="w-full p-2.5 rounded-xl border bg-muted/20 text-sm resize-none focus:outline-none focus:ring-1 focus:ring-border transition-all placeholder:text-muted-foreground/40"
           placeholder={t("tasks:notePlaceholder") || "Add a note..."}
         />
 
@@ -275,8 +275,8 @@ export function TaskDetail({ task, onClose }: TaskDetailProps) {
         <div className="space-y-1.5">
           {/* Progress header */}
           {totalSteps > 0 && (
-            <div className="flex items-center gap-2">
-              <div className="flex-1 h-1 bg-muted rounded-full overflow-hidden">
+            <div className="flex items-center gap-2 min-w-0">
+              <div className="flex-1 min-w-0 h-1 bg-muted rounded-full overflow-hidden">
                 <div
                   className="h-full bg-primary rounded-full transition-all duration-500"
                   style={{ width: `${(completedSteps / totalSteps) * 100}%` }}

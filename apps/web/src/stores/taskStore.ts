@@ -18,6 +18,7 @@ interface TaskState {
 
   // Actions
   setTasks: (tasks: Task[]) => void;
+  mergeTasks: (tasks: Task[]) => void;
   setLists: (lists: List[]) => void;
   addTask: (task: Task) => void;
   updateTask: (taskId: string, updates: Partial<Task>) => void;
@@ -58,6 +59,12 @@ export const useTaskStore = create<TaskState>()(
       selectedTaskIds: [],
 
       setTasks: (tasks) => set({ tasks }),
+      mergeTasks: (incoming) =>
+        set((state) => {
+          const map = new Map(state.tasks.map((t) => [t.id, t]));
+          incoming.forEach((t) => map.set(t.id, t));
+          return { tasks: Array.from(map.values()) };
+        }),
       setLists: (lists) => set({ lists }),
 
       addTask: (task) =>

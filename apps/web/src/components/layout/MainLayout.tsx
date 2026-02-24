@@ -8,11 +8,14 @@ import { BottomNav } from "./BottomNav";
 import { FloatingActionButton } from "./FloatingActionButton";
 import { QuickAddOverlay } from "@/components/task/QuickAddOverlay";
 import { useUIStore } from "@/stores/uiStore";
+import { useTaskStore } from "@/stores/taskStore";
+import { api } from "@/lib/api/client";
 
 const MOBILE_BREAKPOINT = 1024;
 
 export function MainLayout() {
   const { setIsMobile } = useUIStore();
+  const { setLists } = useTaskStore();
   const location = useLocation();
 
   useEffect(() => {
@@ -27,6 +30,36 @@ export function MainLayout() {
       window.removeEventListener("resize", checkMobile);
     };
   }, [setIsMobile]);
+
+  useEffect(() => {
+    const loadLists = async () => {
+      try {
+        interface ListsResponse {
+          success: boolean;
+          data: Array<{
+            id: string;
+            name: string;
+            color: string;
+            isDefault: boolean;
+            isArchived: boolean;
+            order: number;
+            userId: string;
+            taskCount?: number;
+            createdAt: string;
+            updatedAt: string;
+          }>;
+        }
+        const res = (await api.get<ListsResponse>("/lists")) as unknown as ListsResponse;
+        if (res.success) {
+          setLists(res.data);
+        }
+      } catch (error) {
+        console.error("Failed to load lists:", error);
+      }
+    };
+
+    void loadLists();
+  }, [setLists]);
 
   return (
     <div className="flex h-screen bg-muted/20 overflow-hidden">

@@ -70,5 +70,10 @@
   "enableUser": "启用用户",
   "userDisabled": "用户已禁用",
   "userEnabled": "用户已启用",
-  "userStatusUpdateFailed": "用户状态更新失败"
+  "userStatusUpdateFailed": "用户状态更新失败",
+  "accentBlue": "海洋蓝",
+  "accentPurple": "紫罗兰",
+  "accentGreen": "森林绿",
+  "accentOrange": "日落橙",
+  "accentRose": "玫瑰红"
 }
