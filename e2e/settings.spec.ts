@@ -101,4 +101,20 @@ test.describe("Settings Page", () => {
       page.getByRole("heading", { name: /User Management|用户管理/ }),
     ).toBeVisible();
   });
+
+  test("admin can create and disable a user", async ({ page }) => {
+    const email = `managed-${Date.now()}@example.com`;
+
+    await page.getByTestId("create-user-name").fill("Managed User");
+    await page.getByTestId("create-user-email").fill(email);
+    await page.getByTestId("create-user-password").fill("password123");
+    await page.getByTestId("create-user-submit").click();
+
+    const row = page.locator("[data-testid^='user-row-']", { hasText: email });
+    await expect(row).toBeVisible();
+    await expect(row).toContainText(/Status: Active|状态: 启用/);
+
+    await row.getByRole("button", { name: /Disable User|禁用用户/ }).click();
+    await expect(row).toContainText(/Status: Disabled|状态: 禁用/);
+  });
 });

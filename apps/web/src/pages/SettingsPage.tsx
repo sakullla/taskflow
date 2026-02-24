@@ -14,6 +14,7 @@ import type { User as UserType } from "@/types";
 
 type Theme = "light" | "dark" | "system";
 type Language = "en" | "zh-CN";
+type Role = "admin" | "user";
 
 interface ApiResponse<T> {
   success: boolean;
@@ -38,6 +39,12 @@ export function SettingsPage() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [users, setUsers] = useState<UserType[]>([]);
   const [isLoadingUsers, setIsLoadingUsers] = useState(false);
+  const [isCreatingUser, setIsCreatingUser] = useState(false);
+  const [updatingUserId, setUpdatingUserId] = useState<string | null>(null);
+  const [newUserName, setNewUserName] = useState("");
+  const [newUserEmail, setNewUserEmail] = useState("");
+  const [newUserPassword, setNewUserPassword] = useState("");
+  const [newUserRole, setNewUserRole] = useState<Role>("user");
 
   const currentLanguage = i18n.language as Language;
   const isAdmin = useMemo(() => user?.role === "admin", [user?.role]);
@@ -87,6 +94,70 @@ export function SettingsPage() {
     const res = (await api.patch<ApiResponse<UserType>>("/users/me", payload)) as unknown as ApiResponse<UserType>;
     if (res.success) setUser(res.data);
     return res;
+  };
+
+  const resetCreateUserForm = () => {
+    setNewUserName("");
+    setNewUserEmail("");
+    setNewUserPassword("");
+    setNewUserRole("user");
+  };
+
+  const handleCreateUser = async () => {
+    if (!newUserEmail.trim() || !newUserPassword) {
+      toast(t("settings:createUserRequired") || "Email and password are required", "error");
+      return;
+    }
+
+    if (newUserPassword.length < 6) {
+      toast(t("settings:createUserPasswordTooShort") || "Password must be at least 6 characters", "error");
+      return;
+    }
+
+    setIsCreatingUser(true);
+    try {
+      const res = (await api.post<ApiResponse<UserType>>("/users", {
+        name: newUserName.trim() || undefined,
+        email: newUserEmail.trim(),
+        password: newUserPassword,
+        role: newUserRole,
+      })) as unknown as ApiResponse<UserType>;
+
+      if (res.success) {
+        setUsers((prev) => [res.data, ...prev]);
+        resetCreateUserForm();
+        toast(t("settings:userCreated") || "User created", "success");
+      }
+    } catch (error) {
+      console.error("Failed to create user:", error);
+      toast(t("settings:userCreateFailed") || "Failed to create user", "error");
+    } finally {
+      setIsCreatingUser(false);
+    }
+  };
+
+  const handleToggleUserStatus = async (item: UserType) => {
+    setUpdatingUserId(item.id);
+    try {
+      const res = (await api.patch<ApiResponse<UserType>>(`/users/${item.id}/status`, {
+        isActive: !(item.isActive ?? true),
+      })) as unknown as ApiResponse<UserType>;
+
+      if (res.success) {
+        setUsers((prev) => prev.map((u) => (u.id === res.data.id ? res.data : u)));
+        toast(
+          res.data.isActive
+            ? t("settings:userEnabled") || "User enabled"
+            : t("settings:userDisabled") || "User disabled",
+          "success"
+        );
+      }
+    } catch (error) {
+      console.error("Failed to update user status:", error);
+      toast(t("settings:userStatusUpdateFailed") || "Failed to update user status", "error");
+    } finally {
+      setUpdatingUserId(null);
+    }
   };
 
   const handleThemeChange = (theme: Theme) => {
@@ -358,6 +429,62 @@ export function SettingsPage() {
               <CardDescription>{t("settings:userManagementDesc") || "View all users in current environment."}</CardDescription>
             </CardHeader>
             <CardContent>
+              <div className="grid gap-3 mb-4 p-3 border rounded-md bg-muted/30">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <Input
+                    value={newUserName}
+                    onChange={(e) => setNewUserName(e.target.value)}
+                    placeholder={t("settings:newUserName") || "User name (optional)"}
+                    data-testid="create-user-name"
+                  />
+                  <Input
+                    value={newUserEmail}
+                    onChange={(e) => setNewUserEmail(e.target.value)}
+                    placeholder={t("settings:newUserEmail") || "User email"}
+                    type="email"
+                    data-testid="create-user-email"
+                  />
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <Input
+                    value={newUserPassword}
+                    onChange={(e) => setNewUserPassword(e.target.value)}
+                    placeholder={t("settings:newUserPassword") || "Initial password"}
+                    type="password"
+                    data-testid="create-user-password"
+                  />
+                  <div className="flex gap-2">
+                    <Button
+                      variant={newUserRole === "user" ? "default" : "outline"}
+                      size="sm"
+                      className="flex-1"
+                      onClick={() => setNewUserRole("user")}
+                    >
+                      {t("settings:userRoleUser") || "User"}
+                    </Button>
+                    <Button
+                      variant={newUserRole === "admin" ? "default" : "outline"}
+                      size="sm"
+                      className="flex-1"
+                      onClick={() => setNewUserRole("admin")}
+                    >
+                      {t("settings:userRoleAdmin") || "Admin"}
+                    </Button>
+                  </div>
+                </div>
+                <div>
+                  <Button
+                    onClick={() => void handleCreateUser()}
+                    disabled={isCreatingUser}
+                    data-testid="create-user-submit"
+                  >
+                    {isCreatingUser
+                      ? t("settings:creatingUser") || "Creating..."
+                      : t("settings:createUser") || "Create User"}
+                  </Button>
+                </div>
+              </div>
+
               <div className="flex justify-end mb-3">
                 <Button variant="outline" size="sm" onClick={() => void loadUsers()} disabled={isLoadingUsers}>
                   {isLoadingUsers ? t("settings:loading") || "Loading..." : t("settings:refresh") || "Refresh"}
@@ -365,12 +492,34 @@ export function SettingsPage() {
               </div>
               <div className="space-y-2">
                 {users.map((item) => (
-                  <div key={item.id} className="border rounded-md p-3">
+                  <div key={item.id} className="border rounded-md p-3" data-testid={`user-row-${item.id}`}>
                     <p className="font-medium">{item.name || (t("settings:unnamedUser") || "Unnamed user")}</p>
                     <p className="text-sm text-muted-foreground">{item.email}</p>
                     <p className="text-xs text-muted-foreground mt-1">
                       {(t("settings:role") || "Role")}: {item.role || "user"}
                     </p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {(t("settings:status") || "Status")}: {(item.isActive ?? true)
+                        ? (t("settings:userStatusActive") || "Active")
+                        : (t("settings:userStatusDisabled") || "Disabled")}
+                    </p>
+                    {item.id !== user?.id && (
+                      <div className="mt-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => void handleToggleUserStatus(item)}
+                          disabled={updatingUserId === item.id}
+                          data-testid={`toggle-user-status-${item.email}`}
+                        >
+                          {updatingUserId === item.id
+                            ? t("settings:updating") || "Updating..."
+                            : (item.isActive ?? true)
+                              ? t("settings:disableUser") || "Disable User"
+                              : t("settings:enableUser") || "Enable User"}
+                        </Button>
+                      </div>
+                    )}
                   </div>
                 ))}
                 {users.length === 0 && (

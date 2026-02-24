@@ -6,6 +6,7 @@ export interface User {
   id: string;
   email: string;
   password: string;
+  isActive: boolean;
   name: string | null;
   avatar: string | null;
   role: "admin" | "user";
@@ -113,6 +114,7 @@ function seedData() {
     id: demoUserId,
     email: "demo@example.com",
     password: "demo-salt:dc548fb7432bad5dafda603929473162cc79e81fbaf8934de53ea41879b164d1",
+    isActive: true,
     name: "Demo User",
     avatar: null,
     role: "admin",

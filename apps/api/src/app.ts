@@ -74,6 +74,9 @@ export async function createApp(): Promise<FastifyInstance> {
       if (!user) {
         throw new AuthenticationError("User not found");
       }
+      if (user.isActive === false) {
+        throw new AuthenticationError("User is disabled");
+      }
     } catch {
       throw new AuthenticationError("Authentication required");
     }

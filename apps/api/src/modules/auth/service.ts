@@ -20,6 +20,7 @@ export async function registerUser(data: RegisterInput) {
     id: userId,
     email: data.email,
     password: hashedPassword,
+    isActive: true,
     name: data.name ?? null,
     avatar: null,
     role: "user" as const,
@@ -51,6 +52,7 @@ export async function registerUser(data: RegisterInput) {
       email: user.email,
       name: user.name,
       role: user.role,
+      isActive: user.isActive,
       locale: user.locale,
       theme: user.theme,
       dueDateReminders: user.dueDateReminders,
@@ -73,6 +75,10 @@ export async function loginUser(data: LoginInput) {
     throw new AuthenticationError("Invalid email or password");
   }
 
+  if (user.isActive === false) {
+    throw new AuthenticationError("User is disabled");
+  }
+
   // Verify password
   const isValid = await verifyPassword(data.password, user.password);
 
@@ -86,6 +92,7 @@ export async function loginUser(data: LoginInput) {
       email: user.email,
       name: user.name,
       role: user.role,
+      isActive: user.isActive,
       locale: user.locale,
       theme: user.theme,
       dueDateReminders: user.dueDateReminders,
@@ -106,6 +113,7 @@ export async function getCurrentUser(userId: string) {
     email: user.email,
     name: user.name,
     avatar: user.avatar,
+    isActive: user.isActive,
     locale: user.locale,
     theme: user.theme,
     dueDateReminders: user.dueDateReminders,

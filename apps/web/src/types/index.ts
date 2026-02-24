@@ -3,6 +3,7 @@ export type Priority = "low" | "normal" | "high";
 export interface User {
   id: string;
   email: string;
+  isActive?: boolean;
   name: string | null;
   avatar: string | null;
   role?: "admin" | "user";
