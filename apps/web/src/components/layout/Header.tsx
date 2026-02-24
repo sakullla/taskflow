@@ -54,6 +54,7 @@ export function Header() {
           size="icon"
           className="lg:hidden"
           onClick={toggleMobileSidebar}
+          aria-label={t("lists")}
         >
           <Menu className="h-5 w-5" />
         </Button>
@@ -71,6 +72,7 @@ export function Header() {
             onClick={handleSearchClick}
             readOnly
             value={isSearchPage ? "" : undefined}
+            aria-label={t("search")}
           />
         </div>
 
@@ -80,6 +82,7 @@ export function Header() {
           size="icon"
           className="sm:hidden"
           onClick={handleSearchClick}
+          aria-label={t("search")}
         >
           <Search className="h-5 w-5" />
         </Button>
@@ -91,6 +94,8 @@ export function Header() {
             className="hidden sm:flex"
             onClick={toggleBatchMode}
             title={t("batchMode") || "Batch select"}
+            aria-label={t("batchMode") || "Batch select"}
+            aria-pressed={isBatchMode}
           >
             <CheckSquare className="h-5 w-5" />
           </Button>

@@ -119,12 +119,15 @@ export function TaskItem({ task, isSelected, onClick }: TaskItemProps) {
       {isBatchMode ? (
         <button
           onClick={handleBatchSelect}
+          type="button"
           className={cn(
             "mt-0.5 w-5 h-5 rounded border-2 flex items-center justify-center transition-all duration-200 shrink-0",
             isBatchSelected
               ? "bg-primary border-primary text-primary-foreground"
               : "border-muted-foreground hover:border-primary"
           )}
+          aria-label={task.title}
+          aria-pressed={isBatchSelected}
         >
           {isBatchSelected && <Check className="w-3.5 h-3.5 stroke-[3]" />}
         </button>
@@ -132,12 +135,15 @@ export function TaskItem({ task, isSelected, onClick }: TaskItemProps) {
         /* Task completion checkbox (shown in normal mode) */
         <button
           onClick={handleToggleComplete}
+          type="button"
           className={cn(
             "mt-0.5 w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all duration-300 shrink-0",
             task.isCompleted
               ? "bg-primary border-primary text-primary-foreground scale-110"
               : "border-muted-foreground hover:border-primary hover:scale-105"
           )}
+          aria-label={task.isCompleted ? t("tasks:markIncomplete") || "Mark as incomplete" : t("tasks:markCompleted") || "Mark as completed"}
+          aria-pressed={task.isCompleted}
         >
           <div
             className={cn(
@@ -189,10 +195,13 @@ export function TaskItem({ task, isSelected, onClick }: TaskItemProps) {
       {!isBatchMode && (
         <button
           onClick={handleToggleImportant}
+          type="button"
           className={cn(
             "opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-all duration-200 shrink-0",
             task.isImportant && "opacity-100 scale-110"
           )}
+          aria-label={task.isImportant ? t("tasks:unmarkImportant") || "Unmark as important" : t("tasks:markImportant") || "Mark as important"}
+          aria-pressed={task.isImportant}
         >
           <Star
             className={cn(

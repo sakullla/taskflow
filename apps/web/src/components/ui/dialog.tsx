@@ -1,4 +1,5 @@
 import * as React from "react";
+import { useTranslation } from "react-i18next";
 import { X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "./button";
@@ -22,6 +23,10 @@ export function Dialog({
   footer,
   size = "md",
 }: DialogProps) {
+  const { t } = useTranslation("common");
+  const titleId = React.useId();
+  const descriptionId = React.useId();
+
   // Close on escape key
   React.useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
@@ -63,13 +68,17 @@ export function Dialog({
           "relative w-full mx-4 bg-card rounded-xl border shadow-lg animate-scale-in",
           sizeClasses[size]
         )}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
+        aria-describedby={description ? descriptionId : undefined}
       >
         {/* Header */}
         <div className="flex items-start justify-between p-6 pb-0">
           <div>
-            <h2 className="text-lg font-semibold">{title}</h2>
+            <h2 id={titleId} className="text-lg font-semibold">{title}</h2>
             {description && (
-              <p className="text-sm text-muted-foreground mt-1">{description}</p>
+              <p id={descriptionId} className="text-sm text-muted-foreground mt-1">{description}</p>
             )}
           </div>
           <Button
@@ -77,6 +86,7 @@ export function Dialog({
             size="icon"
             className="h-8 w-8 -mr-2 -mt-2"
             onClick={onClose}
+            aria-label={t("actions.close") || "Close"}
           >
             <X className="h-4 w-4" />
           </Button>

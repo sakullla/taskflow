@@ -8,3 +8,8 @@ dist/
 coverage/
 .vscode/
 *.sqlite
+backups/
+deploy/certs/*
+!deploy/certs/.gitkeep
+deploy/certbot-www/*
+!deploy/certbot-www/.gitkeep

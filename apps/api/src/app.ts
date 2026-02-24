@@ -49,9 +49,20 @@ export async function createApp(): Promise<FastifyInstance> {
     },
   });
 
+  const allowedOrigins = env.CORS_ORIGINS.split(",")
+    .map((origin) => origin.trim())
+    .filter((origin) => origin.length > 0);
+
   // Register plugins
   await app.register(cors, {
-    origin: true,
+    origin: (origin, callback) => {
+      if (!origin || env.NODE_ENV !== "production") {
+        callback(null, true);
+        return;
+      }
+
+      callback(null, allowedOrigins.includes(origin));
+    },
     credentials: true,
   });
 
@@ -83,38 +94,40 @@ export async function createApp(): Promise<FastifyInstance> {
   });
 
   // Swagger documentation
-  await app.register(swagger, {
-    openapi: {
-      info: {
-        title: "Todo API",
-        description: "Production-ready Todo API",
-        version: "2.0.0",
-      },
-      servers: [
-        {
-          url: "http://localhost:4000",
-          description: "Development server",
+  if (env.ENABLE_API_DOCS) {
+    await app.register(swagger, {
+      openapi: {
+        info: {
+          title: "Todo API",
+          description: "Production-ready Todo API",
+          version: "2.0.0",
         },
-      ],
-      components: {
-        securitySchemes: {
-          bearerAuth: {
-            type: "http",
-            scheme: "bearer",
-            bearerFormat: "JWT",
+        servers: [
+          {
+            url: "http://localhost:4000",
+            description: "Development server",
+          },
+        ],
+        components: {
+          securitySchemes: {
+            bearerAuth: {
+              type: "http",
+              scheme: "bearer",
+              bearerFormat: "JWT",
+            },
           },
         },
       },
-    },
-  });
+    });
 
-  await app.register(swaggerUi, {
-    routePrefix: "/docs",
-    uiConfig: {
-      docExpansion: "list",
-      deepLinking: false,
-    },
-  });
+    await app.register(swaggerUi, {
+      routePrefix: "/docs",
+      uiConfig: {
+        docExpansion: "list",
+        deepLinking: false,
+      },
+    });
+  }
 
   // Health check
   app.get("/health", async () => {

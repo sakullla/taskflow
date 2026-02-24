@@ -52,6 +52,12 @@ export class ConflictError extends AppError {
   }
 }
 
+export class TooManyRequestsError extends AppError {
+  constructor(message: string = "Too many requests") {
+    super("TOO_MANY_REQUESTS", message, 429);
+  }
+}
+
 export class DatabaseError extends AppError {
   constructor(message: string = "Database operation failed") {
     super("DATABASE_ERROR", message, 500);

@@ -116,8 +116,8 @@ export function SettingsPage() {
       return;
     }
 
-    if (newUserPassword.length < 6) {
-      toast(t("settings:createUserPasswordTooShort") || "Password must be at least 6 characters", "error");
+    if (newUserPassword.length < 8) {
+      toast(t("settings:createUserPasswordTooShort") || "Password must be at least 8 characters", "error");
       return;
     }
 
@@ -248,8 +248,8 @@ export function SettingsPage() {
       toast(t("settings:passwordRequired") || "Please fill current and new password", "error");
       return;
     }
-    if (newPassword.length < 6) {
-      toast(t("settings:passwordTooShort") || "New password must be at least 6 characters", "error");
+    if (newPassword.length < 8) {
+      toast(t("settings:passwordTooShort") || "New password must be at least 8 characters", "error");
       return;
     }
     if (newPassword !== confirmPassword) {

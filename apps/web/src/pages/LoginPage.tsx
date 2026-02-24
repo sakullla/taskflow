@@ -92,33 +92,39 @@ export function LoginPage() {
           <form onSubmit={handleSubmit} className="space-y-4">
             {isRegister && (
               <div className="space-y-2">
-                <label className="text-sm font-medium">Name</label>
+                <label htmlFor="name-input" className="text-sm font-medium">Name</label>
                 <Input
+                  id="name-input"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="Enter your name"
+                  autoComplete="name"
                 />
               </div>
             )}
 
             <div className="space-y-2">
-              <label className="text-sm font-medium">Email</label>
+              <label htmlFor="email-input" className="text-sm font-medium">Email</label>
               <Input
+                id="email-input"
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="Enter your email"
+                autoComplete="email"
                 required
               />
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium">Password</label>
+              <label htmlFor="password-input" className="text-sm font-medium">Password</label>
               <Input
+                id="password-input"
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Enter your password"
+                autoComplete={isRegister ? "new-password" : "current-password"}
                 required
               />
             </div>

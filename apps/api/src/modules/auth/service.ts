@@ -1,6 +1,6 @@
 import { db, generateId, now } from "../../config/db.js";
 import { AuthenticationError, ConflictError } from "../../shared/errors/index.js";
-import { hashPassword, verifyPassword } from "../../shared/utils/password.js";
+import { hashPassword, isLegacyPasswordHash, verifyPassword } from "../../shared/utils/password.js";
 import type { LoginInput, RegisterInput } from "./schemas.js";
 
 export async function registerUser(data: RegisterInput) {
@@ -84,6 +84,11 @@ export async function loginUser(data: LoginInput) {
 
   if (!isValid) {
     throw new AuthenticationError("Invalid email or password");
+  }
+
+  if (isLegacyPasswordHash(user.password)) {
+    user.password = await hashPassword(data.password);
+    db.users.set(user.id, user);
   }
 
   return {

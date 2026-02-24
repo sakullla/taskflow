@@ -10,13 +10,13 @@ export const updateProfileSchema = z.object({
 });
 
 export const changePasswordSchema = z.object({
-  currentPassword: z.string().min(6),
-  newPassword: z.string().min(6),
+  currentPassword: z.string().min(8),
+  newPassword: z.string().min(8),
 });
 
 export const createUserSchema = z.object({
   email: z.string().email(),
-  password: z.string().min(6),
+  password: z.string().min(8),
   name: z.string().trim().min(1).max(100).optional(),
   role: z.enum(["admin", "user"]).default("user"),
 });

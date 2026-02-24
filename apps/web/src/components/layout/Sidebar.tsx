@@ -131,6 +131,7 @@ export function Sidebar() {
               className="h-6 w-6"
               onClick={() => setIsAdding(true)}
               disabled={isAdding}
+              aria-label={`${t("common:actions.add") || "Add"} ${t("lists")}`}
             >
               <Plus className="h-4 w-4" />
             </Button>
@@ -159,6 +160,8 @@ export function Sidebar() {
                     )}
                     style={{ backgroundColor: color }}
                     onClick={() => setSelectedColor(color)}
+                    aria-label={color}
+                    aria-pressed={selectedColor === color}
                   />
                 ))}
               </div>
@@ -217,9 +220,11 @@ export function Sidebar() {
                 </div>
                 {!list.isDefault && (
                   <button
+                    type="button"
                     onClick={(e) => handleDeleteListClick(list.id, e)}
                     className="absolute right-2 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 p-1 hover:bg-destructive/10 hover:text-destructive rounded transition-all"
                     title={t("navigation:delete") || "Delete"}
+                    aria-label={`${t("navigation:delete") || "Delete"} ${list.name}`}
                   >
                     <Trash2 className="h-3 w-3" />
                   </button>

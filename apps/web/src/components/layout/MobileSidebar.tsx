@@ -25,7 +25,7 @@ const LIST_COLORS = [
 ];
 
 export function MobileSidebar() {
-  const { t } = useTranslation("navigation");
+  const { t } = useTranslation(["navigation", "common"]);
   const location = useLocation();
   const { lists, addList, deleteList } = useTaskStore();
   const { isMobileSidebarOpen, closeMobileSidebar } = useUIStore();
@@ -137,7 +137,12 @@ export function MobileSidebar() {
           >
         <div className="p-4 border-b flex items-center justify-between">
           <h1 className="text-xl font-bold text-primary">Todo</h1>
-          <Button variant="ghost" size="icon" onClick={closeMobileSidebar}>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={closeMobileSidebar}
+            aria-label={t("common:actions.close") || "Close"}
+          >
             <X className="h-5 w-5" />
           </Button>
         </div>
@@ -174,6 +179,7 @@ export function MobileSidebar() {
                 className="h-6 w-6"
                 onClick={() => setIsAdding(true)}
                 disabled={isAdding}
+                aria-label={`${t("create") || "Create"} ${t("lists")}`}
               >
                 <Plus className="h-4 w-4" />
               </Button>
@@ -202,6 +208,8 @@ export function MobileSidebar() {
                       )}
                       style={{ backgroundColor: color }}
                       onClick={() => setSelectedColor(color)}
+                      aria-label={color}
+                      aria-pressed={selectedColor === color}
                     />
                   ))}
                 </div>
@@ -260,9 +268,11 @@ export function MobileSidebar() {
                   </div>
                   {!list.isDefault && (
                     <button
+                      type="button"
                       onClick={(e) => handleDeleteList(list.id, e)}
                       className="absolute right-2 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 p-2 hover:bg-destructive/10 hover:text-destructive rounded transition-all"
                       title={t("delete") || "Delete"}
+                      aria-label={`${t("delete") || "Delete"} ${list.name}`}
                     >
                       <Trash2 className="h-3 w-3" />
                     </button>

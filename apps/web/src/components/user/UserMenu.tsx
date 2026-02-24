@@ -28,6 +28,8 @@ export function UserMenu() {
         className="relative"
         onClick={() => setIsOpen(!isOpen)}
         aria-label={t("common:userMenu.openMenu") || "Open user menu"}
+        aria-expanded={isOpen}
+        aria-haspopup="menu"
       >
         {displayAvatar ? (
           <img

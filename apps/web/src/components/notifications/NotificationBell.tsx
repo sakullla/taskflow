@@ -127,6 +127,8 @@ export function NotificationBell() {
         className="relative"
         onClick={handleToggleOpen}
         aria-label={t("common:notifications.open") || "Open notifications"}
+        aria-expanded={isOpen}
+        aria-haspopup="dialog"
       >
         {unreadCount > 0 ? (
           <BellRing className="h-5 w-5 text-primary" />
@@ -156,6 +158,8 @@ export function NotificationBell() {
               exit={{ opacity: 0, y: 10, scale: 0.95 }}
               transition={{ duration: 0.15 }}
               className="absolute right-0 top-full mt-2 w-80 sm:w-96 bg-card rounded-xl border shadow-lg z-50 overflow-hidden"
+              role="dialog"
+              aria-label={t("common:notifications.title") || "Notifications"}
             >
               <div className="flex items-center justify-between p-4 border-b">
                 <h3 className="font-semibold">{t("common:notifications.title") || "Notifications"}</h3>
@@ -199,6 +203,7 @@ export function NotificationBell() {
                               size="icon"
                               className="h-7 w-7"
                               onClick={(e) => handleMarkAsRead(notification.id, e)}
+                              aria-label={t("common:notifications.markAllRead") || "Mark as read"}
                             >
                               <Check className="h-4 w-4" />
                             </Button>
@@ -210,6 +215,7 @@ export function NotificationBell() {
                               className="h-7 w-7 text-primary"
                               onClick={(e) => handleCompleteFromNotification(notification, e)}
                               title={t("common:actions.complete") || "Complete"}
+                              aria-label={t("common:actions.complete") || "Complete"}
                             >
                               <CheckCheck className="h-4 w-4" />
                             </Button>
@@ -219,6 +225,7 @@ export function NotificationBell() {
                             size="icon"
                             className="h-7 w-7 text-muted-foreground hover:text-destructive"
                             onClick={(e) => handleDelete(notification.id, e)}
+                            aria-label={t("common:actions.delete") || "Delete"}
                           >
                             <Trash2 className="h-4 w-4" />
                           </Button>

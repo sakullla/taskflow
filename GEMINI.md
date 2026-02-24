@@ -1,45 +1,45 @@
-# Project Overview
+# Repository Guidelines
 
-This is TaskFlow, a checklist application inspired by Microsoft To Do, featuring lists, tasks, and a "My Day" view. It is structured as a monorepo utilizing npm workspaces. The project encompasses a React + TypeScript frontend built with Vite and a Node.js + TypeScript backend API service. Furthermore, this project integrates multi-agent role definitions and execution orchestration.
+## Structure
 
-## Main Technologies
+- `apps/web`: frontend
+- `apps/api`: backend
+- `e2e`: Playwright tests
+- `docs`: documentation
+- `scripts`: deploy/backup scripts
 
-*   **Frontend:** React, TypeScript, Vite (`apps/web`)
-*   **Backend:** Node.js, TypeScript (`apps/api`)
-*   **Architecture:** Monorepo (npm workspaces) with integrated multi-agent execution tracking and rules (`docs/`, `agents/`, `scripts/`).
-*   **Data:** SQLite (defaulted to `data/todo.sqlite` for the API)
+## Commands
 
-## Building and Running
+- `npm run dev`
+- `npm run build`
+- `npm run build:web`
+- `npm run build:api`
+- `npm run typecheck --workspaces`
+- `npx playwright test`
 
-The project relies on standard npm scripts defined in the root `package.json`.
+## Testing & i18n Requirements
 
-**Initial Setup:**
-```bash
-npm install
-```
+- Any user-visible feature change must include E2E coverage in `e2e/*.spec.ts`.
+- Any user-visible copy change must update both locales:
+  - `apps/web/src/locales/en/*.json`
+  - `apps/web/src/locales/zh-CN/*.json`
 
-**Local Testing & Development:**
-*   Run local MVP deploy for testing (Builds and runs both API and web preview): `npm run deploy:mvp:local`
-*   Run the web app (dev mode): `npm run dev:web`
-*   Run the API service (dev mode): `npm run dev:api`
+## Code Style
 
-**Building and Deployment:**
-*   Build the frontend: `npm run build:web`
-*   Build the API: `npm run build:api`
-*   Start built web preview standalone: `npm run start:web:preview`
-*   Start built API standalone: `npm run start:api`
+- TypeScript strict, 2-space indent
+- React component files: PascalCase
+- Variables/functions/hooks: camelCase
+- Frontend imports prefer `@/`
 
-**Testing and Quality:**
-*   Run tests across all workspaces: `npm run test`
-*   Run linting: `npm run lint`
-*   Run typechecking: `npm run typecheck`
+## PR Gate
 
-**Agent Execution:**
-*   Build/Dispatch agent board: `npm run agent:dispatch`
+1. `npm run typecheck --workspaces`
+2. `npm run build:web`
+3. `npm run build:api`
 
-## Development Conventions
+## Security
 
-*   **TypeScript:** Both frontend and backend utilize TypeScript for strong typing. Ensure all code passes typechecking (`npm run typecheck`).
-*   **Multi-Agent Workflow:** The project relies on specific multi-agent orchestration rules. Review `docs/AGENT_RUNBOOK.md` for handoff contracts and execution rules. The `docs/AGENT_TASK_BOARD.md` holds the auto-generated task queue.
-*   **Environment Configuration:** Refer to `.env.example` to set up your `.env` file (API defaults to PORT=4000, Web defaults to VITE_API_BASE_URL=http://localhost:4000).
-*   **Code Quality:** Adhere to existing linting rules (`npm run lint`).
+- Never commit `.env` or secrets
+- Use `.env.example`
+- Production must set strong `JWT_SECRET`
+- Set `TZ` (IANA, e.g. `Asia/Shanghai`) to align due/reminder date logic

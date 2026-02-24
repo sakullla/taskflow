@@ -1,6 +1,18 @@
 import type { FastifyInstance } from "fastify";
+import { env } from "../../config/env.js";
+import { AuthenticationError, TooManyRequestsError } from "../../shared/errors/index.js";
+import { LoginRateLimiter } from "../../shared/security/login-rate-limit.js";
 import { loginSchema, registerSchema } from "./schemas.js";
 import { loginUser, registerUser, getCurrentUser } from "./service.js";
+
+const loginRateLimiter = new LoginRateLimiter(
+  env.AUTH_RATE_LIMIT_MAX_ATTEMPTS,
+  env.AUTH_RATE_LIMIT_WINDOW_MS
+);
+
+function getAttemptKey(email: string, ip: string): string {
+  return `${email.toLowerCase()}:${ip}`;
+}
 
 export async function authRoutes(fastify: FastifyInstance) {
   // POST /auth/register
@@ -13,7 +25,7 @@ export async function authRoutes(fastify: FastifyInstance) {
           required: ["email", "password"],
           properties: {
             email: { type: "string", format: "email" },
-            password: { type: "string", minLength: 6 },
+            password: { type: "string", minLength: 8 },
             name: { type: "string" },
           },
         },
@@ -47,26 +59,41 @@ export async function authRoutes(fastify: FastifyInstance) {
           required: ["email", "password"],
           properties: {
             email: { type: "string", format: "email" },
-            password: { type: "string" },
+            password: { type: "string", minLength: 8 },
           },
         },
       },
     },
     async (request, reply) => {
       const data = loginSchema.parse(request.body);
-      const result = await loginUser(data);
-      const token = fastify.jwt.sign({
-        userId: result.user.id,
-        email: result.user.email,
-      });
+      const key = getAttemptKey(data.email, request.ip);
 
-      reply.send({
-        success: true,
-        data: {
-          user: result.user,
-          token,
-        },
-      });
+      if (loginRateLimiter.isBlocked(key)) {
+        throw new TooManyRequestsError("Too many failed login attempts, try again later");
+      }
+
+      try {
+        const result = await loginUser(data);
+        const token = fastify.jwt.sign({
+          userId: result.user.id,
+          email: result.user.email,
+        });
+
+        loginRateLimiter.reset(key);
+
+        reply.send({
+          success: true,
+          data: {
+            user: result.user,
+            token,
+          },
+        });
+      } catch (error) {
+        if (error instanceof AuthenticationError) {
+          loginRateLimiter.recordFailure(key);
+        }
+        throw error;
+      }
     }
   );
 
