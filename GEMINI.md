@@ -1,6 +1,6 @@
 # Project Overview
 
-This is a To-Do List application inspired by Microsoft To Do, featuring lists, tasks, and a "My Day" view. It is structured as a monorepo utilizing npm workspaces. The project encompasses a React + TypeScript frontend built with Vite and a Node.js + TypeScript backend API service. Furthermore, this project integrates multi-agent role definitions and execution orchestration.
+This is TaskFlow, a checklist application inspired by Microsoft To Do, featuring lists, tasks, and a "My Day" view. It is structured as a monorepo utilizing npm workspaces. The project encompasses a React + TypeScript frontend built with Vite and a Node.js + TypeScript backend API service. Furthermore, this project integrates multi-agent role definitions and execution orchestration.
 
 ## Main Technologies
 

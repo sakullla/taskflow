@@ -7,7 +7,7 @@
 ```bash
 # 1. 克隆仓库
 git clone <repository-url>
-cd to-do-list
+cd taskflow
 
 # 2. 配置环境变量
 cp .env.example .env

@@ -10,7 +10,7 @@ test.describe("Smoke Tests", () => {
 
   test("page loads successfully", async ({ page }) => {
     await page.goto("/");
-    await expect(page).toHaveTitle(/To-Do List/i);
+    await expect(page).toHaveTitle(/TaskFlow/i);
   });
 
   test("navigation sidebar is visible", async ({ page }) => {

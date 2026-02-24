@@ -1,4 +1,4 @@
-# Todo App
+# TaskFlow
 
 A Microsoft To Do-style task management application with a modern tech stack.
 
@@ -66,7 +66,7 @@ A Microsoft To Do-style task management application with a modern tech stack.
 ```bash
 # Clone repository
 git clone <repository-url>
-cd to-do-list
+cd taskflow
 
 # Install dependencies
 npm install
