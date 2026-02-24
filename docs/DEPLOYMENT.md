@@ -23,6 +23,7 @@ Set at least these values in `.env`:
 - `IMAGE_TAG` (for example `latest` or `v2.0.0`)
 - `TZ` (IANA timezone, for example `Asia/Shanghai`)
 - `CORS_ORIGINS` (comma-separated allowlist)
+- `ALLOW_REGISTRATION=true|false` (set to `false` to close public signup)
 - `ENABLE_API_DOCS=false` in production
 
 TLS mode also needs:

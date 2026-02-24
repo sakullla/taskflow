@@ -4,17 +4,20 @@ generator client {
 
 datasource db {
   provider = "sqlite"
-  url      = env("DATABASE_URL")
 }
 
 model User {
   id        String   @id @default(uuid())
   email     String   @unique
   password  String
+  isActive  Boolean  @default(true) @map("is_active")
   name      String?
   avatar    String?
+  role      UserRole @default(user)
   locale    String   @default("zh-CN")
   theme     String   @default("system")
+  dueDateReminders Boolean @default(true) @map("due_date_reminders")
+  weeklyDigest Boolean @default(false) @map("weekly_digest")
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
@@ -130,4 +133,9 @@ enum NotificationType {
   task_reminder
   task_due
   system
+}
+
+enum UserRole {
+  admin
+  user
 }

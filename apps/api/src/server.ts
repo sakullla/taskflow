@@ -1,36 +1,36 @@
-import 'dotenv/config';
+import "dotenv/config";
 import { createApp } from "./app.js";
 import { env } from "./config/env.js";
-import { checkDatabaseHealth } from "./config/db.js";
+import { checkDatabaseHealth, prisma } from "./config/db.js";
+import { seedDevelopmentDataIfNeeded } from "./config/dev-seed.js";
 
 async function bootstrap() {
   try {
-    // Check database connection
     const isDbHealthy = await checkDatabaseHealth();
     if (!isDbHealthy) {
-      console.error("❌ Database connection failed");
+      console.error("Database connection failed");
       process.exit(1);
     }
-    console.log("✅ Database connected");
+    console.log("Database connected");
 
-    // Create app
+    await seedDevelopmentDataIfNeeded();
+
     const app = await createApp();
-
-    // Start server
     await app.listen({
-      port: parseInt(env.PORT),
+      port: Number.parseInt(env.PORT, 10),
       host: env.HOST,
     });
 
     console.log(`
-🚀 Server ready!
-   Local:   http://localhost:${env.PORT}
-   API Docs: http://localhost:${env.PORT}/docs
-    `);
+Server ready!
+  Local:    http://localhost:${env.PORT}
+  API Docs: http://localhost:${env.PORT}/docs
+`);
   } catch (error) {
-    console.error("❌ Failed to start server:", error);
+    console.error("Failed to start server:", error);
+    await prisma.$disconnect();
     process.exit(1);
   }
 }
 
-bootstrap();
+void bootstrap();

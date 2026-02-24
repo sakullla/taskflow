@@ -1,6 +1,6 @@
 import type { FastifyInstance } from "fastify";
 import { env } from "../../config/env.js";
-import { AuthenticationError, TooManyRequestsError } from "../../shared/errors/index.js";
+import { AuthenticationError, AuthorizationError, TooManyRequestsError } from "../../shared/errors/index.js";
 import { LoginRateLimiter } from "../../shared/security/login-rate-limit.js";
 import { loginSchema, registerSchema } from "./schemas.js";
 import { loginUser, registerUser, getCurrentUser } from "./service.js";
@@ -32,6 +32,10 @@ export async function authRoutes(fastify: FastifyInstance) {
       },
     },
     async (request, reply) => {
+      if (!env.ALLOW_REGISTRATION) {
+        throw new AuthorizationError("Registration is disabled");
+      }
+
       const data = registerSchema.parse(request.body);
       const result = await registerUser(data);
       const token = fastify.jwt.sign({

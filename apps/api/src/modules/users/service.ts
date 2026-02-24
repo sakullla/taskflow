@@ -1,4 +1,4 @@
-import { db, generateId, now } from "../../config/db.js";
+import { prisma } from "../../config/db.js";
 import { AuthenticationError, AuthorizationError, ConflictError, NotFoundError, ValidationError } from "../../shared/errors/index.js";
 import { hashPassword, verifyPassword } from "../../shared/utils/password.js";
 import type { ChangePasswordInput, CreateUserInput, UpdateProfileInput, UpdateUserStatusInput } from "./schemas.js";
@@ -6,33 +6,36 @@ import type { ChangePasswordInput, CreateUserInput, UpdateProfileInput, UpdateUs
 function sanitizeUser(user: {
   id: string;
   email: string;
-  isActive?: boolean;
+  isActive: boolean;
   name: string | null;
   avatar: string | null;
   locale: string;
   theme: string;
-  dueDateReminders?: boolean;
-  weeklyDigest?: boolean;
-  createdAt: string;
-  role?: "admin" | "user";
+  dueDateReminders: boolean;
+  weeklyDigest: boolean;
+  createdAt: Date;
+  role: "admin" | "user";
 }) {
   return {
     id: user.id,
     email: user.email,
-    isActive: user.isActive ?? true,
+    isActive: user.isActive,
     name: user.name,
     avatar: user.avatar,
     locale: user.locale,
     theme: user.theme,
-    dueDateReminders: user.dueDateReminders ?? true,
-    weeklyDigest: user.weeklyDigest ?? false,
-    createdAt: user.createdAt,
-    role: user.role ?? "user",
+    dueDateReminders: user.dueDateReminders,
+    weeklyDigest: user.weeklyDigest,
+    createdAt: user.createdAt.toISOString(),
+    role: user.role,
   };
 }
 
-function assertAdmin(actorUserId: string) {
-  const actor = db.users.get(actorUserId);
+async function assertAdmin(actorUserId: string) {
+  const actor = await prisma.user.findUnique({
+    where: { id: actorUserId },
+    select: { id: true, role: true },
+  });
   if (!actor) throw new NotFoundError("User");
   if (actor.role !== "admin") {
     throw new AuthorizationError("Admin permission required");
@@ -40,56 +43,59 @@ function assertAdmin(actorUserId: string) {
 }
 
 export async function getUsers(actorUserId: string) {
-  assertAdmin(actorUserId);
+  await assertAdmin(actorUserId);
 
-  return Array.from(db.users.values())
-    .map(sanitizeUser)
-    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  const users = await prisma.user.findMany({
+    orderBy: { createdAt: "desc" },
+  });
+
+  return users.map(sanitizeUser);
 }
 
 export async function createUserByAdmin(actorUserId: string, data: CreateUserInput) {
-  assertAdmin(actorUserId);
+  await assertAdmin(actorUserId);
 
-  for (const user of db.users.values()) {
-    if (user.email.toLowerCase() === data.email.toLowerCase()) {
-      throw new ConflictError("User with this email already exists");
-    }
+  const email = data.email.trim().toLowerCase();
+  const existing = await prisma.user.findUnique({
+    where: { email },
+    select: { id: true },
+  });
+  if (existing) {
+    throw new ConflictError("User with this email already exists");
   }
 
-  const userId = generateId();
-  const createdAt = now();
   const hashedPassword = await hashPassword(data.password);
 
-  db.users.set(userId, {
-    id: userId,
-    email: data.email,
-    password: hashedPassword,
-    isActive: true,
-    name: data.name ?? null,
-    avatar: null,
-    role: data.role,
-    locale: "zh-CN",
-    theme: "system",
-    dueDateReminders: true,
-    weeklyDigest: false,
-    createdAt,
+  const user = await prisma.$transaction(async (tx) => {
+    const created = await tx.user.create({
+      data: {
+        email,
+        password: hashedPassword,
+        isActive: true,
+        name: data.name ?? null,
+        avatar: null,
+        role: data.role,
+        locale: "zh-CN",
+        theme: "system",
+        dueDateReminders: true,
+        weeklyDigest: false,
+      },
+    });
+
+    await tx.list.create({
+      data: {
+        name: "Tasks",
+        color: "#3b82f6",
+        isDefault: true,
+        isArchived: false,
+        order: 0,
+        userId: created.id,
+      },
+    });
+
+    return created;
   });
 
-  const listId = generateId();
-  db.lists.set(listId, {
-    id: listId,
-    name: "任务",
-    color: "#3b82f6",
-    isDefault: true,
-    isArchived: false,
-    order: 0,
-    userId,
-    createdAt,
-    updatedAt: createdAt,
-  });
-
-  const user = db.users.get(userId);
-  if (!user) throw new NotFoundError("User");
   return sanitizeUser(user);
 }
 
@@ -98,53 +104,63 @@ export async function updateUserStatusByAdmin(
   targetUserId: string,
   data: UpdateUserStatusInput
 ) {
-  assertAdmin(actorUserId);
+  await assertAdmin(actorUserId);
 
   if (actorUserId === targetUserId && data.isActive === false) {
     throw new ValidationError("You cannot disable your own account");
   }
 
-  const targetUser = db.users.get(targetUserId);
+  const targetUser = await prisma.user.findUnique({
+    where: { id: targetUserId },
+  });
   if (!targetUser) throw new NotFoundError("User");
 
-  const updated = {
-    ...targetUser,
-    isActive: data.isActive,
-    updatedAt: now(),
-  };
-  db.users.set(targetUserId, updated);
+  const updated = await prisma.user.update({
+    where: { id: targetUserId },
+    data: {
+      isActive: data.isActive,
+    },
+  });
   return sanitizeUser(updated);
 }
 
 export async function getUserById(userId: string) {
-  const user = db.users.get(userId);
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+  });
   if (!user) throw new NotFoundError("User");
   return sanitizeUser(user);
 }
 
 export async function updateProfile(userId: string, data: UpdateProfileInput) {
-  const user = db.users.get(userId);
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { id: true },
+  });
   if (!user) throw new NotFoundError("User");
 
-  const updated = {
-    ...user,
-    ...(data.name !== undefined && { name: data.name }),
-    ...(data.locale !== undefined && { locale: data.locale }),
-    ...(data.theme !== undefined && { theme: data.theme }),
-    ...(data.dueDateReminders !== undefined && {
-      dueDateReminders: data.dueDateReminders,
-    }),
-    ...(data.weeklyDigest !== undefined && { weeklyDigest: data.weeklyDigest }),
-    ...(data.avatar !== undefined && { avatar: data.avatar }),
-    updatedAt: now(),
-  };
+  const updated = await prisma.user.update({
+    where: { id: userId },
+    data: {
+      ...(data.name !== undefined ? { name: data.name } : {}),
+      ...(data.locale !== undefined ? { locale: data.locale } : {}),
+      ...(data.theme !== undefined ? { theme: data.theme } : {}),
+      ...(data.dueDateReminders !== undefined
+        ? { dueDateReminders: data.dueDateReminders }
+        : {}),
+      ...(data.weeklyDigest !== undefined ? { weeklyDigest: data.weeklyDigest } : {}),
+      ...(data.avatar !== undefined ? { avatar: data.avatar } : {}),
+    },
+  });
 
-  db.users.set(userId, updated);
   return sanitizeUser(updated);
 }
 
 export async function changePassword(userId: string, data: ChangePasswordInput) {
-  const user = db.users.get(userId);
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { id: true, password: true, isActive: true },
+  });
   if (!user) throw new NotFoundError("User");
 
   if (user.isActive === false) {
@@ -154,10 +170,10 @@ export async function changePassword(userId: string, data: ChangePasswordInput) 
   const ok = await verifyPassword(data.currentPassword, user.password);
   if (!ok) throw new AuthenticationError("Current password is incorrect");
 
-  const updated = {
-    ...user,
-    password: await hashPassword(data.newPassword),
-    updatedAt: now(),
-  };
-  db.users.set(userId, updated);
+  await prisma.user.update({
+    where: { id: userId },
+    data: {
+      password: await hashPassword(data.newPassword),
+    },
+  });
 }

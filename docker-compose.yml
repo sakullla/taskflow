@@ -13,6 +13,7 @@ services:
       - DB_TYPE=${DB_TYPE:-sqlite}
       - DATABASE_URL=${DATABASE_URL:-file:/app/data/todo.db}
       - JWT_SECRET=${JWT_SECRET:-change-me-in-production}
+      - ALLOW_REGISTRATION=${ALLOW_REGISTRATION:-true}
     volumes:
       - todo-data:/app/data
     healthcheck:

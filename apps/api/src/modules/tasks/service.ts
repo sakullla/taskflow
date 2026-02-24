@@ -1,206 +1,261 @@
-import { db, generateId, now } from "../../config/db.js";
+import type { Priority, Task } from "@prisma/client";
+import { prisma } from "../../config/db.js";
 import { NotFoundError, ValidationError } from "../../shared/errors/index.js";
 import { getDateKey, getTodayDateKey } from "../../shared/utils/timezone.js";
 import type { CreateTaskInput, UpdateTaskInput, TaskQuery } from "./schemas.js";
-import type { Task, Step } from "../../config/db-simple.js";
 
-function ensureDueTodayNotification(task: Task) {
+function mapTask(task: Task & { steps: Array<{ id: string; title: string; isCompleted: boolean; order: number; createdAt: Date; updatedAt: Date }> }) {
+  return {
+    ...task,
+    dueDate: task.dueDate ? task.dueDate.toISOString() : null,
+    reminderAt: task.reminderAt ? task.reminderAt.toISOString() : null,
+    createdAt: task.createdAt.toISOString(),
+    updatedAt: task.updatedAt.toISOString(),
+    steps: task.steps.map((step) => ({
+      ...step,
+      createdAt: step.createdAt.toISOString(),
+      updatedAt: step.updatedAt.toISOString(),
+    })),
+  };
+}
+
+async function ensureDueTodayNotification(task: {
+  id: string;
+  title: string;
+  userId: string;
+  isCompleted: boolean;
+  dueDate: Date | null;
+}) {
   if (task.isCompleted || !task.dueDate) return;
 
   const today = getTodayDateKey();
-  const taskDueDate = getDateKey(task.dueDate);
-  if (taskDueDate !== today) return;
+  if (getDateKey(task.dueDate) !== today) return;
 
-  for (const notification of db.notifications.values()) {
-    if (
-      notification.taskId === task.id &&
-      notification.type === "task_due" &&
-      getDateKey(notification.createdAt) === today
-    ) {
-      return;
-    }
-  }
-
-  const notificationId = generateId();
-  db.notifications.set(notificationId, {
-    id: notificationId,
-    userId: task.userId,
-    title: "Task Due Today",
-    message: `"${task.title}" is due today`,
-    type: "task_due",
-    isRead: false,
-    taskId: task.id,
-    createdAt: now(),
+  const existing = await prisma.notification.findFirst({
+    where: {
+      taskId: task.id,
+      type: "task_due",
+      createdAt: {
+        gte: new Date(`${today}T00:00:00.000Z`),
+      },
+    },
+    select: { id: true },
   });
-}
 
-// Extended task type with steps
-interface TaskWithSteps extends Task {
-  steps: Array<Pick<Step, "id" | "title" | "isCompleted" | "order">>;
+  if (existing) return;
+
+  await prisma.notification.create({
+    data: {
+      userId: task.userId,
+      title: "Task Due Today",
+      message: `"${task.title}" is due today`,
+      type: "task_due",
+      isRead: false,
+      taskId: task.id,
+    },
+  });
 }
 
 export async function getTasks(userId: string, query: TaskQuery) {
-  const tasks: Array<typeof db.tasks extends Map<string, infer U> ? U : never> = [];
-
-  for (const task of db.tasks.values()) {
-    if (task.userId !== userId) continue;
-
-    if (query.listId && task.listId !== query.listId) continue;
-    if (query.isCompleted !== undefined && task.isCompleted !== (query.isCompleted === "true")) continue;
-    if (query.isImportant !== undefined && task.isImportant !== (query.isImportant === "true")) continue;
-    if (query.dueDate) {
-      const taskDate = task.dueDate ? getDateKey(task.dueDate) : null;
-      if (taskDate !== query.dueDate) continue;
-    }
-    if (query.search) {
-      const search = query.search.toLowerCase();
-      const matchTitle = task.title.toLowerCase().includes(search);
-      const matchNote = task.note.toLowerCase().includes(search);
-      if (!matchTitle && !matchNote) continue;
-    }
-
-    tasks.push(task);
-  }
-
-  // Sort by isCompleted asc, isImportant desc, createdAt desc
-  tasks.sort((a, b) => {
-    if (a.isCompleted !== b.isCompleted) return a.isCompleted ? 1 : -1;
-    if (a.isImportant !== b.isImportant) return b.isImportant ? 1 : -1;
-    return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+  const tasks = await prisma.task.findMany({
+    where: {
+      userId,
+      ...(query.listId ? { listId: query.listId } : {}),
+      ...(query.isCompleted !== undefined
+        ? { isCompleted: query.isCompleted === "true" }
+        : {}),
+      ...(query.isImportant !== undefined
+        ? { isImportant: query.isImportant === "true" }
+        : {}),
+    },
+    include: {
+      steps: {
+        select: {
+          id: true,
+          title: true,
+          isCompleted: true,
+          order: true,
+          createdAt: true,
+          updatedAt: true,
+        },
+        orderBy: { order: "asc" },
+      },
+    },
+    orderBy: [{ isCompleted: "asc" }, { isImportant: "desc" }, { createdAt: "desc" }],
   });
 
-  return tasks.map(enrichTaskWithSteps);
-}
+  let filtered = tasks;
 
-function enrichTaskWithSteps(task: Task): TaskWithSteps {
-  const steps: Array<Pick<Step, "id" | "title" | "isCompleted" | "order">> = [];
-  for (const step of db.steps.values()) {
-    if (step.taskId === task.id) {
-      steps.push({
-        id: step.id,
-        title: step.title,
-        isCompleted: step.isCompleted,
-        order: step.order,
-      });
-    }
+  if (query.dueDate) {
+    filtered = filtered.filter((task) => task.dueDate && getDateKey(task.dueDate) === query.dueDate);
   }
-  steps.sort((a, b) => a.order - b.order);
 
-  return { ...task, steps };
+  if (query.search) {
+    const search = query.search.toLowerCase();
+    filtered = filtered.filter((task) => (
+      task.title.toLowerCase().includes(search) ||
+      task.note.toLowerCase().includes(search)
+    ));
+  }
+
+  return filtered.map(mapTask);
 }
 
 export async function getTaskById(id: string, userId: string) {
-  const task = db.tasks.get(id);
+  const task = await prisma.task.findFirst({
+    where: { id, userId },
+    include: {
+      steps: {
+        select: {
+          id: true,
+          title: true,
+          isCompleted: true,
+          order: true,
+          createdAt: true,
+          updatedAt: true,
+        },
+        orderBy: { order: "asc" },
+      },
+    },
+  });
 
-  if (!task || task.userId !== userId) {
+  if (!task) {
     throw new NotFoundError("Task");
   }
 
-  return enrichTaskWithSteps(task);
+  return mapTask(task);
 }
 
 export async function createTask(userId: string, data: CreateTaskInput) {
-  // Validate list exists
   let listId = data.listId;
 
   if (listId) {
-    const list = db.lists.get(listId);
-    if (!list || list.userId !== userId) {
+    const list = await prisma.list.findFirst({
+      where: { id: listId, userId },
+      select: { id: true },
+    });
+    if (!list) {
       throw new NotFoundError("List");
     }
   } else {
-    // Use default list
-    let defaultList: (typeof db.lists extends Map<string, infer U> ? U : never) | undefined = undefined;
-    for (const list of db.lists.values()) {
-      if (list.userId === userId && list.isDefault) {
-        defaultList = list;
-        break;
-      }
-    }
+    const defaultList = await prisma.list.findFirst({
+      where: {
+        userId,
+        isDefault: true,
+      },
+      select: { id: true },
+    });
     if (!defaultList) {
       throw new ValidationError("No default list found");
     }
     listId = defaultList.id;
   }
 
-  const taskId = generateId();
-  const task = {
-    id: taskId,
-    title: data.title,
-    note: data.note ?? "",
-    listId: listId!,
-    userId,
-    isCompleted: false,
-    isImportant: data.isImportant ?? false,
-    dueDate: data.dueDate ?? null,
-    reminderAt: data.reminderAt ?? null,
-    priority: data.priority ?? "normal",
-    order: 0,
-    createdAt: now(),
-    updatedAt: now(),
-  };
+  const task = await prisma.task.create({
+    data: {
+      title: data.title,
+      note: data.note ?? "",
+      listId,
+      userId,
+      isCompleted: false,
+      isImportant: data.isImportant ?? false,
+      dueDate: data.dueDate ? new Date(data.dueDate) : null,
+      reminderAt: data.reminderAt ? new Date(data.reminderAt) : null,
+      priority: (data.priority ?? "normal") as Priority,
+      order: 0,
+    },
+    include: {
+      steps: {
+        select: {
+          id: true,
+          title: true,
+          isCompleted: true,
+          order: true,
+          createdAt: true,
+          updatedAt: true,
+        },
+        orderBy: { order: "asc" },
+      },
+    },
+  });
 
-  db.tasks.set(taskId, task);
-  ensureDueTodayNotification(task);
-  return enrichTaskWithSteps(task);
+  await ensureDueTodayNotification(task);
+  return mapTask(task);
 }
 
 export async function updateTask(id: string, userId: string, data: UpdateTaskInput) {
-  const task = db.tasks.get(id);
+  const task = await prisma.task.findFirst({
+    where: { id, userId },
+    select: { id: true, userId: true, title: true, isCompleted: true, dueDate: true, listId: true },
+  });
 
-  if (!task || task.userId !== userId) {
+  if (!task) {
     throw new NotFoundError("Task");
   }
 
-  // Validate list if changing
   if (data.listId && data.listId !== task.listId) {
-    const list = db.lists.get(data.listId);
-    if (!list || list.userId !== userId) {
+    const list = await prisma.list.findFirst({
+      where: { id: data.listId, userId },
+      select: { id: true },
+    });
+    if (!list) {
       throw new NotFoundError("List");
     }
   }
 
-  const updated = {
-    ...task,
-    ...(data.title !== undefined && { title: data.title }),
-    ...(data.note !== undefined && { note: data.note }),
-    ...(data.listId !== undefined && { listId: data.listId }),
-    ...(data.isCompleted !== undefined && { isCompleted: data.isCompleted }),
-    ...(data.isImportant !== undefined && { isImportant: data.isImportant }),
-    ...(data.dueDate !== undefined && { dueDate: data.dueDate }),
-    ...(data.reminderAt !== undefined && { reminderAt: data.reminderAt }),
-    ...(data.priority !== undefined && { priority: data.priority }),
-    ...(data.order !== undefined && { order: data.order }),
-    updatedAt: now(),
-  };
+  const updated = await prisma.task.update({
+    where: { id },
+    data: {
+      ...(data.title !== undefined ? { title: data.title } : {}),
+      ...(data.note !== undefined ? { note: data.note } : {}),
+      ...(data.listId !== undefined ? { listId: data.listId } : {}),
+      ...(data.isCompleted !== undefined ? { isCompleted: data.isCompleted } : {}),
+      ...(data.isImportant !== undefined ? { isImportant: data.isImportant } : {}),
+      ...(data.dueDate !== undefined
+        ? { dueDate: data.dueDate ? new Date(data.dueDate) : null }
+        : {}),
+      ...(data.reminderAt !== undefined
+        ? { reminderAt: data.reminderAt ? new Date(data.reminderAt) : null }
+        : {}),
+      ...(data.priority !== undefined ? { priority: data.priority as Priority } : {}),
+      ...(data.order !== undefined ? { order: data.order } : {}),
+    },
+    include: {
+      steps: {
+        select: {
+          id: true,
+          title: true,
+          isCompleted: true,
+          order: true,
+          createdAt: true,
+          updatedAt: true,
+        },
+        orderBy: { order: "asc" },
+      },
+    },
+  });
 
-  db.tasks.set(id, updated);
-  ensureDueTodayNotification(updated);
-  return enrichTaskWithSteps(updated);
+  await ensureDueTodayNotification(updated);
+  return mapTask(updated);
 }
 
 export async function deleteTask(id: string, userId: string) {
-  const task = db.tasks.get(id);
+  const task = await prisma.task.findFirst({
+    where: { id, userId },
+    select: { id: true },
+  });
 
-  if (!task || task.userId !== userId) {
+  if (!task) {
     throw new NotFoundError("Task");
   }
 
-  // Delete related myDayTasks
-  for (const [key, myDayTask] of db.myDayTasks) {
-    if (myDayTask.taskId === id) {
-      db.myDayTasks.delete(key);
-    }
-  }
+  await prisma.$transaction([
+    prisma.myDayTask.deleteMany({ where: { taskId: id } }),
+    prisma.step.deleteMany({ where: { taskId: id } }),
+    prisma.notification.deleteMany({ where: { taskId: id } }),
+    prisma.task.delete({ where: { id } }),
+  ]);
 
-  // Delete related steps
-  for (const [key, step] of db.steps) {
-    if (step.taskId === id) {
-      db.steps.delete(key);
-    }
-  }
-
-  db.tasks.delete(id);
   return { deleted: id };
 }
 
@@ -209,19 +264,27 @@ export async function getImportantTasks(userId: string) {
 }
 
 export async function getPlannedTasks(userId: string) {
-  const tasks: TaskWithSteps[] = [];
-
-  for (const task of db.tasks.values()) {
-    if (task.userId === userId && !task.isCompleted && task.dueDate) {
-      tasks.push(enrichTaskWithSteps(task));
-    }
-  }
-
-  tasks.sort((a, b) => {
-    if (!a.dueDate) return 1;
-    if (!b.dueDate) return -1;
-    return new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime();
+  const tasks = await prisma.task.findMany({
+    where: {
+      userId,
+      isCompleted: false,
+      dueDate: { not: null },
+    },
+    include: {
+      steps: {
+        select: {
+          id: true,
+          title: true,
+          isCompleted: true,
+          order: true,
+          createdAt: true,
+          updatedAt: true,
+        },
+        orderBy: { order: "asc" },
+      },
+    },
+    orderBy: [{ dueDate: "asc" }],
   });
 
-  return tasks;
+  return tasks.map(mapTask);
 }

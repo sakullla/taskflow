@@ -1,7 +1,6 @@
-import { db } from "../../config/db-simple.js";
+import { prisma } from "../../config/db.js";
 import { NotFoundError } from "../../shared/errors/index.js";
 import { getDateKey, getTodayDateKey } from "../../shared/utils/timezone.js";
-import type { Notification } from "../../config/db-simple.js";
 
 export interface NotificationInput {
   title: string;
@@ -10,158 +9,181 @@ export interface NotificationInput {
   taskId?: string;
 }
 
+function mapNotification(notification: {
+  id: string;
+  userId: string;
+  title: string;
+  message: string;
+  type: "task_reminder" | "task_due" | "system";
+  isRead: boolean;
+  taskId: string | null;
+  createdAt: Date;
+}) {
+  return {
+    ...notification,
+    createdAt: notification.createdAt.toISOString(),
+  };
+}
+
 export async function getNotifications(userId: string, unreadOnly = false) {
-  const notifications: Notification[] = [];
+  const notifications = await prisma.notification.findMany({
+    where: {
+      userId,
+      ...(unreadOnly ? { isRead: false } : {}),
+    },
+    orderBy: { createdAt: "desc" },
+  });
 
-  for (const notification of db.notifications.values()) {
-    if (notification.userId !== userId) continue;
-    if (unreadOnly && notification.isRead) continue;
-    notifications.push(notification);
-  }
-
-  // Sort by createdAt desc
-  notifications.sort((a, b) =>
-    new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-  );
-
-  return notifications;
+  return notifications.map(mapNotification);
 }
 
 export async function getUnreadCount(userId: string): Promise<number> {
-  let count = 0;
-  for (const notification of db.notifications.values()) {
-    if (notification.userId === userId && !notification.isRead) {
-      count++;
-    }
-  }
-  return count;
+  return prisma.notification.count({
+    where: {
+      userId,
+      isRead: false,
+    },
+  });
 }
 
 export async function createNotification(
   userId: string,
   data: NotificationInput
-): Promise<Notification> {
-  const id = crypto.randomUUID();
-  const now = new Date().toISOString();
+) {
+  const notification = await prisma.notification.create({
+    data: {
+      userId,
+      title: data.title,
+      message: data.message,
+      type: data.type ?? "system",
+      isRead: false,
+      taskId: data.taskId ?? null,
+    },
+  });
 
-  const notification: Notification = {
-    id,
-    userId,
-    title: data.title,
-    message: data.message,
-    type: data.type || "system",
-    isRead: false,
-    taskId: data.taskId || null,
-    createdAt: now,
-  };
-
-  db.notifications.set(id, notification);
-  return notification;
+  return mapNotification(notification);
 }
 
-export async function markAsRead(id: string, userId: string): Promise<Notification> {
-  const notification = db.notifications.get(id);
+export async function markAsRead(id: string, userId: string) {
+  const notification = await prisma.notification.findFirst({
+    where: { id, userId },
+  });
 
-  if (!notification || notification.userId !== userId) {
+  if (!notification) {
     throw new NotFoundError("Notification");
   }
 
-  const updated = { ...notification, isRead: true };
-  db.notifications.set(id, updated);
+  const updated = await prisma.notification.update({
+    where: { id },
+    data: { isRead: true },
+  });
 
-  return updated;
+  return mapNotification(updated);
 }
 
 export async function markAllAsRead(userId: string): Promise<void> {
-  for (const [id, notification] of db.notifications) {
-    if (notification.userId === userId && !notification.isRead) {
-      db.notifications.set(id, { ...notification, isRead: true });
-    }
-  }
+  await prisma.notification.updateMany({
+    where: {
+      userId,
+      isRead: false,
+    },
+    data: { isRead: true },
+  });
 }
 
 export async function deleteNotification(id: string, userId: string): Promise<void> {
-  const notification = db.notifications.get(id);
+  const notification = await prisma.notification.findFirst({
+    where: { id, userId },
+    select: { id: true },
+  });
 
-  if (!notification || notification.userId !== userId) {
+  if (!notification) {
     throw new NotFoundError("Notification");
   }
 
-  db.notifications.delete(id);
+  await prisma.notification.delete({
+    where: { id },
+  });
 }
 
-// Check for tasks with reminders due
 export async function checkTaskReminders(): Promise<void> {
   const now = new Date();
   const fiveMinutesAgo = new Date(now.getTime() - 5 * 60 * 1000);
   const fiveMinutesFromNow = new Date(now.getTime() + 5 * 60 * 1000);
+  const oneHourAgo = new Date(now.getTime() - 60 * 60 * 1000);
 
-  for (const task of db.tasks.values()) {
-    if (task.isCompleted) continue;
-    if (!task.reminderAt) continue;
+  const tasks = await prisma.task.findMany({
+    where: {
+      isCompleted: false,
+      reminderAt: {
+        gte: fiveMinutesAgo,
+        lte: fiveMinutesFromNow,
+      },
+    },
+    select: {
+      id: true,
+      userId: true,
+      title: true,
+    },
+  });
 
-    const reminderTime = new Date(task.reminderAt);
+  for (const task of tasks) {
+    const existing = await prisma.notification.findFirst({
+      where: {
+        taskId: task.id,
+        type: "task_reminder",
+        createdAt: { gt: oneHourAgo },
+      },
+      select: { id: true },
+    });
 
-    // Check if reminder is within the window
-    if (reminderTime >= fiveMinutesAgo && reminderTime <= fiveMinutesFromNow) {
-      // Check if notification already exists
-      let exists = false;
-      for (const notification of db.notifications.values()) {
-        if (
-          notification.taskId === task.id &&
-          notification.type === "task_reminder" &&
-          notification.createdAt > new Date(now.getTime() - 60 * 60 * 1000).toISOString()
-        ) {
-          exists = true;
-          break;
-        }
-      }
+    if (existing) continue;
 
-      if (!exists) {
-        await createNotification(task.userId, {
-          title: "Task Reminder",
-          message: `Reminder: ${task.title}`,
-          type: "task_reminder",
-          taskId: task.id,
-        });
-      }
-    }
+    await createNotification(task.userId, {
+      title: "Task Reminder",
+      message: `Reminder: ${task.title}`,
+      type: "task_reminder",
+      taskId: task.id,
+    });
   }
 }
 
-// Check for tasks due today
 export async function checkDueTasks(): Promise<void> {
   const today = getTodayDateKey();
+  const tasks = await prisma.task.findMany({
+    where: {
+      isCompleted: false,
+      dueDate: { not: null },
+    },
+    select: {
+      id: true,
+      userId: true,
+      title: true,
+      dueDate: true,
+    },
+  });
 
-  for (const task of db.tasks.values()) {
-    if (task.isCompleted) continue;
-    if (!task.dueDate) continue;
+  for (const task of tasks) {
+    if (!task.dueDate || getDateKey(task.dueDate) !== today) continue;
 
-    const taskDueDate = getDateKey(task.dueDate);
+    const existing = await prisma.notification.findFirst({
+      where: {
+        taskId: task.id,
+        type: "task_due",
+      },
+      orderBy: { createdAt: "desc" },
+      select: { createdAt: true },
+    });
 
-    if (taskDueDate === today) {
-      // Check if notification already sent today
-      let exists = false;
-
-      for (const notification of db.notifications.values()) {
-        if (
-          notification.taskId === task.id &&
-          notification.type === "task_due" &&
-          getDateKey(notification.createdAt) === today
-        ) {
-          exists = true;
-          break;
-        }
-      }
-
-      if (!exists) {
-        await createNotification(task.userId, {
-          title: "Task Due Today",
-          message: `"${task.title}" is due today`,
-          type: "task_due",
-          taskId: task.id,
-        });
-      }
+    if (existing && getDateKey(existing.createdAt) === today) {
+      continue;
     }
+
+    await createNotification(task.userId, {
+      title: "Task Due Today",
+      message: `"${task.title}" is due today`,
+      type: "task_due",
+      taskId: task.id,
+    });
   }
 }

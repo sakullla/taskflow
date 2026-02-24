@@ -29,6 +29,7 @@ const envSchema = z.object({
   LOG_LEVEL: z.enum(["fatal", "error", "warn", "info", "debug", "trace"]).default("info"),
   CORS_ORIGINS: z.string().default("http://localhost:5173"),
   ENABLE_API_DOCS: booleanFromEnv.optional(),
+  ALLOW_REGISTRATION: booleanFromEnv.optional(),
   AUTH_RATE_LIMIT_WINDOW_MS: z.coerce.number().int().positive().default(15 * 60 * 1000),
   AUTH_RATE_LIMIT_MAX_ATTEMPTS: z.coerce.number().int().positive().default(5),
 }).superRefine((data, ctx) => {
@@ -56,4 +57,5 @@ const parsedEnv = parsed.data;
 export const env = {
   ...parsedEnv,
   ENABLE_API_DOCS: parsedEnv.ENABLE_API_DOCS ?? parsedEnv.NODE_ENV !== "production",
+  ALLOW_REGISTRATION: parsedEnv.ALLOW_REGISTRATION ?? true,
 };

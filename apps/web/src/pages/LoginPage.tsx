@@ -24,8 +24,8 @@ export function LoginPage() {
 
   const [mode, setMode] = useState<"login" | "register">("login");
   const [name, setName] = useState("");
-  const [email, setEmail] = useState("demo@example.com");
-  const [password, setPassword] = useState("password123");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
   const isRegister = mode === "register";

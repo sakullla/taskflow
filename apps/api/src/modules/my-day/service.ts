@@ -1,169 +1,152 @@
-import { db, generateId, now, getTodayString } from "../../config/db.js";
+import { Prisma } from "@prisma/client";
+import { prisma } from "../../config/db.js";
+import { getTodayDateKey } from "../../shared/utils/timezone.js";
 import { NotFoundError, ConflictError } from "../../shared/errors/index.js";
-import type { Task, Step } from "../../config/db-simple.js";
 
-// Extended task type with steps and list info
-interface TaskWithSteps extends Task {
-  steps: Array<Pick<Step, "id" | "title" | "isCompleted" | "order">>;
-  list?: {
+function mapTask(task: {
+  id: string;
+  title: string;
+  note: string;
+  isCompleted: boolean;
+  isImportant: boolean;
+  dueDate: Date | null;
+  reminderAt: Date | null;
+  priority: "low" | "normal" | "high";
+  order: number;
+  listId: string;
+  userId: string;
+  createdAt: Date;
+  updatedAt: Date;
+  list: { id: string; name: string; color: string } | null;
+  steps: Array<{
     id: string;
-    name: string;
-    color: string;
-  } | null;
+    title: string;
+    isCompleted: boolean;
+    order: number;
+    taskId: string;
+    createdAt: Date;
+    updatedAt: Date;
+  }>;
+}) {
+  return {
+    ...task,
+    dueDate: task.dueDate ? task.dueDate.toISOString() : null,
+    reminderAt: task.reminderAt ? task.reminderAt.toISOString() : null,
+    createdAt: task.createdAt.toISOString(),
+    updatedAt: task.updatedAt.toISOString(),
+    inMyDay: true,
+    steps: task.steps.map((step) => ({
+      ...step,
+      createdAt: step.createdAt.toISOString(),
+      updatedAt: step.updatedAt.toISOString(),
+    })),
+  };
 }
 
 export async function getMyDayTasks(userId: string, date?: string) {
-  const targetDate = date ?? getTodayString();
+  const targetDate = date ?? getTodayDateKey();
 
-  const taskIds: string[] = [];
-  for (const entry of db.myDayTasks.values()) {
-    if (entry.userId === userId && entry.date === targetDate) {
-      taskIds.push(entry.taskId);
-    }
-  }
-
-  const tasks: TaskWithSteps[] = [];
-  for (const taskId of taskIds) {
-    const task = db.tasks.get(taskId);
-    if (task) {
-      // Add steps
-      const steps: Array<Pick<typeof db.steps extends Map<string, infer U> ? U : never, "id" | "title" | "isCompleted" | "order">> = [];
-      for (const step of db.steps.values()) {
-        if (step.taskId === task.id) {
-          steps.push({
-            id: step.id,
-            title: step.title,
-            isCompleted: step.isCompleted,
-            order: step.order,
-          });
-        }
-      }
-      steps.sort((a, b) => a.order - b.order);
-
-      // Add list info
-      const list = db.lists.get(task.listId);
-
-      tasks.push({
-        ...task,
-        steps,
-        list: list ? {
-          id: list.id,
-          name: list.name,
-          color: list.color,
-        } : null,
-      });
-    }
-  }
-
-  // Sort by added time (entry createdAt)
-  tasks.sort((a, b) => {
-    const entryA = Array.from(db.myDayTasks.values()).find(e => e.taskId === a.id && e.date === targetDate);
-    const entryB = Array.from(db.myDayTasks.values()).find(e => e.taskId === b.id && e.date === targetDate);
-    if (!entryA || !entryB) return 0;
-    return new Date(entryA.createdAt).getTime() - new Date(entryB.createdAt).getTime();
+  const entries = await prisma.myDayTask.findMany({
+    where: {
+      userId,
+      date: targetDate,
+    },
+    include: {
+      task: {
+        include: {
+          list: {
+            select: { id: true, name: true, color: true },
+          },
+          steps: {
+            orderBy: { order: "asc" },
+          },
+        },
+      },
+    },
+    orderBy: { createdAt: "asc" },
   });
 
   return {
     date: targetDate,
-    tasks,
-    count: tasks.length,
+    tasks: entries.map((entry) => mapTask(entry.task)),
+    count: entries.length,
   };
 }
 
 export async function addTaskToMyDay(userId: string, taskId: string, date?: string) {
-  const targetDate = date ?? getTodayString();
+  const targetDate = date ?? getTodayDateKey();
 
-  // Verify task exists and belongs to user
-  const task = db.tasks.get(taskId);
-  if (!task || task.userId !== userId) {
+  const task = await prisma.task.findFirst({
+    where: { id: taskId, userId },
+    select: { id: true },
+  });
+  if (!task) {
     throw new NotFoundError("Task");
   }
 
-  // Check if already added
-  const existingKey = Array.from(db.myDayTasks.entries()).find(
-    ([, e]) => e.taskId === taskId && e.date === targetDate
-  )?.[0];
+  try {
+    const entry = await prisma.myDayTask.create({
+      data: {
+        taskId,
+        userId,
+        date: targetDate,
+      },
+    });
 
-  if (existingKey) {
-    throw new ConflictError("Task is already in My Day for this date");
+    return {
+      ...entry,
+      createdAt: entry.createdAt.toISOString(),
+    };
+  } catch (error) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
+      throw new ConflictError("Task is already in My Day for this date");
+    }
+    throw error;
   }
-
-  // Create entry
-  const entryId = generateId();
-  const entry = {
-    id: entryId,
-    taskId,
-    userId,
-    date: targetDate,
-    createdAt: now(),
-  };
-
-  db.myDayTasks.set(entryId, entry);
-
-  // Update task inMyDay flag if it's for today
-  if (targetDate === getTodayString()) {
-    task.inMyDay = true;
-    task.updatedAt = now();
-    db.tasks.set(taskId, task);
-  }
-
-  return entry;
 }
 
 export async function removeTaskFromMyDay(userId: string, taskId: string, date?: string) {
-  const targetDate = date ?? getTodayString();
+  const targetDate = date ?? getTodayDateKey();
 
-  // Verify task exists
-  const task = db.tasks.get(taskId);
-  if (!task || task.userId !== userId) {
+  const task = await prisma.task.findFirst({
+    where: { id: taskId, userId },
+    select: { id: true },
+  });
+  if (!task) {
     throw new NotFoundError("Task");
   }
 
-  // Find entry
-  const entryKey = Array.from(db.myDayTasks.entries()).find(
-    ([, e]) => e.taskId === taskId && e.date === targetDate
-  )?.[0];
+  const entry = await prisma.myDayTask.findFirst({
+    where: {
+      userId,
+      taskId,
+      date: targetDate,
+    },
+    select: { id: true },
+  });
 
-  if (!entryKey) {
+  if (!entry) {
     throw new NotFoundError("My Day entry");
   }
 
-  db.myDayTasks.delete(entryKey);
+  await prisma.myDayTask.delete({
+    where: { id: entry.id },
+  });
 
-  // Update task inMyDay flag if it's for today and no other entries
-  if (targetDate === getTodayString()) {
-    let hasOtherEntries = false;
-    for (const entry of db.myDayTasks.values()) {
-      if (entry.taskId === taskId) {
-        hasOtherEntries = true;
-        break;
-      }
-    }
-
-    if (!hasOtherEntries) {
-      task.inMyDay = false;
-      task.updatedAt = now();
-      db.tasks.set(taskId, task);
-    }
-  }
-
-  return { deleted: entryKey, taskId, date: targetDate };
+  return { deleted: entry.id, taskId, date: targetDate };
 }
 
-export async function getMyDayHistory(userId: string, limit: number = 30) {
-  const dateMap = new Map<string, number>();
+export async function getMyDayHistory(userId: string, limit = 30) {
+  const history = await prisma.myDayTask.groupBy({
+    by: ["date"],
+    where: { userId },
+    _count: { _all: true },
+    orderBy: { date: "desc" },
+    take: limit,
+  });
 
-  for (const entry of db.myDayTasks.values()) {
-    if (entry.userId === userId) {
-      const count = dateMap.get(entry.date) ?? 0;
-      dateMap.set(entry.date, count + 1);
-    }
-  }
-
-  const history = Array.from(dateMap.entries())
-    .map(([date, taskCount]) => ({ date, taskCount }))
-    .sort((a, b) => b.date.localeCompare(a.date))
-    .slice(0, limit);
-
-  return history;
+  return history.map((item) => ({
+    date: item.date,
+    taskCount: item._count._all,
+  }));
 }

@@ -1,129 +1,151 @@
-import { db, generateId, now } from "../../config/db.js";
+import { prisma } from "../../config/db.js";
 import { AuthenticationError, ConflictError } from "../../shared/errors/index.js";
 import { hashPassword, isLegacyPasswordHash, verifyPassword } from "../../shared/utils/password.js";
 import type { LoginInput, RegisterInput } from "./schemas.js";
 
-export async function registerUser(data: RegisterInput) {
-  // Check if user exists
-  for (const user of db.users.values()) {
-    if (user.email === data.email) {
-      throw new ConflictError("User with this email already exists");
-    }
-  }
-
-  // Hash password
-  const hashedPassword = await hashPassword(data.password);
-
-  // Create user
-  const userId = generateId();
-  const user = {
-    id: userId,
-    email: data.email,
-    password: hashedPassword,
-    isActive: true,
-    name: data.name ?? null,
-    avatar: null,
-    role: "user" as const,
-    locale: "zh-CN",
-    theme: "system",
-    dueDateReminders: true,
-    weeklyDigest: false,
-    createdAt: now(),
-  };
-  db.users.set(userId, user);
-
-  // Create default list
-  const listId = generateId();
-  db.lists.set(listId, {
-    id: listId,
-    name: "任务",
-    color: "#3b82f6",
-    isDefault: true,
-    isArchived: false,
-    order: 0,
-    userId,
-    createdAt: now(),
-    updatedAt: now(),
-  });
-
+function sanitizeUser(user: {
+  id: string;
+  email: string;
+  isActive: boolean;
+  name: string | null;
+  role: "admin" | "user";
+  locale: string;
+  theme: string;
+  dueDateReminders: boolean;
+  weeklyDigest: boolean;
+}) {
   return {
-    user: {
-      id: user.id,
-      email: user.email,
-      name: user.name,
-      role: user.role,
-      isActive: user.isActive,
-      locale: user.locale,
-      theme: user.theme,
-      dueDateReminders: user.dueDateReminders,
-      weeklyDigest: user.weeklyDigest,
-    },
+    id: user.id,
+    email: user.email,
+    isActive: user.isActive,
+    name: user.name,
+    role: user.role,
+    locale: user.locale,
+    theme: user.theme,
+    dueDateReminders: user.dueDateReminders,
+    weeklyDigest: user.weeklyDigest,
   };
 }
 
-export async function loginUser(data: LoginInput) {
-  // Find user
-  let user: (typeof db.users extends Map<string, infer U> ? U : never) | undefined = undefined;
-  for (const u of db.users.values()) {
-    if (u.email === data.email) {
-      user = u;
-      break;
-    }
+export async function registerUser(data: RegisterInput) {
+  const email = data.email.trim().toLowerCase();
+  const existing = await prisma.user.findUnique({ where: { email } });
+  if (existing) {
+    throw new ConflictError("User with this email already exists");
   }
+
+  const hashedPassword = await hashPassword(data.password);
+
+  const user = await prisma.$transaction(async (tx) => {
+    const created = await tx.user.create({
+      data: {
+        email,
+        password: hashedPassword,
+        isActive: true,
+        name: data.name ?? null,
+        role: "user",
+        locale: "zh-CN",
+        theme: "system",
+        dueDateReminders: true,
+        weeklyDigest: false,
+      },
+      select: {
+        id: true,
+        email: true,
+        isActive: true,
+        name: true,
+        role: true,
+        locale: true,
+        theme: true,
+        dueDateReminders: true,
+        weeklyDigest: true,
+      },
+    });
+
+    await tx.list.create({
+      data: {
+        name: "Tasks",
+        color: "#3b82f6",
+        isDefault: true,
+        isArchived: false,
+        order: 0,
+        userId: created.id,
+      },
+    });
+
+    return created;
+  });
+
+  return { user: sanitizeUser(user) };
+}
+
+export async function loginUser(data: LoginInput) {
+  const email = data.email.trim().toLowerCase();
+  const user = await prisma.user.findUnique({
+    where: { email },
+    select: {
+      id: true,
+      email: true,
+      password: true,
+      isActive: true,
+      name: true,
+      role: true,
+      locale: true,
+      theme: true,
+      dueDateReminders: true,
+      weeklyDigest: true,
+    },
+  });
 
   if (!user) {
     throw new AuthenticationError("Invalid email or password");
   }
 
-  if (user.isActive === false) {
+  if (!user.isActive) {
     throw new AuthenticationError("User is disabled");
   }
 
-  // Verify password
   const isValid = await verifyPassword(data.password, user.password);
-
   if (!isValid) {
     throw new AuthenticationError("Invalid email or password");
   }
 
   if (isLegacyPasswordHash(user.password)) {
-    user.password = await hashPassword(data.password);
-    db.users.set(user.id, user);
+    await prisma.user.update({
+      where: { id: user.id },
+      data: {
+        password: await hashPassword(data.password),
+      },
+    });
   }
 
-  return {
-    user: {
-      id: user.id,
-      email: user.email,
-      name: user.name,
-      role: user.role,
-      isActive: user.isActive,
-      locale: user.locale,
-      theme: user.theme,
-      dueDateReminders: user.dueDateReminders,
-      weeklyDigest: user.weeklyDigest,
-    },
-  };
+  return { user: sanitizeUser(user) };
 }
 
 export async function getCurrentUser(userId: string) {
-  const user = db.users.get(userId);
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: {
+      id: true,
+      email: true,
+      name: true,
+      avatar: true,
+      isActive: true,
+      locale: true,
+      theme: true,
+      dueDateReminders: true,
+      weeklyDigest: true,
+      role: true,
+      createdAt: true,
+    },
+  });
 
   if (!user) {
     throw new AuthenticationError("User not found");
   }
 
   return {
-    id: user.id,
-    email: user.email,
-    name: user.name,
-    avatar: user.avatar,
-    isActive: user.isActive,
-    locale: user.locale,
-    theme: user.theme,
-    dueDateReminders: user.dueDateReminders,
-    weeklyDigest: user.weeklyDigest,
-    role: user.role,
-    createdAt: user.createdAt,
+    ...user,
+    createdAt: user.createdAt.toISOString(),
   };
 }

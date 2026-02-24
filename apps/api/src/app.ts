@@ -7,7 +7,7 @@ import jwt from "@fastify/jwt";
 import swagger from "@fastify/swagger";
 import swaggerUi from "@fastify/swagger-ui";
 import { env } from "./config/env.js";
-import { db } from "./config/db.js";
+import { prisma } from "./config/db.js";
 import { authRoutes } from "./modules/auth/routes.js";
 import { listRoutes } from "./modules/lists/routes.js";
 import { taskRoutes } from "./modules/tasks/routes.js";
@@ -81,7 +81,10 @@ export async function createApp(): Promise<FastifyInstance> {
         throw new AuthenticationError("Invalid token payload");
       }
 
-      const user = db.users.get(parsed.data.userId);
+      const user = await prisma.user.findUnique({
+        where: { id: parsed.data.userId },
+        select: { id: true, isActive: true },
+      });
       if (!user) {
         throw new AuthenticationError("User not found");
       }

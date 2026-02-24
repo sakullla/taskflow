@@ -16,7 +16,11 @@ async function main() {
       email: "demo@example.com",
       password: hashedPassword,
       name: "Demo User",
+      role: "admin",
+      isActive: true,
       locale: "zh-CN",
+      dueDateReminders: true,
+      weeklyDigest: false,
     },
   });
   console.log(`✅ Created user: ${user.email}`);
