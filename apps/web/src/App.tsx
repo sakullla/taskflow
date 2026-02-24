@@ -10,6 +10,8 @@ import { PlannedPage } from "@/pages/PlannedPage";
 import { AllTasksPage } from "@/pages/AllTasksPage";
 import { ListPage } from "@/pages/ListPage";
 import { LoginPage } from "@/pages/LoginPage";
+import { SearchPage } from "@/pages/SearchPage";
+import { SettingsPage } from "@/pages/SettingsPage";
 import { ToastContainer } from "@/components/ui/toast";
 import "./index.css";
 
@@ -55,6 +57,8 @@ function App() {
               <Route path="planned" element={<PlannedPage />} />
               <Route path="tasks" element={<AllTasksPage />} />
               <Route path="lists/:listId" element={<ListPage />} />
+              <Route path="search" element={<SearchPage />} />
+              <Route path="settings" element={<SettingsPage />} />
             </Route>
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>

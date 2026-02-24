@@ -25,5 +25,11 @@
   "stepPlaceholder": "添加步骤...",
   "deleteConfirm": "确定要删除这个任务吗？",
   "created": "创建于",
-  "updated": "更新于"
+  "updated": "更新于",
+  "tasks": "任务",
+  "searchPlaceholder": "搜索任务...",
+  "searchPrompt": "输入关键词搜索任务",
+  "searchDescription": "按任务标题或备注搜索",
+  "noSearchResults": "未找到任务",
+  "tryDifferentSearch": "尝试其他搜索词"
 }

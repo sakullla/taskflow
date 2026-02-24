@@ -60,4 +60,4 @@ export interface MyDayEntry {
   count: number;
 }
 
-export type ViewType = "myDay" | "important" | "planned" | "all" | "list";
+export type ViewType = "myDay" | "important" | "planned" | "all" | "list" | "search";

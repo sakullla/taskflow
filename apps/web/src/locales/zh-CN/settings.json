@@ -1,0 +1,23 @@
+{
+  "title": "设置",
+  "subtitle": "管理你的偏好和账户设置",
+  "appearance": "外观",
+  "appearanceDesc": "自定义应用的外观",
+  "theme": "主题",
+  "light": "浅色",
+  "dark": "深色",
+  "system": "跟随系统",
+  "language": "语言",
+  "languageDesc": "选择你的首选语言",
+  "notifications": "通知",
+  "notificationsDesc": "配置通知偏好",
+  "dueDateReminders": "截止日期提醒",
+  "dueDateRemindersDesc": "任务到期时收到通知",
+  "weeklyDigest": "每周摘要",
+  "weeklyDigestDesc": "接收任务摘要",
+  "account": "账户",
+  "accountDesc": "管理你的账户信息",
+  "editProfile": "编辑资料",
+  "changePassword": "修改密码",
+  "madeWith": "用 ❤️ 打造，助你高效"
+}

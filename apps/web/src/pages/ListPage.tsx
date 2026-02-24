@@ -7,7 +7,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { TaskList } from "@/components/task/TaskList";
 import { TaskDetail } from "@/components/task/TaskDetail";
+import { MobileTaskDetail } from "@/components/task/MobileTaskDetail";
 import { useTaskStore } from "@/stores/taskStore";
+import { useUIStore } from "@/stores/uiStore";
 import { api } from "@/lib/api/client";
 import type { Task } from "@/types";
 
@@ -23,6 +25,7 @@ export function ListPage() {
     addTask,
     selectTask,
   } = useTaskStore();
+  const { isMobile } = useUIStore();
   const [newTaskTitle, setNewTaskTitle] = useState("");
   const [isAdding, setIsAdding] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -129,14 +132,18 @@ export function ListPage() {
         />
       </div>
 
-      {selectedTaskId && (
-        <div className="w-96 animate-slide-in">
+      {/* Desktop Task Detail */}
+      {!isMobile && selectedTaskId && (
+        <div className="w-96 animate-slide-in hidden lg:block">
           <TaskDetail
             task={tasks.find((t) => t.id === selectedTaskId) || null}
             onClose={() => selectTask(null)}
           />
         </div>
       )}
+
+      {/* Mobile Task Detail */}
+      <MobileTaskDetail />
     </div>
   );
 }

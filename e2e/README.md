@@ -1,6 +1,20 @@
-# E2E Tests with Playwright
+# E2E Testing Guide
 
-This directory contains end-to-end tests using Playwright.
+This directory contains Playwright end-to-end tests for the Todo application.
+
+## Test Structure
+
+```
+e2e/
+├── smoke.spec.ts          # Basic smoke tests
+├── navigation.spec.ts     # Navigation and routing tests
+├── tasks.spec.ts          # Task management tests
+├── task-detail.spec.ts    # Task detail panel tests
+├── lists.spec.ts          # List management tests
+├── search.spec.ts         # Search functionality tests
+├── settings.spec.ts       # Settings page tests
+└── mobile-responsive.spec.ts  # Mobile responsive design tests
+```
 
 ## Running Tests
 
@@ -8,35 +22,43 @@ This directory contains end-to-end tests using Playwright.
 # Run all tests
 npx playwright test
 
-# Run tests in headed mode (see the browser)
-npx playwright test --headed
-
 # Run specific test file
-npx playwright test e2e/smoke.spec.ts
+npx playwright test search.spec.ts
 
-# Run tests with UI mode
+# Run with UI mode
 npx playwright test --ui
 
-# Run tests in debug mode
-npx playwright test --debug
+# Run in headed mode (see browser)
+npx playwright test --headed
 ```
 
-## Test Structure
+## Test Coverage
 
-- `smoke.spec.ts` - Basic smoke tests (API health, page loads)
-- `tasks.spec.ts` - Task management tests (add, complete)
-- `navigation.spec.ts` - Navigation tests (sidebar, routing)
-- `task-detail.spec.ts` - Task detail panel tests
-- `lists.spec.ts` - List management tests (create, delete)
+### Search Functionality (search.spec.ts)
+- ✅ Navigate to search page
+- ✅ Empty state display
+- ✅ Search for tasks
+- ✅ No results message
 
-## Configuration
+### Settings Page (settings.spec.ts)
+- ✅ Navigate to settings page
+- ✅ Display all sections (Appearance, Language, Notifications, Account)
+- ✅ Switch theme (Light/Dark)
+- ✅ Switch language (English/Chinese)
+- ✅ Theme preference persistence in localStorage
 
-Tests are configured in `playwright.config.ts` at the project root.
+### Mobile Responsive (mobile-responsive.spec.ts)
+- ✅ Desktop sidebar visible on large viewport
+- ✅ Mobile viewport hides desktop sidebar
+- ✅ Mobile menu button opens sidebar
+- ✅ Navigation to search page on mobile
+- ✅ Responsive layout padding adjustment
 
-- Base URL: `http://localhost:5173`
-- API URL: `http://localhost:4000`
-- Browser: Chromium
+### Existing Tests (14 tests)
+- ✅ Smoke tests (page loads, sidebar visible)
+- ✅ Navigation (sidebar navigation, lists display)
+- ✅ Task management (add task, mark complete, view filters)
+- ✅ Task detail (open detail, mark important, add steps)
+- ✅ List management (create list, delete list, task reassignment)
 
-## CI/CD
-
-Tests automatically start the web server and API server before running.
+## Total: 28 tests passing

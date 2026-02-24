@@ -1,4 +1,5 @@
-import { Star, Calendar } from "lucide-react";
+import { useState } from "react";
+import { Star, Calendar, Check } from "lucide-react";
 import { cn, formatDate, isOverdue, isToday } from "@/lib/utils";
 import { api } from "@/lib/api/client";
 import { useTaskStore } from "@/stores/taskStore";
@@ -12,11 +13,18 @@ interface TaskItemProps {
 
 export function TaskItem({ task, isSelected, onClick }: TaskItemProps) {
   const { updateTask } = useTaskStore();
+  const [isCompleting, setIsCompleting] = useState(false);
 
   const handleToggleComplete = async (e: React.MouseEvent) => {
     e.stopPropagation();
 
     const newStatus = !task.isCompleted;
+
+    if (newStatus) {
+      // Trigger completion animation
+      setIsCompleting(true);
+      setTimeout(() => setIsCompleting(false), 400);
+    }
 
     // Optimistic update
     updateTask(task.id, { isCompleted: newStatus });
@@ -69,31 +77,37 @@ export function TaskItem({ task, isSelected, onClick }: TaskItemProps) {
         isSelected
           ? "border-primary bg-primary/5"
           : "border-border bg-card hover:border-primary/50",
-        task.isCompleted && "opacity-60"
+        task.isCompleted && "opacity-60",
+        isCompleting && "animate-task-complete"
       )}
     >
       {/* Checkbox */}
       <button
         onClick={handleToggleComplete}
         className={cn(
-          "mt-0.5 w-5 h-5 rounded-full border-2 flex items-center justify-center transition-colors",
+          "mt-0.5 w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all duration-300",
           task.isCompleted
-            ? "bg-primary border-primary text-primary-foreground"
-            : "border-muted-foreground hover:border-primary"
+            ? "bg-primary border-primary text-primary-foreground scale-110"
+            : "border-muted-foreground hover:border-primary hover:scale-105"
         )}
       >
-        {task.isCompleted && (
-          <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-          </svg>
-        )}
+        <div
+          className={cn(
+            "transition-all duration-300",
+            task.isCompleted
+              ? "scale-100 opacity-100"
+              : "scale-0 opacity-0"
+          )}
+        >
+          <Check className="w-3 h-3 stroke-[3]" />
+        </div>
       </button>
 
       {/* Content */}
       <div className="flex-1 min-w-0">
         <p
           className={cn(
-            "font-medium truncate",
+            "font-medium truncate transition-all duration-300",
             task.isCompleted && "line-through text-muted-foreground"
           )}
         >
@@ -126,16 +140,16 @@ export function TaskItem({ task, isSelected, onClick }: TaskItemProps) {
       <button
         onClick={handleToggleImportant}
         className={cn(
-          "opacity-0 group-hover:opacity-100 transition-opacity",
-          task.isImportant && "opacity-100"
+          "opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-all duration-200",
+          task.isImportant && "opacity-100 scale-110"
         )}
       >
         <Star
           className={cn(
-            "h-5 w-5",
+            "h-5 w-5 transition-all duration-200",
             task.isImportant
-              ? "fill-red-500 text-red-500"
-              : "text-muted-foreground hover:text-red-500"
+              ? "fill-red-500 text-red-500 scale-110"
+              : "text-muted-foreground hover:text-red-500 hover:scale-110"
           )}
         />
       </button>

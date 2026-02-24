@@ -25,6 +25,13 @@ export async function taskRoutes(fastify: FastifyInstance) {
     reply.send({ success: true, data: tasks });
   });
 
+  // GET /tasks/search
+  fastify.get("/search", async (request, reply) => {
+    const query = taskQuerySchema.parse(request.query);
+    const tasks = await getTasks(request.user.userId, { ...query, search: query.search || "" });
+    reply.send({ success: true, data: tasks });
+  });
+
   // GET /tasks/:id
   fastify.get("/:id", async (request, reply) => {
     const { id } = request.params as { id: string };

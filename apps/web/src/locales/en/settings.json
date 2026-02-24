@@ -1,0 +1,23 @@
+{
+  "title": "Settings",
+  "subtitle": "Manage your preferences and account settings",
+  "appearance": "Appearance",
+  "appearanceDesc": "Customize how the app looks",
+  "theme": "Theme",
+  "light": "Light",
+  "dark": "Dark",
+  "system": "System",
+  "language": "Language",
+  "languageDesc": "Choose your preferred language",
+  "notifications": "Notifications",
+  "notificationsDesc": "Configure notification preferences",
+  "dueDateReminders": "Due date reminders",
+  "dueDateRemindersDesc": "Get notified when tasks are due",
+  "weeklyDigest": "Weekly digest",
+  "weeklyDigestDesc": "Receive a summary of your tasks",
+  "account": "Account",
+  "accountDesc": "Manage your account information",
+  "editProfile": "Edit Profile",
+  "changePassword": "Change Password",
+  "madeWith": "Made with ❤️ for productivity"
+}

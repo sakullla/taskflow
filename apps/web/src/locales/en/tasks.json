@@ -25,5 +25,11 @@
   "stepPlaceholder": "Add a step...",
   "deleteConfirm": "Are you sure you want to delete this task?",
   "created": "Created on",
-  "updated": "Updated on"
+  "updated": "Updated on",
+  "tasks": "Tasks",
+  "searchPlaceholder": "Search tasks...",
+  "searchPrompt": "Type to search for tasks",
+  "searchDescription": "Search by task title or notes",
+  "noSearchResults": "No tasks found",
+  "tryDifferentSearch": "Try a different search term"
 }

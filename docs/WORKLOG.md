@@ -36,3 +36,8 @@
 - 2026-02-23: **Fixed environment variable loading** by adding `dotenv/config` import to API server.
 - 2026-02-23: **Added seed data** to in-memory database for consistent E2E testing.
 - 2026-02-23: **Fixed i18n translations** for list management UI (newListPlaceholder, create, cancel, delete).
+- 2026-02-24: **Implemented search functionality** - Added backend search API endpoint and frontend SearchPage with debounced search, empty states, and i18n support.
+- 2026-02-24: **Implemented mobile responsive design** - Added mobile sidebar drawer, mobile task detail full-screen overlay, responsive Header with hamburger menu, and updated all pages to support mobile layout.
+- 2026-02-24: **Implemented task completion animations** - Added scale and color transition animations when completing tasks, smooth checkbox check animation, and star icon scale effect for important tasks.
+- 2026-02-24: **Implemented settings page and theme switching** - Added SettingsPage with theme selection (light/dark/system), language switching, notification preferences, and account management UI. Added Switch component and CardDescription component.
+- 2026-02-24: **Added E2E tests for new features** - Added test suites for search functionality (4 tests), settings page (5 tests), and mobile responsive design (5 tests). All 28 tests passing.
