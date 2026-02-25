@@ -13,7 +13,7 @@ interface TaskItemProps {
   onClick?: () => void;
 }
 
-const SWIPE_THRESHOLD = 80;
+const SWIPE_THRESHOLD = 120;
 
 export function TaskItem({ task, isSelected, onClick }: TaskItemProps) {
   const { t } = useTranslation(["tasks"]);
@@ -138,7 +138,7 @@ export function TaskItem({ task, isSelected, onClick }: TaskItemProps) {
       <motion.div
         drag={!isBatchMode ? "x" : false}
         dragConstraints={{ left: 0, right: 0 }}
-        dragElastic={0.7}
+        dragElastic={0.3}
         onDragEnd={handleDragEnd}
         animate={controls}
         style={{ x }}
