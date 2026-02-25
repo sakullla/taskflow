@@ -51,5 +51,10 @@
   "error": {
     "title": "Error",
     "retry": "Retry"
+  },
+  "pwa": {
+    "installTitle": "Install TaskFlow",
+    "installDescription": "Install to your home screen for quick access to your tasks",
+    "install": "Install"
   }
 }

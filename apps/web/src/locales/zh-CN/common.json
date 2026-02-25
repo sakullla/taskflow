@@ -51,5 +51,10 @@
   "error": {
     "title": "出错了",
     "retry": "重试"
+  },
+  "pwa": {
+    "installTitle": "安装 TaskFlow",
+    "installDescription": "安装到主屏幕，快速访问你的任务",
+    "install": "安装"
   }
 }

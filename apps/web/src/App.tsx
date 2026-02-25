@@ -8,6 +8,7 @@ import { MainLayout } from "@/components/layout/MainLayout";
 import { LoginPage } from "@/pages/LoginPage";
 import { ToastContainer } from "@/components/ui/toast";
 import { Loading } from "@/components/ui/loading";
+import { PWAInstallPrompt } from "@/components/PWAInstallPrompt";
 import { api } from "@/lib/api/client";
 import { useAuthStore } from "@/stores/authStore";
 import type { User } from "@/types";
@@ -143,6 +144,7 @@ function App() {
         <BrowserRouter>
           <AnimatedRoutes />
           <ToastContainer />
+          <PWAInstallPrompt />
         </BrowserRouter>
       </QueryClientProvider>
     </I18nextProvider>
