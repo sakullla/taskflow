@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { CalendarIcon, X } from "lucide-react";
+import { CalendarIcon, X, Clock } from "lucide-react";
 import { format, isToday, isTomorrow, isYesterday } from "date-fns";
 import { enUS, zhCN } from "date-fns/locale";
 import { cn } from "@/lib/utils";
@@ -17,6 +17,7 @@ export function DatePicker({ value, onChange, disabled }: DatePickerProps) {
   const [isOpen, setIsOpen] = useState(false);
   const dateLocale = i18n.resolvedLanguage?.startsWith("zh") ? zhCN : enUS;
   const dateFormat = i18n.resolvedLanguage?.startsWith("zh") ? "M月d日" : "MMM d";
+  const timeFormat = i18n.resolvedLanguage?.startsWith("zh") ? "HH:mm" : "h:mm a";
   const presetDates = [
     { label: t("tasks:today") || "Today", getDate: () => new Date() },
     { label: t("tasks:tomorrow") || "Tomorrow", getDate: () => new Date(Date.now() + 86400000) },
@@ -24,17 +25,37 @@ export function DatePicker({ value, onChange, disabled }: DatePickerProps) {
   ];
 
   const selectedDate = value ? new Date(value) : null;
+  const [selectedTime, setSelectedTime] = useState(selectedDate ? format(selectedDate, "HH:mm") : "09:00");
+
+  useEffect(() => {
+    if (selectedDate) {
+      setSelectedTime(format(selectedDate, "HH:mm"));
+    }
+  }, [selectedDate?.toISOString()]);
 
   const formatDateLabel = (date: Date) => {
-    if (isToday(date)) return t("tasks:today") || "Today";
-    if (isTomorrow(date)) return t("tasks:tomorrow") || "Tomorrow";
-    if (isYesterday(date)) return t("tasks:yesterday") || "Yesterday";
-    return format(date, dateFormat, { locale: dateLocale });
+    const timeStr = format(date, timeFormat, { locale: dateLocale });
+    if (isToday(date)) return `${t("tasks:today") || "Today"} ${timeStr}`;
+    if (isTomorrow(date)) return `${t("tasks:tomorrow") || "Tomorrow"} ${timeStr}`;
+    if (isYesterday(date)) return `${t("tasks:yesterday") || "Yesterday"} ${timeStr}`;
+    return `${format(date, dateFormat, { locale: dateLocale })} ${timeStr}`;
   };
 
   const handleSelectDate = (date: Date) => {
+    const [hours, minutes] = selectedTime.split(":").map(Number);
+    date.setHours(hours, minutes, 0, 0);
     onChange(date.toISOString());
     setIsOpen(false);
+  };
+
+  const handleTimeChange = (time: string) => {
+    setSelectedTime(time);
+    if (selectedDate) {
+      const [hours, minutes] = time.split(":").map(Number);
+      const newDate = new Date(selectedDate);
+      newDate.setHours(hours, minutes, 0, 0);
+      onChange(newDate.toISOString());
+    }
   };
 
   const handleClear = (e: React.MouseEvent) => {
@@ -100,17 +121,27 @@ export function DatePicker({ value, onChange, disabled }: DatePickerProps) {
                 );
               })}
 
-              <div className="border-t pt-2 mt-2">
+              <div className="border-t pt-2 mt-2 space-y-2">
                 <input
                   type="date"
                   value={selectedDate ? format(selectedDate, "yyyy-MM-dd") : ""}
                   onChange={(e) => {
                     if (e.target.value) {
-                      handleSelectDate(new Date(e.target.value));
+                      const date = new Date(e.target.value);
+                      handleSelectDate(date);
                     }
                   }}
                   className="w-full px-3 py-2 rounded-md border bg-transparent text-sm"
                 />
+                <div className="flex items-center gap-2">
+                  <Clock className="h-4 w-4 text-muted-foreground" />
+                  <input
+                    type="time"
+                    value={selectedTime}
+                    onChange={(e) => handleTimeChange(e.target.value)}
+                    className="flex-1 px-3 py-2 rounded-md border bg-transparent text-sm"
+                  />
+                </div>
               </div>
 
               {selectedDate && (

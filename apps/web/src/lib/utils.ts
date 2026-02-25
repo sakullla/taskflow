@@ -42,3 +42,13 @@ export function isToday(date: string | Date | null | undefined): boolean {
     d.getDate() === today.getDate()
   );
 }
+
+export function formatTime(date: string | Date | null | undefined): string {
+  if (!date) return "";
+  const d = typeof date === "string" ? new Date(date) : date;
+  return d.toLocaleTimeString("zh-CN", {
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  });
+}

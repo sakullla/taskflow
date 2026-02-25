@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Star, Calendar, Check, Trash2, Undo } from "lucide-react";
-import { cn, formatDate, isOverdue, isToday } from "@/lib/utils";
+import { cn, formatDate, formatTime, isOverdue, isToday } from "@/lib/utils";
 import { api } from "@/lib/api/client";
 import { useTaskStore } from "@/stores/taskStore";
 import { motion, useAnimation, useMotionValue, PanInfo } from "framer-motion";
@@ -203,7 +203,7 @@ export function TaskItem({ task, isSelected, onClick }: TaskItemProps) {
                   dueDateOverdue ? "text-destructive" : dueDateToday ? "text-amber-500" : ""
                 )}>
                   <Calendar className="h-3 w-3" />
-                  {dueDateToday ? t("tasks:today") || "Today" : formatDate(task.dueDate)}
+                  {dueDateToday ? `${t("tasks:today") || "Today"} ${formatTime(task.dueDate)}` : `${formatDate(task.dueDate)} ${formatTime(task.dueDate)}`}
                 </span>
               )}
               {task.steps.length > 0 && (
