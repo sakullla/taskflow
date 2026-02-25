@@ -1,8 +1,9 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { CalendarIcon, X, Clock } from "lucide-react";
 import { format, isToday, isTomorrow, isYesterday } from "date-fns";
 import { enUS, zhCN } from "date-fns/locale";
+import { createPortal } from "react-dom";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 
@@ -15,6 +16,8 @@ interface DatePickerProps {
 export function DatePicker({ value, onChange, disabled }: DatePickerProps) {
   const { t, i18n } = useTranslation(["tasks"]);
   const [isOpen, setIsOpen] = useState(false);
+  const buttonRef = useRef<HTMLButtonElement>(null);
+  const [popoverPosition, setPopoverPosition] = useState({ top: 0, left: 0 });
   const dateLocale = i18n.resolvedLanguage?.startsWith("zh") ? zhCN : enUS;
   const dateFormat = i18n.resolvedLanguage?.startsWith("zh") ? "M月d日" : "MMM d";
   const timeFormat = i18n.resolvedLanguage?.startsWith("zh") ? "HH:mm" : "h:mm a";
@@ -26,6 +29,16 @@ export function DatePicker({ value, onChange, disabled }: DatePickerProps) {
 
   const selectedDate = value ? new Date(value) : null;
   const [selectedTime, setSelectedTime] = useState(selectedDate ? format(selectedDate, "HH:mm") : "09:00");
+
+  useEffect(() => {
+    if (isOpen && buttonRef.current) {
+      const rect = buttonRef.current.getBoundingClientRect();
+      setPopoverPosition({
+        top: rect.bottom + window.scrollY + 8,
+        left: rect.left + window.scrollX,
+      });
+    }
+  }, [isOpen]);
 
   useEffect(() => {
     if (selectedDate) {
@@ -66,6 +79,7 @@ export function DatePicker({ value, onChange, disabled }: DatePickerProps) {
   return (
     <div className="relative">
       <Button
+        ref={buttonRef}
         type="button"
         variant="outline"
         size="sm"
@@ -95,7 +109,11 @@ export function DatePicker({ value, onChange, disabled }: DatePickerProps) {
             className="fixed inset-0 z-40"
             onClick={() => setIsOpen(false)}
           />
-          <div className="absolute top-full mt-2 left-0 z-50 w-56 p-3 bg-popover border rounded-lg shadow-lg">
+          {createPortal(
+            <div
+              className="fixed z-50 w-56 p-3 bg-popover border rounded-lg shadow-lg"
+              style={{ top: popoverPosition.top, left: popoverPosition.left }}
+            >
             <div className="space-y-2">
               {presetDates.map((preset) => {
                 const date = preset.getDate();
@@ -157,7 +175,9 @@ export function DatePicker({ value, onChange, disabled }: DatePickerProps) {
                 </button>
               )}
             </div>
-          </div>
+          </div>,
+            document.body
+          )}
         </>
       )}
     </div>
